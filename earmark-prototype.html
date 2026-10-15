@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Earmark — Listen Up</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tinos:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#1E140D; --bg-2:#241910; --panel:rgba(255,235,210,.05); --line:rgba(255,225,190,.13);
+  --ink:#F1E6D4; --ink-2:#BBA68C; --accent:#CFA253; --accent-ink:#1E140D;
+  --rail-hi:#7A4E2C; --rail:#4E3119; --rail-lo:#2C1A0E;
+  --bronze:#B8773F; --silver:#B9BEC6; --gold:#D4A84B; --platinum:#A7C9D2; --diamond:#7FBFDF; --obsidian:#8E7BB0;
+  color-scheme:dark;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){ color-scheme:dark; } }
+:root[data-theme="dark"]{ color-scheme:dark; }
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+*{box-sizing:border-box}
+body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Times New Roman",Times,Tinos,"Liberation Serif",serif;font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.wood{background-color:#221710;background-image:
+  repeating-linear-gradient(90deg, rgba(0,0,0,.22) 0 1px, transparent 1px 86px),
+  repeating-linear-gradient(90deg, rgba(255,215,170,.035) 0 1px, transparent 1px 86px),
+  repeating-linear-gradient(90deg, transparent 0 7px, rgba(255,210,160,.012) 7px 9px, transparent 9px 23px),
+  linear-gradient(180deg,#2B1B10 0%,#231811 45%,#1E140D 100%);
+  background-position:43px 0, 44px 0, 0 0, 0 0}
+.phone{max-width:430px;margin:0 auto;min-height:100%;position:relative}
+.screen{display:none;padding:14px 22px 120px}
+.screen.active{display:block}
+h1,h2,h3{margin:0;font-weight:400;letter-spacing:.01em}
+h2{font-size:21px;margin:24px 0 12px}
+p{margin:0}
+.muted{color:var(--ink-2)}
+button{font-family:inherit}
+
+/* header */
+.brandblock{text-align:center;padding:8px 0 14px}
+.brand{font-size:26px;letter-spacing:.06em;color:var(--accent)}
+.tagline{font-size:14px;font-style:italic;color:var(--ink-2);margin-top:2px;letter-spacing:.02em}
+.hdr{text-align:center;padding:8px 0 14px}
+.hdr .title{font-size:24px}
+.hdr .tag{font-size:14px;color:var(--ink-2);font-style:italic}
+
+/* period chips */
+.chips{display:flex;gap:8px;margin:6px 0 4px}
+.chips button{flex:1;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:10px;padding:9px 0;font-size:15px;cursor:pointer}
+.chips button.on{border-color:var(--accent);background:rgba(207,162,83,.12);color:var(--accent)}
+
+/* shelf rail — restrained wood edge */
+.rail{height:7px;margin:0 -8px;position:relative;
+  background:linear-gradient(180deg,var(--rail-hi),var(--rail) 50%,var(--rail-lo));
+  box-shadow:0 5px 8px -2px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,220,180,.18);}
+.rail.thin{height:5px}
+
+/* hero */
+.hero{text-align:center;padding:26px 0 22px;position:relative}
+.hero .glow{position:absolute;left:50%;top:40px;width:260px;height:200px;transform:translateX(-50%);border-radius:50%;background:radial-gradient(closest-side,rgba(207,162,83,.16),rgba(207,162,83,.05) 55%,transparent);pointer-events:none}
+.streakwrap{display:flex;align-items:center;justify-content:center;gap:22px;position:relative}
+.hero .num{font-size:92px;line-height:.95;letter-spacing:-.02em}
+.hero .unit{font-size:20px;margin-top:6px;letter-spacing:.08em}
+.hero .sub{color:var(--ink-2);font-size:14px;margin-top:4px;font-style:italic}
+.streakmedal{text-align:center}
+.streakmedal .medal{width:68px;height:68px;margin:0 auto 6px}
+.streakmedal .medal svg{width:28px;height:28px}
+.streakmedal small{display:block;font-size:13px;color:var(--ink-2);font-style:italic;line-height:1.25;white-space:nowrap}
+.boxes{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:24px;position:relative}
+.box{padding:14px 8px 12px;border-radius:12px;background:linear-gradient(180deg,rgba(255,235,210,.08),rgba(255,235,210,.03));border:1px solid var(--line);box-shadow:0 0 18px rgba(207,162,83,.06), inset 0 1px 0 rgba(255,255,255,.05)}
+.box b{font-size:26px;font-weight:400;display:block;letter-spacing:-.01em}
+.box small{color:var(--ink-2);font-size:13px}
+.notes{margin-top:12px;text-align:left;padding:10px 14px;border-radius:10px;border:1px solid var(--line);background:rgba(0,0,0,.18)}
+.notes .lbl{font-size:12px;color:var(--ink-2);font-style:italic;margin-bottom:4px}
+.notes div{font-size:15px;line-height:1.4}
+.notes div span{color:var(--ink-2);font-size:13px;margin-left:6px}
+.totalline{margin-top:22px;position:relative}
+.totalline b{font-size:40px;font-weight:400;display:block;letter-spacing:-.01em;line-height:1.1}
+.totalline small{color:var(--ink-2);font-size:14px;font-style:italic}
+.share{display:inline-flex;align-items:center;gap:8px;margin:14px auto 0;background:transparent;border:0;color:var(--ink);font-size:16px;cursor:pointer;letter-spacing:.02em}
+.share svg{width:18px;height:18px}
+
+.sec{padding:18px 0 22px}
+.card{background:linear-gradient(180deg,rgba(255,235,210,.075),rgba(255,235,210,.03));border:1px solid var(--line);border-radius:12px;padding:14px 16px;box-shadow:0 0 20px rgba(207,162,83,.05), inset 0 1px 0 rgba(255,255,255,.05)}
+.card+.card{margin-top:10px}
+.rank .row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.rank .name{font-size:22px}
+.rank .next{font-size:14px;color:var(--ink-2);font-style:italic}
+.bar{height:6px;border-radius:99px;background:rgba(0,0,0,.35);margin-top:12px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:99px;background:var(--accent)}
+.rank .ticks{display:flex;justify-content:space-between;font-size:13px;color:var(--ink-2);margin-top:6px}
+.up{display:flex;gap:14px;align-items:center}
+.up .ic{width:38px;height:38px;border-radius:50%;border:1.5px solid #8fcf99;color:#8fcf99;display:grid;place-items:center;flex:0 0 auto}
+.up b{display:block;font-size:17px;font-weight:400}
+.up small{color:var(--ink-2);font-size:14px}
+
+/* medals — restrained metallic ring, matte center, line icon */
+.sechead{display:flex;align-items:baseline;justify-content:space-between}
+.sechead h2{margin:0}
+.seeall{background:transparent;border:0;color:var(--accent);font-size:15px;cursor:pointer;font-style:italic}
+.medals{display:flex;gap:16px;overflow-x:auto;padding:8px 2px 12px;scrollbar-width:none}
+.medals::-webkit-scrollbar{display:none}
+.medalwrap{flex:0 0 auto;width:100px;text-align:center;cursor:pointer}
+.medal{width:78px;height:78px;margin:0 auto 10px;border-radius:50%;position:relative;display:grid;place-items:center;
+  background:radial-gradient(circle at 50% 40%,#2E2017,#1A110B);
+  box-shadow:0 0 0 1px rgba(0,0,0,.6), inset 0 1px 1px rgba(255,255,255,.06)}
+.medal:before{content:"";position:absolute;inset:-5px;border-radius:50%;z-index:-1;
+  background:linear-gradient(135deg,var(--m-hi),var(--m-lo) 55%,var(--m-hi));
+  box-shadow:0 4px 10px rgba(0,0,0,.5), 0 0 14px rgba(255,220,160,.12)}
+.medal:after{content:"";position:absolute;inset:4px;border-radius:50%;border:1px solid var(--m-lo);opacity:.6}
+.medal svg,.medal span{position:relative;z-index:1;width:32px;height:32px;color:var(--m-hi)}
+.medal span{font-size:22px;display:grid;place-items:center;letter-spacing:-.02em}
+.m-bronze{--m-hi:#D9A070;--m-lo:#8A5429}
+.m-silver{--m-hi:#E6E9EE;--m-lo:#8A9199}
+.m-gold{--m-hi:#F0D48A;--m-lo:#A3782B}
+.m-platinum{--m-hi:#E3F2F6;--m-lo:#7FA9B3}
+.m-diamond{--m-hi:#CFEBFA;--m-lo:#4E93B8}
+.m-obsidian{--m-hi:#C9B8E6;--m-lo:#4A3A66}
+.m-rainbow{--m-hi:#F0D48A;--m-lo:#8E7BB0}
+.m-rainbow:before{background:conic-gradient(from 200deg,#c96a6a,#d4a84b,#8fbf7a,#6aa6c9,#9a86c9,#c96a6a)}
+.m-locked{--m-hi:#4A3A2C;--m-lo:#2A1E14}
+.m-locked:before{box-shadow:0 4px 10px rgba(0,0,0,.5)}
+.m-locked svg,.m-locked span{color:#6B5A48}
+.medalwrap b{display:block;font-size:15px;font-weight:400;line-height:1.25}
+.medalwrap small{display:block;font-size:13px;color:var(--ink-2);font-style:italic}
+.medalwrap.locked b{color:var(--ink-2)}
+
+/* next-up pair */
+.nextup{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+.nextup .card{display:flex;flex-direction:column;align-items:center;text-align:center;padding:14px 10px;cursor:pointer}
+.nextup .lbl{font-size:13px;color:var(--ink-2);font-style:italic;margin-bottom:10px}
+.nextup .medal{width:64px;height:64px}
+.nextup .medal svg,.nextup .medal span{width:26px;height:26px;font-size:18px}
+.nextup b{display:block;font-size:16px;font-weight:400}
+.nextup small{color:var(--ink-2);font-size:13px;display:block}
+.nextup .bar{width:100%;margin-top:10px}
+
+/* bookshelf */
+.seg{display:flex;gap:2px;border:1px solid var(--line);padding:2px;border-radius:8px;font-size:13px}
+.seg button{border:0;background:transparent;color:var(--ink-2);padding:4px 10px;border-radius:6px;cursor:pointer}
+.seg button.on{background:var(--accent);color:var(--accent-ink)}
+.bookcase{margin-top:12px;background:linear-gradient(180deg,#F7F3EC,#EBE5DA);border-radius:10px;padding:14px 0 6px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.row{display:flex;gap:14px;align-items:flex-end;overflow-x:auto;padding:0 16px 10px;scrollbar-width:none;scroll-snap-type:x proximity}
+.row::-webkit-scrollbar{display:none}
+.shelfline{height:7px;margin:0 10px 16px;background:linear-gradient(180deg,#fff,#D9D2C6);border-radius:1px;box-shadow:0 7px 9px -4px rgba(0,0,0,.35)}
+.cover{flex:0 0 auto;width:74px;height:108px;border-radius:2px;position:relative;scroll-snap-align:start;cursor:pointer;
+  box-shadow:0 9px 12px -6px rgba(0,0,0,.45), inset 3px 0 0 rgba(255,255,255,.14), inset -2px 0 0 rgba(0,0,0,.25);
+  display:flex;flex-direction:column;justify-content:flex-end;padding:8px 7px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.5)}
+.cover b{font-weight:400;font-size:12.5px;line-height:1.1}
+.cover small{font-size:9.5px;opacity:.9;margin-top:3px;font-style:italic}
+.cover .hrs{position:absolute;top:6px;right:6px;font-size:9.5px;background:rgba(0,0,0,.45);padding:1px 5px;border-radius:99px}
+
+/* nav */
+.nav{position:fixed;left:0;right:0;bottom:0;padding:8px 0 calc(8px + env(safe-area-inset-bottom,0px));background:#1A110B;border-top:1px solid var(--line);box-shadow:0 -6px 16px rgba(0,0,0,.35)}
+.nav .inner{max-width:430px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:end}
+.nav button{border:0;background:transparent;color:var(--ink-2);font-size:13px;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px;cursor:pointer;letter-spacing:.02em}
+.nav button.on{color:var(--accent)}
+.nav svg{width:24px;height:24px}
+.plus{width:60px;height:60px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;margin-top:-34px;box-shadow:0 6px 16px rgba(0,0,0,.5);border:3px solid #1A110B}
+.plus svg{width:28px;height:28px}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.chk,.cta,.opt,.seg button,.filters button,.fchips button,.nav button,.medalwrap,.cover,.nextup .card,.earned .btn,.tray button,.share{transition:transform .12s ease,opacity .12s ease}
+.chk:active,.cta:active,.opt:active,.medalwrap:active,.cover:active,.nextup .card:active,.earned .btn:active,.tray button:active,.share:active{transform:scale(.97)}
+.nav button:active{opacity:.7}
+
+/* sheet */
+.scrim{position:fixed;inset:0;background:rgba(10,5,2,.6);display:none;z-index:20}
+.scrim.open{display:block}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:21;transform:translateY(105%);transition:transform .28s cubic-bezier(.2,.8,.2,1)}
+.sheet.open{transform:translateY(0)}
+.sheet .inner{max-width:430px;margin:0 auto;background:#261A10;border-radius:18px 18px 0 0;padding:14px 22px calc(28px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line)}
+.handle{width:40px;height:4px;border-radius:99px;background:var(--line);margin:0 auto 16px}
+.opt{display:flex;gap:14px;align-items:center;width:100%;text-align:left;border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:14px;margin-top:10px;font:inherit;color:inherit;cursor:pointer}
+.opt .ic{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line);flex:0 0 auto;color:var(--accent)}
+.opt .ic svg{width:20px;height:20px}
+.opt b{display:block;font-size:17px;font-weight:400}
+.opt small{display:block;color:var(--ink-2);font-size:14px;line-height:1.35}
+.form{margin-top:14px;display:none}
+.form.show{display:block}
+.field{display:flex;gap:8px;align-items:center;margin-top:10px}
+.field input,.field select{flex:1;min-width:0;width:100%;font:inherit;font-size:17px;padding:12px;border-radius:10px;border:1px solid var(--line);background:rgba(0,0,0,.3);color:var(--ink)}
+.field label{flex:1;min-width:0;position:relative;display:block}
+.field label span{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--ink-2);font-size:14px;font-style:italic;pointer-events:none}
+.field label input{padding-right:40px}
+.cta{width:100%;margin-top:14px;padding:14px;border:0;border-radius:10px;background:var(--accent);color:var(--accent-ink);font-size:17px;cursor:pointer;letter-spacing:.02em}
+.ghost{background:transparent;color:var(--ink-2);border:0;padding:10px;width:100%;cursor:pointer;font-size:15px}
+.switch{display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+.switch small{color:var(--ink-2);display:block;font-size:13px;font-style:italic}
+.sw{width:44px;height:26px;border-radius:99px;background:rgba(0,0,0,.4);position:relative;border:0;cursor:pointer;flex:0 0 auto}
+.sw:after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .15s}
+.sw.on{background:var(--accent)} .sw.on:after{left:21px}
+.note{font-size:13.5px;color:var(--ink-2);margin-top:8px;line-height:1.45;font-style:italic}
+
+/* search */
+.search{display:flex;gap:8px;align-items:center;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+.search input{flex:1;border:0;background:transparent;font:inherit;font-size:17px;color:var(--ink);outline:0}
+.fchips{display:flex;gap:8px;margin:12px 0 4px;overflow-x:auto;scrollbar-width:none}
+.fchips button{flex:0 0 auto;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:99px;padding:6px 12px;font-size:14px;cursor:pointer}
+.fchips button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.result{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.result .cv{width:40px;height:58px;border-radius:2px;flex:0 0 auto}
+.result b{display:block;font-size:16px;font-weight:400;line-height:1.2}
+.result small{color:var(--ink-2);font-size:13.5px;font-style:italic}
+.result .meta{flex:1}
+.chk{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--line);background:transparent;display:grid;place-items:center;cursor:pointer;flex:0 0 auto;color:var(--accent-ink)}
+.chk.on{background:var(--accent);border-color:var(--accent)}
+.chk svg{width:14px;height:14px;display:none}
+.chk.on svg{display:block}
+.tray{position:fixed;left:0;right:0;bottom:calc(78px + env(safe-area-inset-bottom,0px));display:none;z-index:5}
+@media (min-width:430px){.tray .inner{margin:0 auto}}
+#s-search{padding-bottom:170px}
+.tray.show{display:block}
+.tray .inner{max-width:386px;margin:0 22px;background:var(--accent);color:var(--accent-ink);border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 10px 24px rgba(0,0,0,.4)}
+.tray button{margin-left:auto;border:0;border-radius:8px;background:#1E140D;color:var(--ink);font-size:15px;padding:8px 14px;cursor:pointer}
+
+/* badge wall */
+.filters{display:flex;gap:8px;margin:4px 0 10px}
+.filters button{flex:1;border:1px solid var(--line);background:transparent;color:var(--ink-2);border-radius:8px;padding:7px 0;font-size:14px;cursor:pointer}
+.filters button.on{color:var(--accent);border-color:var(--accent)}
+.wall{display:grid;grid-template-columns:repeat(3,1fr);gap:18px 6px}
+.wall .medalwrap{width:auto}
+.wall .medalwrap.hide{display:none}
+.wallhead{display:flex;justify-content:space-between;align-items:baseline}
+.wallhead small{color:var(--ink-2);font-style:italic;font-size:13px}
+
+/* earned overlay — quiet, elegant */
+.earned{position:fixed;inset:0;z-index:40;display:none;align-items:center;justify-content:center;text-align:center;padding:24px;background:radial-gradient(60% 45% at 50% 38%,rgba(207,162,83,.10),transparent 70%),#1A100A}
+.earned.open{display:flex}
+.earned .ebox{max-width:360px;width:100%;position:relative}
+.earned h3{font-size:22px;line-height:1.35;font-weight:400}
+.earned .medal{width:150px;height:150px;margin:38px auto 28px}
+.earned .medal:before{inset:-8px}
+.earned .medal svg,.earned .medal span{width:60px;height:60px;font-size:40px}
+.earned .name{font-size:32px;letter-spacing:.01em}
+.earned .desc{color:var(--ink-2);margin-top:8px;font-size:16px;font-style:italic}
+.earned .prog{margin-top:18px;color:var(--ink-2);font-size:14px}
+.earned .btns{margin-top:36px}
+.earned .btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px;border-radius:10px;font-size:16px;cursor:pointer;letter-spacing:.06em}
+.earned .btn svg{width:20px;height:20px}
+.earned .btn.primary{border:0;background:var(--accent);color:var(--accent-ink)}
+.earned .btn.secondary{margin-top:10px;background:transparent;border:1px solid var(--accent);color:var(--accent)}
+.earned .close{margin-top:22px;width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--ink);font-size:22px;cursor:pointer}
+
+.toast{position:fixed;left:50%;top:18px;transform:translate(-50%,-30px);opacity:0;background:var(--accent);color:var(--accent-ink);padding:10px 16px;border-radius:10px;z-index:50;transition:all .25s;pointer-events:none;max-width:90%;text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media (prefers-reduced-motion:reduce){.sheet{transition:none}}
+.proto{font-size:12px;color:var(--ink-2);text-align:center;margin-top:28px;font-style:italic}
+</style>
+</head>
+<body>
+<div class="phone wood">
+
+<!-- HOME -->
+<section class="screen active" id="s-home">
+  <div class="brandblock"><div class="brand">Earmark</div><div class="tagline">Listen up</div></div>
+
+  <div class="hero">
+    <div class="glow"></div>
+    <div class="streakwrap">
+      <div>
+        <div class="num" id="streakNum">12</div>
+        <div class="unit">Day streak</div>
+        <div class="sub">Gold streak at 30 days</div>
+      </div>
+      <div class="streakmedal"><div class="medal m-silver" id="streakMedal"></div><small>Silver<br>streak</small></div>
+    </div>
+    <div class="boxes">
+      <div class="box"><b id="t1">2h 14m</b><small>today</small></div>
+      <div class="box"><b id="t2">18.5</b><small>hrs this week</small></div>
+      <div class="box"><b id="t3">61</b><small>hrs this month</small></div>
+    </div>
+    <div class="notes" id="notes"></div>
+    <div class="totalline"><b id="heroNum">4,312</b><small>hours listened, lifetime</small></div>
+    <button class="share" id="shareStats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12M7 8l5-5 5 5"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg>Share my stats</button>
+  </div>
+
+  <div class="rail"></div>
+
+  <div class="sec">
+    <div class="card rank">
+      <div class="row"><div class="name">Obsidian</div><div class="next">Meteorite at 5,000 hours</div></div>
+      <div class="bar"><i style="width:72%"></i></div>
+      <div class="ticks"><span>2,500</span><span>688 hours to go</span><span>5,000</span></div>
+    </div>
+    <div class="card up">
+      <div class="ic"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg></div>
+      <div><b>You're listening more</b><small>Already up 7h 20m this month.</small></div>
+    </div>
+  </div>
+
+  <div class="rail thin"></div>
+
+  <div class="sec">
+    <div class="sechead"><h2>Achievements</h2><button class="seeall" data-go="s-badges">See all 27</button></div>
+    <div class="medals" id="homeMedals"></div>
+    <div class="nextup">
+      <div class="card" id="closest"></div>
+      <div class="card" id="random"></div>
+    </div>
+  </div>
+
+  <div class="rail thin"></div>
+
+  <div class="sec">
+    <div class="sechead"><h2>Your bookshelf</h2>
+      <div class="seg"><button class="on" data-shelf="month">Month</button><button data-shelf="year">Year</button><button data-shelf="all">All</button></div>
+    </div>
+    <div class="bookcase" id="bookcase"></div>
+  </div>
+
+  <p class="proto">Prototype · sample data · nothing is saved yet</p>
+</section>
+
+<!-- SEARCH -->
+<section class="screen" id="s-search">
+  <div class="hdr"><div class="title">Add books</div><div class="tag">Check everything you've finished</div></div>
+  <div class="search">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <input id="q" placeholder="Title, author, or series" value="Stormlight">
+  </div>
+  <div class="fchips"><button class="on">Stormlight Archive</button><button>Brandon Sanderson</button><button>Neal Shusterman</button></div>
+  <div id="results"></div>
+  <p class="note" style="margin-top:14px">Books you add go on your shelf and count toward achievements. Hours come with them unless you turn that off — useful when the hours are already in an import.</p>
+</section>
+<div class="tray" id="tray"><div class="inner"><span id="trayText">0 selected</span><button id="trayAdd">Add to shelf</button></div></div>
+
+<!-- BADGES -->
+<section class="screen" id="s-badges">
+  <div class="hdr"><div class="title">Achievements</div><div class="tag" id="wallCount">10 of 27 earned</div></div>
+  <div class="filters"><button class="on" data-f="all">All</button><button data-f="earned">Earned</button><button data-f="locked">Not yet</button></div>
+  <div id="walls"></div>
+</section>
+
+</div>
+
+<!-- NAV -->
+<nav class="nav" aria-label="Main">
+  <div class="inner">
+    <button data-go="s-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>Search</button>
+    <button id="n-plus" aria-label="Add hours"><span class="plus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></span></button>
+    <button data-go="s-home" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Profile</button>
+  </div>
+</nav>
+
+<!-- ADD SHEET -->
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet" role="dialog" aria-label="Add hours">
+  <div class="inner">
+    <div class="handle"></div>
+    <div id="menu">
+      <h2 style="margin:0 0 4px">Add hours</h2>
+      <button class="opt" data-form="f-live"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span><b>Log today's listening</b><small>Keeps your streak alive and counts toward daily achievements.</small></span></button>
+      <button class="opt" data-form="f-book"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h12a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3z"/><path d="M4 17a3 3 0 0 1 3-3h12"/></svg></span><span><b>Finished a book</b><small>Puts it on your shelf. Add its hours, or skip them if they're already logged.</small></span></button>
+      <button class="opt" data-form="f-past"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 8v4l2 2"/></svg></span><span><b>Add hours from the past</b><small>Audible, Libby, Libro.fm… Counts toward your total and rank only.</small></span></button>
+    </div>
+    <div class="form" id="f-live"><h2 style="margin:0">Today's listening</h2><div class="field"><label><input type="number" inputmode="numeric" placeholder="0" value="1"><span>hours</span></label><label><input type="number" inputmode="numeric" placeholder="0" value="30"><span>min</span></label></div><div class="field"><input id="noteIn" placeholder="Note, e.g. Scythe, chapters 18–20"></div><button class="cta" data-done="live" id="logBtn">Log 1h 30m</button><button class="ghost" data-back>Back</button></div>
+    <div class="form" id="f-book"><h2 style="margin:0">Finished a book</h2><div class="field"><input placeholder="Search title or author" value="Scythe — Neal Shusterman"></div><div class="switch"><div>Add its 10h 32m to my total<small>Turn off if you already logged these hours</small></div><button class="sw on" id="swHours" aria-pressed="true"></button></div><button class="cta" data-done="book">Add to shelf</button><button class="ghost" data-back>Back</button></div>
+    <div class="form" id="f-past"><h2 style="margin:0">Hours from the past</h2><div class="field"><select><option>Audible</option><option>Libby</option><option>Libro.fm</option><option>Spotify</option><option>Other</option></select><label><input type="number" inputmode="numeric" placeholder="0" value="20"><span>hours</span></label></div><p class="note">No date attached. Adds to your lifetime total and rank, never to streaks.</p><button class="cta" data-done="past">Add 20 hours</button><button class="ghost" data-back>Back</button></div>
+  </div>
+</div>
+
+<!-- MEDAL DETAIL / EARNED -->
+<div class="earned" id="earned" role="dialog" aria-modal="true">
+  <div class="ebox">
+    <h3 id="eTitle"></h3>
+    <div class="medal" id="eMedal"></div>
+    <div class="name" id="eName"></div>
+    <div class="desc" id="eDesc"></div>
+    <div class="prog" id="eProg"></div>
+    <div class="btns" id="eBtns">
+      <button class="btn primary" id="eShare"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 5l7 7-7 7"/><path d="M21 12H9a6 6 0 0 0-6 6v1"/></svg>Share</button>
+      <button class="btn secondary" id="eSave"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>Save image</button>
+    </div>
+    <button class="close" id="eClose" aria-label="Close">×</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+  const sw1='fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"';
+  const I={
+    book:`<svg viewBox="0 0 24 24" ${sw1}><path d="M4 4h12a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3z"/><path d="M4 17a3 3 0 0 1 3-3h12"/></svg>`,
+    flame:`<svg viewBox="0 0 24 24" ${sw1}><path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-9z"/></svg>`,
+    cal:`<svg viewBox="0 0 24 24" ${sw1}><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>`,
+    stack:`<svg viewBox="0 0 24 24" ${sw1}><path d="M5 7h14M5 12h14M5 17h14"/></svg>`,
+    star:`<svg viewBox="0 0 24 24" ${sw1}><path d="m12 3 2.6 5.6 6.1.7-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6L3.3 9.3l6.1-.7z"/></svg>`,
+    bolt:`<svg viewBox="0 0 24 24" ${sw1}><path d="M13 3 5 14h6l-1 7 8-11h-6z"/></svg>`,
+    globe:`<svg viewBox="0 0 24 24" ${sw1}><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>`,
+    leaf:`<svg viewBox="0 0 24 24" ${sw1}><path d="M4 20c0-9 6-15 16-16-1 10-7 16-16 16z"/><path d="M4 20c4-5 8-8 12-10"/></svg>`,
+    cap:`<svg viewBox="0 0 24 24" ${sw1}><path d="M2 9l10-4 10 4-10 4z"/><path d="M6 11v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"/><path d="M22 9v6"/></svg>`,
+    column:`<svg viewBox="0 0 24 24" ${sw1}><path d="M4 21h16M5 8h14M6 8v13M10 8v13M14 8v13M18 8v13"/><path d="M3 8l9-4 9 4"/></svg>`,
+    person:`<svg viewBox="0 0 24 24" ${sw1}><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>`,
+    moon:`<svg viewBox="0 0 24 24" ${sw1}><path d="M20 15A8 8 0 0 1 9 4a8 8 0 1 0 11 11z"/></svg>`
+  };
+  const G={year:"This year",rank:"Lifetime rank",streak:"Streaks",feat:"Feats",stretch:"Stretch"};
+  const M=[
+    {id:"y26",tier:"gold",ic:"<span>26</span>",name:"Gold year",sub:"2026 · 541 hrs",desc:"541 hours in 2026 so far.",earned:true,group:"year",prog:[541,750,"Platinum year at 750 hours"]},
+    {id:"b",tier:"bronze",ic:"<span>25</span>",name:"Bronze",sub:"25 hours",desc:"Your first 25 hours.",earned:true,group:"rank"},
+    {id:"s",tier:"silver",ic:"<span>100</span>",name:"Silver",sub:"100 hours",desc:"100 lifetime hours.",earned:true,group:"rank"},
+    {id:"g",tier:"gold",ic:"<span>250</span>",name:"Gold",sub:"250 hours",desc:"250 lifetime hours.",earned:true,group:"rank"},
+    {id:"p",tier:"platinum",ic:"<span>500</span>",name:"Platinum",sub:"500 hours",desc:"500 lifetime hours.",earned:true,group:"rank"},
+    {id:"d",tier:"diamond",ic:"<span>1k</span>",name:"Diamond",sub:"1,000 hours",desc:"1,000 lifetime hours.",earned:true,group:"rank"},
+    {id:"ob",tier:"obsidian",ic:"<span>2.5k</span>",name:"Obsidian",sub:"2,500 hours",desc:"2,500 lifetime hours. Uncharted territory.",earned:true,group:"rank",prog:[4312,5000,"Meteorite at 5,000 hours"]},
+    {id:"met",tier:"locked",ic:"<span>5k</span>",name:"Meteorite",sub:"5,000 hours",desc:"5,000 lifetime hours.",earned:false,group:"rank",prog:[4312,5000,"688 hours to go"]},
+    {id:"ir",tier:"locked",ic:"<span>10k</span>",name:"Iridium",sub:"10,000 hours",desc:"10,000 lifetime hours.",earned:false,group:"rank",prog:[4312,10000,""]},
+    {id:"os",tier:"locked",ic:"<span>25k</span>",name:"Osmium",sub:"25,000 hours",desc:"25,000 lifetime hours.",earned:false,group:"rank",prog:[4312,25000,""]},
+    {id:"cel",tier:"locked",ic:I.star,name:"Celestial",sub:"50,000 hours",desc:"50,000 lifetime hours.",earned:false,group:"rank",prog:[4312,50000,""]},
+    {id:"s3",tier:"bronze",ic:I.flame,name:"Three days",sub:"3-day streak",desc:"Three days in a row.",earned:true,group:"streak"},
+    {id:"wk",tier:"silver",ic:I.flame,name:"One week",sub:"7-day streak",desc:"Seven days in a row.",earned:true,group:"streak"},
+    {id:"s30",tier:"locked",ic:I.flame,name:"One month",sub:"30-day streak",desc:"Thirty days in a row.",earned:false,group:"streak",prog:[12,30,"18 days to go"]},
+    {id:"s100",tier:"locked",ic:I.flame,name:"Hundred",sub:"100-day streak",desc:"One hundred days in a row.",earned:false,group:"streak",prog:[12,100,""]},
+    {id:"s365",tier:"locked",ic:I.cal,name:"Full year",sub:"365-day streak",desc:"A full year without missing a day.",earned:false,group:"streak",prog:[12,365,""]},
+    {id:"door",tier:"diamond",ic:I.stack,name:"Doorstopper",sub:"A 45-hour book",desc:"Finished a book over 40 hours long.",earned:true,group:"feat"},
+    {id:"ser",tier:"bronze",ic:I.book,name:"Series slayer",sub:"All 5 Stormlight",desc:"Finished every book in a series.",earned:true,group:"feat"},
+    {id:"mar",tier:"locked",ic:I.bolt,name:"Marathon",sub:"8 hours in a day",desc:"Eight hours of listening in one day.",earned:false,group:"feat",prog:[3.7,8,"Best day so far: 3h 44m"]},
+    {id:"spr",tier:"locked",ic:I.bolt,name:"Sprint",sub:"A book in 48 hours",desc:"Start to finish in two days.",earned:false,group:"feat"},
+    {id:"owl",tier:"locked",ic:I.moon,name:"Night owl",sub:"Log after midnight",desc:"A session logged between midnight and 4 a.m.",earned:false,group:"feat"},
+    {id:"ya",tier:"bronze",ic:I.leaf,name:"Young adult",sub:"Scythe",desc:"Tried a young-adult title.",earned:true,group:"stretch"},
+    {id:"sch",tier:"locked",ic:I.cap,name:"Scholar",sub:"25 hrs of learning",desc:"Twenty-five hours of educational or nonfiction listening.",earned:false,group:"stretch",prog:[6,25,"6 of 25 hours · Atomic Habits counted"]},
+    {id:"cla",tier:"locked",ic:I.column,name:"Classical",sub:"25 hrs of classics",desc:"Twenty-five hours of classic literature.",earned:false,group:"stretch",prog:[0,25,"0 of 25 hours · try Austen, Dumas, Tolstoy"]},
+    {id:"bio",tier:"locked",ic:I.person,name:"Biography",sub:"Finish one",desc:"A life told from start to finish.",earned:false,group:"stretch"},
+    {id:"tr",tier:"locked",ic:I.globe,name:"In translation",sub:"Finish one",desc:"A book written in another language.",earned:false,group:"stretch"},
+    {id:"omni",tier:"rainbow",ic:I.star,name:"Omnivore",sub:"All stretch medals",desc:"Every stretch medal earned.",earned:false,group:"stretch",lockedLook:true}
+  ];
+  function medalHTML(m,cls=""){
+    const locked=!m.earned;
+    const tier=locked&&!m.lockedLook?"locked":m.tier;
+    return `<div class="medalwrap ${locked?"locked":""} ${cls}" data-id="${m.id}"><div class="medal m-${tier}">${m.ic}</div><b>${m.name}</b><small>${m.sub}</small></div>`;
+  }
+  $("#homeMedals").innerHTML=M.filter(m=>["ob","y26","door","wk","ser"].includes(m.id)).map(m=>medalHTML(m)).join("");
+
+  /* closest + random */
+  function pct(m){ return m.prog?m.prog[0]/m.prog[1]:0 }
+  const lockedWithProg=M.filter(m=>!m.earned&&m.prog&&m.prog[1]>0);
+  const closest=lockedWithProg.sort((a,b)=>pct(b)-pct(a))[0];
+  const pool=M.filter(m=>!m.earned&&m.group==="stretch"&&m.id!=="omni");
+  const rnd=pool[Math.floor(Math.random()*pool.length)];
+  function nextCard(el,label,m){
+    const p=m.prog?Math.round(pct(m)*100):0;
+    el.dataset.id=m.id;
+    el.innerHTML=`<div class="lbl">${label}</div><div class="medal m-locked">${m.ic}</div><b>${m.name}</b><small>${m.prog?m.prog[2]:m.sub}</small>${m.prog?`<div class="bar"><i style="width:${p}%"></i></div>`:""}`;
+  }
+  nextCard($("#closest"),"Closest to unlocking",closest);
+  nextCard($("#random"),"Try something new",rnd);
+
+  /* wall */
+  const earnedCount=M.filter(m=>m.earned).length;
+  $("#wallCount").textContent=`${earnedCount} of ${M.length} earned`;
+  $(".seeall").textContent=`See all ${M.length}`;
+  $("#walls").innerHTML=Object.keys(G).map((g,i)=>{
+    const list=M.filter(m=>m.group===g);
+    const e=list.filter(m=>m.earned).length;
+    return `${i?'<div class="rail thin" style="margin:22px -8px 0"></div>':''}<div class="wallhead"><h2>${G[g]}</h2><small>${e} of ${list.length}</small></div><div class="wall">${list.map(m=>medalHTML(m)).join("")}</div>`;
+  }).join("");
+  $$(".filters button").forEach(b=>b.onclick=()=>{
+    $$(".filters button").forEach(x=>x.classList.remove("on")); b.classList.add("on");
+    const f=b.dataset.f;
+    $$("#walls .medalwrap").forEach(w=>{ const m=M.find(x=>x.id===w.dataset.id); w.classList.toggle("hide", f==="earned"?!m.earned : f==="locked"?m.earned : false); });
+  });
+
+  /* detail overlay */
+  function showMedal(m,justEarned){
+    const t=m.earned?m.tier:"locked";
+    $("#eTitle").innerHTML= justEarned?`Congratulations.<br>You earned a ${m.tier} medal.` : (m.earned?"Earned":"Not yet earned");
+    $("#eMedal").className=`medal m-${t}`; $("#eMedal").innerHTML=m.ic;
+    $("#eName").textContent=m.name; $("#eDesc").textContent=m.desc||m.sub;
+    $("#eProg").innerHTML=m.prog?`${m.prog[2]}<div class="bar" style="margin-top:8px"><i style="width:${Math.round(pct(m)*100)}%"></i></div>`:"";
+    $("#eBtns").style.display=m.earned?"block":"none";
+    $("#earned").classList.add("open");
+  }
+  document.addEventListener("click",e=>{
+    const w=e.target.closest(".medalwrap, .nextup .card"); if(!w) return;
+    const m=M.find(x=>x.id===w.dataset.id); if(m) showMedal(m,false);
+  });
+  $("#eClose").onclick=()=>$("#earned").classList.remove("open");
+  $("#earned").addEventListener("click",e=>{ if(e.target.id==="earned") $("#earned").classList.remove("open"); });
+  document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ $("#earned").classList.remove("open"); closeSheet(); } });
+  $("#eShare").onclick=()=>toast("Sharing a medal card (prototype)");
+  $("#eSave").onclick=()=>toast("Saved to photos (prototype)");
+  $("#shareStats").onclick=()=>toast("Sharing your stats card (prototype)");
+
+  /* streak medal + today's notes */
+  $("#streakMedal").innerHTML=I.flame;
+  const notes=[{t:"Scythe, chapters 15–17",m:"2h 14m"}];
+  function renderNotes(){ $("#notes").innerHTML=`<div class="lbl">Today</div>`+notes.map(n=>`<div>${n.t}<span>${n.m}</span></div>`).join(""); }
+  renderNotes();
+
+  /* bookshelf */
+  const C={red:"#7F3540",teal:"#2C5360",gold:"#A6782A",green:"#44633A",plum:"#524463",rust:"#9E512B",navy:"#2B3A60",moss:"#5F5F2C",wine:"#5F2A39",slate:"#44525C"};
+  const LIB=[
+    {t:"Sunrise on the Reaping",a:"Suzanne Collins",h:10,c:C.red,when:"month"},
+    {t:"Scythe",a:"Neal Shusterman",h:11,c:C.teal,when:"month"},
+    {t:"Wind and Truth",a:"Brandon Sanderson",h:62,c:C.gold,when:"year"},
+    {t:"Project Hail Mary",a:"Andy Weir",h:16,c:C.green,when:"year"},
+    {t:"Atomic Habits",a:"James Clear",h:6,c:C.plum,when:"year"},
+    {t:"The Black Prism",a:"Brent Weeks",h:22,c:C.rust,when:"year"},
+    {t:"Dungeon Crawler Carl",a:"Matt Dinniman",h:13,c:C.navy,when:"year"},
+    {t:"Rhythm of War",a:"Brandon Sanderson",h:57,c:C.gold,when:"all"},
+    {t:"Oathbringer",a:"Brandon Sanderson",h:55,c:C.gold,when:"all"},
+    {t:"Words of Radiance",a:"Brandon Sanderson",h:48,c:C.gold,when:"all"},
+    {t:"The Way of Kings",a:"Brandon Sanderson",h:45,c:C.gold,when:"all"},
+    {t:"Mistborn",a:"Brandon Sanderson",h:25,c:C.plum,when:"all"},
+    {t:"Red Rising",a:"Pierce Brown",h:16,c:C.wine,when:"all"},
+    {t:"Dune",a:"Frank Herbert",h:21,c:C.rust,when:"all"},
+    {t:"The Name of the Wind",a:"Patrick Rothfuss",h:28,c:C.moss,when:"all"},
+    {t:"Ender's Game",a:"Orson Scott Card",h:12,c:C.slate,when:"all"},
+    {t:"The Martian",a:"Andy Weir",h:11,c:C.green,when:"all"},
+    {t:"Sapiens",a:"Yuval Noah Harari",h:15,c:C.navy,when:"all"}
+  ];
+  function renderShelf(mode){
+    const order={month:0,year:1,all:2};
+    const list=LIB.filter(b=>order[b.when]<=order[mode]);
+    const perRow=mode==="month"?list.length:6, rows=[];
+    for(let i=0;i<list.length;i+=perRow) rows.push(list.slice(i,i+perRow));
+    $("#bookcase").innerHTML=rows.map(r=>`<div class="row">${r.map(b=>`<div class="cover" style="background:linear-gradient(165deg,${b.c},#1a0f0a)"><span class="hrs">${b.h}h</span><b>${b.t}</b><small>${b.a}</small></div>`).join("")}</div><div class="shelfline"></div>`).join("");
+  }
+  renderShelf("month");
+  $$(".seg button").forEach(b=>b.onclick=()=>{ $$(".seg button").forEach(x=>x.classList.remove("on")); b.classList.add("on"); renderShelf(b.dataset.shelf); });
+
+  /* search */
+  const RES=[
+    {t:"The Way of Kings",a:"Brandon Sanderson",h:"45h 30m",c:C.gold},{t:"Words of Radiance",a:"Brandon Sanderson",h:"48h 13m",c:C.gold},
+    {t:"Oathbringer",a:"Brandon Sanderson",h:"55h 5m",c:C.gold},{t:"Rhythm of War",a:"Brandon Sanderson",h:"57h 26m",c:C.gold},
+    {t:"Wind and Truth",a:"Brandon Sanderson",h:"62h 2m",c:C.gold},{t:"Edgedancer",a:"Brandon Sanderson",h:"5h 48m",c:C.plum},{t:"Dawnshard",a:"Brandon Sanderson",h:"5h 29m",c:C.plum}
+  ];
+  const picked=new Set();
+  function renderResults(){
+    $("#results").innerHTML=RES.map((r,i)=>`<div class="result"><div class="cv" style="background:linear-gradient(165deg,${r.c},#1a0f0a)"></div><div class="meta"><b>${r.t}</b><small>${r.a} · ${r.h}</small></div><button class="chk ${picked.has(i)?"on":""}" data-i="${i}" aria-pressed="${picked.has(i)}" aria-label="Mark finished"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m5 12 4 4L19 7"/></svg></button></div>`).join("");
+    $$(".chk").forEach(c=>c.onclick=()=>{ const i=+c.dataset.i; picked.has(i)?picked.delete(i):picked.add(i); renderResults(); });
+    $("#tray").classList.toggle("show",picked.size>0 && $("#s-search").classList.contains("active"));
+    $("#trayText").textContent=`${picked.size} selected`;
+  }
+  renderResults();
+  $$(".fchips button").forEach(b=>b.onclick=()=>{ $$(".fchips button").forEach(x=>x.classList.remove("on")); b.classList.add("on"); $("#q").value=b.textContent; });
+  $("#trayAdd").onclick=()=>{ toast(`${picked.size} books added to your shelf`); picked.clear(); renderResults(); };
+
+  /* nav */
+  function go(id){
+    $("#earned").classList.remove("open");
+    $$(".screen").forEach(s=>s.classList.toggle("active",s.id===id));
+    $$(".nav button[data-go]").forEach(b=>b.classList.toggle("on",b.dataset.go===id));
+    $("#tray").classList.toggle("show",picked.size>0 && id==="s-search");
+    window.scrollTo({top:0});
+  }
+  $$("[data-go]").forEach(b=>b.onclick=()=>go(b.dataset.go));
+
+  /* sheet */
+  const sheet=$("#sheet"), scrim=$("#scrim");
+  function openSheet(){ showMenu(); sheet.classList.add("open"); scrim.classList.add("open"); }
+  function closeSheet(){ sheet.classList.remove("open"); scrim.classList.remove("open"); }
+  function showMenu(){ $("#menu").style.display="block"; $$(".form").forEach(f=>f.classList.remove("show")); }
+  $("#n-plus").onclick=openSheet; scrim.onclick=closeSheet;
+  $$(".opt").forEach(o=>o.onclick=()=>{ $("#menu").style.display="none"; $("#"+o.dataset.form).classList.add("show"); });
+  $$("[data-back]").forEach(b=>b.onclick=showMenu);
+  const sw=$("#swHours"); sw.onclick=()=>{ sw.classList.toggle("on"); sw.setAttribute("aria-pressed",sw.classList.contains("on")); };
+  let total=4312;
+  function bump(h){ total+=h; $("#heroNum").textContent=Math.round(total).toLocaleString(); }
+  $$("[data-done]").forEach(b=>b.onclick=()=>{
+    const k=b.dataset.done; closeSheet(); go("s-home");
+    if(k==="live"){ $("#t1").textContent="3h 44m"; $("#t2").textContent="20"; $("#t3").textContent="62.5"; bump(1.5); const nt=$("#noteIn").value.trim(); const h=+hIn.value||0,m=+mIn.value||0; if(nt) notes.push({t:nt,m:`${h?h+"h ":""}${m?m+"m":""}`.trim()}); renderNotes(); $("#noteIn").value=""; toast("Logged. Streak: 12 days and counting"); }
+    if(k==="book"){ if(sw.classList.contains("on")) bump(10.5); const m=M.find(x=>x.id==="ya"); showMedal(m,true); }
+    if(k==="past"){ bump(20); toast("20 hours added to your lifetime total"); }
+  });
+
+  const hIn=$("#f-live input[type=number]:first-of-type"), mIn=$$("#f-live input[type=number]")[1];
+  function logLabel(){ const h=+hIn.value||0, m=+mIn.value||0; $("#logBtn").textContent=`Log ${h?h+"h ":""}${m?m+"m":""}`.trim()||"Log time"; }
+  hIn.oninput=mIn.oninput=logLabel;
+  let tt; function toast(m){ const t=$("#toast"); t.textContent=m; t.classList.add("show"); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove("show"),2200); }
+})();
+</script>
+</body>
+</html>
