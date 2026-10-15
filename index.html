@@ -92,6 +92,8 @@ button{font-family:inherit}
 .up .ic{width:38px;height:38px;border-radius:50%;border:1.5px solid #8fcf99;color:#8fcf99;display:grid;place-items:center;flex:0 0 auto}
 .up b{display:block;font-size:17px;font-weight:400}
 .up small{color:var(--ink-2);font-size:14px}
+.up .ic svg{width:18px;height:18px}
+#insights .card{margin-top:10px}
 
 /* medals — restrained metallic ring, matte center, line icon */
 .sechead{display:flex;align-items:baseline;justify-content:space-between}
@@ -270,10 +272,8 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       <div class="bar"><i style="width:72%"></i></div>
       <div class="ticks"><span>2,500</span><span>688 hours to go</span><span>5,000</span></div>
     </div>
-    <div class="card up">
-      <div class="ic"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg></div>
-      <div><b>You're listening more</b><small>Already up 7h 20m this month.</small></div>
-    </div>
+    <!-- Insight cards: a small rotating set generated from the listener's data (see renderInsights) -->
+    <div id="insights"></div>
   </div>
 
   <div class="rail thin"></div>
@@ -305,10 +305,13 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 <section class="screen" id="s-add">
   <div class="hdr"><div class="title">Add books</div><div class="tag">Type in everything you've finished</div></div>
   <div class="field"><input id="addTitle" placeholder="Book title" autocomplete="off" aria-label="Book title"></div>
+  <!-- TODO: genre is a manual pick for now. It will be fetched automatically from the book database
+       (along with cover art and runtime) once titles come from a real search. -->
+  <div class="field"><select class="genre" id="addGenre" aria-label="Genre (optional)"></select></div>
   <div class="field"><label><input id="addHours" type="number" inputmode="decimal" min="0" step="0.5" placeholder="Optional" aria-label="Hours it ran"><span>hours</span></label><button class="addbtn" id="addBtn">Add</button></div>
   <div class="added" id="addedList" aria-live="polite"></div>
   <p class="note" style="margin-top:14px">Each book goes on your shelf and counts toward achievements. Add the hours it ran if you know them and they count toward your total; leave hours blank to add the book only.</p>
-  <button class="cta" data-go="s-home" style="margin-top:18px">Done</button>
+  <button class="cta" id="addDone" style="margin-top:18px">Done</button>
 </section>
 
 <!-- BADGES -->
@@ -345,6 +348,8 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
          backed by the book database, returning covers and runtimes instead of typed titles and hours. -->
     <div class="form" id="f-book"><h2 style="margin:0">Finished a book</h2>
       <div class="field"><input id="sheetTitle" placeholder="Book title" autocomplete="off" aria-label="Book title"></div>
+      <!-- TODO: genre is a manual pick for now; later it comes automatically from the book database. -->
+      <div class="field"><select class="genre" id="sheetGenre" aria-label="Genre (optional)"></select></div>
       <div class="field"><label><input id="sheetHours" type="number" inputmode="decimal" min="0" step="0.5" placeholder="Optional" aria-label="Hours it ran"><span>hours</span></label><button class="addbtn" id="sheetAddBtn">Add</button></div>
       <div class="added" id="sheetAddedList" aria-live="polite"></div>
       <p class="note">Hours you enter count toward your total. Leave them blank if they're already logged.</p>
@@ -387,8 +392,13 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     cap:`<svg viewBox="0 0 24 24" ${sw1}><path d="M2 9l10-4 10 4-10 4z"/><path d="M6 11v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"/><path d="M22 9v6"/></svg>`,
     column:`<svg viewBox="0 0 24 24" ${sw1}><path d="M4 21h16M5 8h14M6 8v13M10 8v13M14 8v13M18 8v13"/><path d="M3 8l9-4 9 4"/></svg>`,
     person:`<svg viewBox="0 0 24 24" ${sw1}><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>`,
-    moon:`<svg viewBox="0 0 24 24" ${sw1}><path d="M20 15A8 8 0 0 1 9 4a8 8 0 1 0 11 11z"/></svg>`
+    moon:`<svg viewBox="0 0 24 24" ${sw1}><path d="M20 15A8 8 0 0 1 9 4a8 8 0 1 0 11 11z"/></svg>`,
+    up:`<svg viewBox="0 0 24 24" ${sw1}><path d="M12 19V5M5 12l7-7 7 7"/></svg>`
   };
+  /* sample profile + listening stats; the real app will compute these from logged sessions */
+  const USER={name:"Avery"};
+  const STATS={todayH:2.23, weekH:18.5, monthH:61, lastMonthH:53.67, yearH:541, streak:12,
+    typicalByWeekday:[1.5,2.1,3.5,2.2,2.5,1.9,1.5]};   // Sun..Sat, typical hours on that weekday
   const G={year:"This year",rank:"Lifetime rank",streak:"Streaks",feat:"Feats",stretch:"Stretch"};
   const M=[
     {id:"y26",tier:"gold",ic:"<span>26</span>",name:"Gold year",sub:"2026 · 541 hrs",desc:"541 hours in 2026 so far.",earned:true,group:"year",prog:[541,750,"Platinum year at 750 hours"]},
@@ -412,51 +422,64 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     {id:"mar",tier:"locked",ic:I.bolt,name:"Marathon",sub:"8 hours in a day",desc:"Eight hours of listening in one day.",earned:false,group:"feat",prog:[3.7,8,"Best day so far: 3h 44m"]},
     {id:"spr",tier:"locked",ic:I.bolt,name:"Sprint",sub:"A book in 48 hours",desc:"Start to finish in two days.",earned:false,group:"feat"},
     {id:"owl",tier:"locked",ic:I.moon,name:"Night owl",sub:"Log after midnight",desc:"A session logged between midnight and 4 a.m.",earned:false,group:"feat"},
-    {id:"ya",tier:"bronze",ic:I.leaf,name:"Young adult",sub:"Scythe",desc:"Tried a young-adult title.",earned:true,group:"stretch"},
-    {id:"sch",tier:"locked",ic:I.cap,name:"Scholar",sub:"25 hrs of learning",desc:"Twenty-five hours of educational or nonfiction listening.",earned:false,group:"stretch",prog:[6,25,"6 of 25 hours · Atomic Habits counted"]},
-    {id:"cla",tier:"locked",ic:I.column,name:"Classical",sub:"25 hrs of classics",desc:"Twenty-five hours of classic literature.",earned:false,group:"stretch",prog:[0,25,"0 of 25 hours · try Austen, Dumas, Tolstoy"]},
-    {id:"bio",tier:"locked",ic:I.person,name:"Biography",sub:"Finish one",desc:"A life told from start to finish.",earned:false,group:"stretch"},
-    {id:"tr",tier:"locked",ic:I.globe,name:"In translation",sub:"Finish one",desc:"A book written in another language.",earned:false,group:"stretch"},
-    {id:"omni",tier:"rainbow",ic:I.star,name:"Omnivore",sub:"All stretch medals",desc:"Every stretch medal earned.",earned:false,group:"stretch",lockedLook:true}
+    /* genre-stretch medals: earned/progress are computed from each book's genre in recomputeMedals() */
+    {id:"ya",tier:"bronze",ic:I.leaf,name:"Young adult",sub:"Finish one",desc:"Tried a young-adult title.",earned:false,group:"stretch"},
+    {id:"sch",tier:"gold",ic:I.cap,name:"Scholar",sub:"25 hrs of learning",desc:"Twenty-five hours of educational or nonfiction listening.",earned:false,group:"stretch"},
+    {id:"cla",tier:"gold",ic:I.column,name:"Classical",sub:"25 hrs of classics",desc:"Twenty-five hours of classic literature.",earned:false,group:"stretch"},
+    {id:"bio",tier:"silver",ic:I.person,name:"Biography",sub:"Finish one",desc:"A life told from start to finish.",earned:false,group:"stretch"},
+    {id:"tr",tier:"silver",ic:I.globe,name:"In translation",sub:"Finish one",desc:"A book written in another language.",earned:false,group:"stretch"},
+    {id:"omni",tier:"rainbow",ic:I.star,name:"Omnivore",sub:"6 genres",desc:"Sampled across six different genres.",earned:false,group:"stretch",lockedLook:true}
   ];
+  const byId=id=>M.find(m=>m.id===id);
   function medalHTML(m,cls=""){
     const locked=!m.earned;
     const tier=locked&&!m.lockedLook?"locked":m.tier;
     return `<div class="medalwrap ${locked?"locked":""} ${cls}" data-id="${m.id}"><div class="medal m-${tier}">${m.ic}</div><b>${m.name}</b><small>${m.sub}</small></div>`;
   }
-  $("#homeMedals").innerHTML=M.filter(m=>["ob","y26","door","wk","ser"].includes(m.id)).map(m=>medalHTML(m)).join("");
-
   /* closest + random */
   function pct(m){ return m.prog?m.prog[0]/m.prog[1]:0 }
-  const lockedWithProg=M.filter(m=>!m.earned&&m.prog&&m.prog[1]>0);
-  const closest=lockedWithProg.sort((a,b)=>pct(b)-pct(a))[0];
-  const pool=M.filter(m=>!m.earned&&m.group==="stretch"&&m.id!=="omni");
-  const rnd=pool[Math.floor(Math.random()*pool.length)];
   function nextCard(el,label,m){
     const p=m.prog?Math.round(pct(m)*100):0;
     el.dataset.id=m.id;
     el.innerHTML=`<div class="lbl">${label}</div><div class="medal m-locked">${m.ic}</div><b>${m.name}</b><small>${m.prog?m.prog[2]:m.sub}</small>${m.prog?`<div class="bar"><i style="width:${p}%"></i></div>`:""}`;
   }
-  nextCard($("#closest"),"Closest to unlocking",closest);
-  nextCard($("#random"),"Try something new",rnd);
+  let rnd=null;
+  function renderNext(){
+    const lockedWithProg=M.filter(m=>!m.earned&&m.prog&&m.prog[1]>0);
+    const closest=lockedWithProg.sort((a,b)=>pct(b)-pct(a))[0];
+    if(closest) nextCard($("#closest"),"Closest to unlocking",closest);
+    const pool=M.filter(m=>!m.earned&&m.group==="stretch"&&m.id!=="omni");
+    if((!rnd||rnd.earned)&&pool.length) rnd=pool[Math.floor(Math.random()*pool.length)];
+    if(rnd) nextCard($("#random"),"Try something new",rnd);
+  }
 
   /* wall */
-  const earnedCount=M.filter(m=>m.earned).length;
-  $("#wallCount").textContent=`${earnedCount} of ${M.length} earned`;
-  $(".seeall").textContent=`See all ${M.length}`;
-  $("#walls").innerHTML=Object.keys(G).map((g,i)=>{
-    const list=M.filter(m=>m.group===g);
-    const e=list.filter(m=>m.earned).length;
-    return `${i?'<div class="rail thin" style="margin:22px -8px 0"></div>':''}<div class="wallhead"><h2>${G[g]}</h2><small>${e} of ${list.length}</small></div><div class="wall">${list.map(m=>medalHTML(m)).join("")}</div>`;
-  }).join("");
+  let wallFilter="all";
+  function applyFilter(){
+    $$("#walls .medalwrap").forEach(w=>{ const m=byId(w.dataset.id); w.classList.toggle("hide", wallFilter==="earned"?!m.earned : wallFilter==="locked"?m.earned : false); });
+  }
+  function renderMedals(){
+    $("#homeMedals").innerHTML=M.filter(m=>["ob","y26","door","wk","ser"].includes(m.id)).map(m=>medalHTML(m)).join("");
+    const earnedCount=M.filter(m=>m.earned).length;
+    $("#wallCount").textContent=`${earnedCount} of ${M.length} earned`;
+    $(".seeall").textContent=`See all ${M.length}`;
+    $("#walls").innerHTML=Object.keys(G).map((g,i)=>{
+      const list=M.filter(m=>m.group===g);
+      const e=list.filter(m=>m.earned).length;
+      return `${i?'<div class="rail thin" style="margin:22px -8px 0"></div>':''}<div class="wallhead"><h2>${G[g]}</h2><small>${e} of ${list.length}</small></div><div class="wall">${list.map(m=>medalHTML(m)).join("")}</div>`;
+    }).join("");
+    applyFilter();
+    renderNext();
+  }
   $$(".filters button").forEach(b=>b.onclick=()=>{
     $$(".filters button").forEach(x=>x.classList.remove("on")); b.classList.add("on");
-    const f=b.dataset.f;
-    $$("#walls .medalwrap").forEach(w=>{ const m=M.find(x=>x.id===w.dataset.id); w.classList.toggle("hide", f==="earned"?!m.earned : f==="locked"?m.earned : false); });
+    wallFilter=b.dataset.f; applyFilter();
   });
 
   /* detail overlay */
+  let shownMedal=null;
   function showMedal(m,justEarned){
+    shownMedal=m;
     const t=m.earned?m.tier:"locked";
     $("#eTitle").innerHTML= justEarned?`Congratulations.<br>You earned a ${m.tier} medal.` : (m.earned?"Earned":"Not yet earned");
     $("#eMedal").className=`medal m-${t}`; $("#eMedal").innerHTML=m.ic;
@@ -472,8 +495,19 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   $("#eClose").onclick=()=>$("#earned").classList.remove("open");
   $("#earned").addEventListener("click",e=>{ if(e.target.id==="earned") $("#earned").classList.remove("open"); });
   document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ $("#earned").classList.remove("open"); closeSheet(); } });
-  $("#eShare").onclick=()=>toast("Sharing a medal card (prototype)");
-  $("#eSave").onclick=()=>toast("Saved to photos (prototype)");
+  $("#eSave").onclick=async()=>{
+    if(!shownMedal) return;
+    try{ downloadFile(await cardFile(shownMedal)); toast("Card saved"); }
+    catch(e){ toast("Couldn't make the card"); }
+  };
+  $("#eShare").onclick=async()=>{
+    if(!shownMedal) return;
+    try{
+      const f=await cardFile(shownMedal);
+      if(navigator.canShare&&navigator.canShare({files:[f]})) await navigator.share({files:[f],title:`${shownMedal.name} — Earmark`});
+      else { downloadFile(f); toast("Sharing isn't available here, so the card was saved"); }
+    }catch(e){ if(e.name!=="AbortError") toast("Couldn't share the card"); }
+  };
   $("#shareStats").onclick=()=>toast("Sharing your stats card (prototype)");
 
   /* streak medal + today's notes */
@@ -484,25 +518,30 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
   /* bookshelf */
   const C={red:"#7F3540",teal:"#2C5360",gold:"#A6782A",green:"#44633A",plum:"#524463",rust:"#9E512B",navy:"#2B3A60",moss:"#5F5F2C",wine:"#5F2A39",slate:"#44525C"};
+  /* genre options for the manual pick; keys are what each book's `genre` field holds.
+     TODO: once titles come from the book database, `genre` is filled automatically from its metadata. */
+  const GENRES=[["fantasy","Fantasy"],["scifi","Sci-fi"],["litfic","Literary fiction"],["mystery","Mystery & thriller"],["romance","Romance"],
+    ["ya","Young adult"],["classic","Classic"],["nonfiction","Nonfiction"],["biography","Biography & memoir"],["translation","In translation"]];
+  $$("select.genre").forEach(sel=>sel.innerHTML=`<option value="">Genre (optional)</option>`+GENRES.map(([k,l])=>`<option value="${k}">${l}</option>`).join(""));
   const LIB=[
-    {t:"Sunrise on the Reaping",a:"Suzanne Collins",h:10,c:C.red,when:"month"},
-    {t:"Scythe",a:"Neal Shusterman",h:11,c:C.teal,when:"month"},
-    {t:"Wind and Truth",a:"Brandon Sanderson",h:62,c:C.gold,when:"year"},
-    {t:"Project Hail Mary",a:"Andy Weir",h:16,c:C.green,when:"year"},
-    {t:"Atomic Habits",a:"James Clear",h:6,c:C.plum,when:"year"},
-    {t:"The Black Prism",a:"Brent Weeks",h:22,c:C.rust,when:"year"},
-    {t:"Dungeon Crawler Carl",a:"Matt Dinniman",h:13,c:C.navy,when:"year"},
-    {t:"Rhythm of War",a:"Brandon Sanderson",h:57,c:C.gold,when:"all"},
-    {t:"Oathbringer",a:"Brandon Sanderson",h:55,c:C.gold,when:"all"},
-    {t:"Words of Radiance",a:"Brandon Sanderson",h:48,c:C.gold,when:"all"},
-    {t:"The Way of Kings",a:"Brandon Sanderson",h:45,c:C.gold,when:"all"},
-    {t:"Mistborn",a:"Brandon Sanderson",h:25,c:C.plum,when:"all"},
-    {t:"Red Rising",a:"Pierce Brown",h:16,c:C.wine,when:"all"},
-    {t:"Dune",a:"Frank Herbert",h:21,c:C.rust,when:"all"},
-    {t:"The Name of the Wind",a:"Patrick Rothfuss",h:28,c:C.moss,when:"all"},
-    {t:"Ender's Game",a:"Orson Scott Card",h:12,c:C.slate,when:"all"},
-    {t:"The Martian",a:"Andy Weir",h:11,c:C.green,when:"all"},
-    {t:"Sapiens",a:"Yuval Noah Harari",h:15,c:C.navy,when:"all"}
+    {t:"Sunrise on the Reaping",a:"Suzanne Collins",h:10,c:C.red,when:"month",genre:"ya"},
+    {t:"Scythe",a:"Neal Shusterman",h:11,c:C.teal,when:"month",genre:"ya"},
+    {t:"Wind and Truth",a:"Brandon Sanderson",h:62,c:C.gold,when:"year",genre:"fantasy"},
+    {t:"Project Hail Mary",a:"Andy Weir",h:16,c:C.green,when:"year",genre:"scifi"},
+    {t:"Atomic Habits",a:"James Clear",h:6,c:C.plum,when:"year",genre:"nonfiction"},
+    {t:"The Black Prism",a:"Brent Weeks",h:22,c:C.rust,when:"year",genre:"fantasy"},
+    {t:"Dungeon Crawler Carl",a:"Matt Dinniman",h:13,c:C.navy,when:"year",genre:"fantasy"},
+    {t:"Rhythm of War",a:"Brandon Sanderson",h:57,c:C.gold,when:"all",genre:"fantasy"},
+    {t:"Oathbringer",a:"Brandon Sanderson",h:55,c:C.gold,when:"all",genre:"fantasy"},
+    {t:"Words of Radiance",a:"Brandon Sanderson",h:48,c:C.gold,when:"all",genre:"fantasy"},
+    {t:"The Way of Kings",a:"Brandon Sanderson",h:45,c:C.gold,when:"all",genre:"fantasy"},
+    {t:"Mistborn",a:"Brandon Sanderson",h:25,c:C.plum,when:"all",genre:"fantasy"},
+    {t:"Red Rising",a:"Pierce Brown",h:16,c:C.wine,when:"all",genre:"scifi"},
+    {t:"Dune",a:"Frank Herbert",h:21,c:C.rust,when:"all",genre:"classic"},
+    {t:"The Name of the Wind",a:"Patrick Rothfuss",h:28,c:C.moss,when:"all",genre:"fantasy"},
+    {t:"Ender's Game",a:"Orson Scott Card",h:12,c:C.slate,when:"all",genre:"scifi"},
+    {t:"The Martian",a:"Andy Weir",h:11,c:C.green,when:"all",genre:"scifi"},
+    {t:"Sapiens",a:"Yuval Noah Harari",h:15,c:C.navy,when:"all",genre:"nonfiction"}
   ];
   const esc=s=>String(s).replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
   const fmtH=h=>`${Number.isInteger(h)?h:h.toFixed(1)}h`;
@@ -526,15 +565,17 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   /* free-type book entry — shared by the Add books screen and the plus-button sheet.
      TODO: this is a stopgap. Replace the typed title/hours with a real book search backed by the
      book database, which will supply the cover art and runtime for each result. */
-  function addBook(title,hours){
-    const entry={t:title,a:"",h:hours,when:"month",ph:true};
+  function addBook(title,hours,genre){
+    const entry={t:title,a:"",h:hours,when:"month",ph:true,genre:genre||null};
     LIB.unshift(entry);               // newest book sits first on the shelf
     if(hours!=null) bump(hours);      // hours count toward the lifetime total only when given
     renderShelf(shelfMode);
+    recomputeMedals();                // genre-stretch medals may have moved
+    renderInsights();
     return entry;
   }
-  function wireEntry(titleSel,hoursSel,btnSel,listSel,onAdd){
-    const tIn=$(titleSel), hrIn=$(hoursSel), list=$(listSel), added=[];
+  function wireEntry(titleSel,hoursSel,genreSel,btnSel,listSel){
+    const tIn=$(titleSel), hrIn=$(hoursSel), gIn=$(genreSel), list=$(listSel), added=[];
     function renderList(){
       list.innerHTML=added.length?`<div class="lbl">Added</div>`+added.map(b=>`<div class="item"><b>${esc(b.t)}</b><small>${b.h!=null?fmtH(b.h)+" · counted":"no hours"}</small></div>`).join(""):"";
     }
@@ -542,18 +583,45 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       const title=tIn.value.trim(); if(!title){ tIn.focus(); return; }
       const raw=hrIn.value.trim(), n=parseFloat(raw);
       const hours=raw!==""&&isFinite(n)&&n>0?n:null;   // blank or invalid → book only, no hours
-      const b=addBook(title,hours); added.push(b); renderList();
-      tIn.value=""; hrIn.value=""; tIn.focus();
+      const b=addBook(title,hours,gIn.value); added.push(b); renderList();
+      tIn.value=""; hrIn.value=""; gIn.value=""; tIn.focus();
       toast(hours!=null?`${title} added · ${fmtH(hours)} to your total`:`${title} added to your shelf`);
-      if(onAdd) onAdd();
     }
     $(btnSel).onclick=submit;
     [tIn,hrIn].forEach(i=>i.addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); submit(); } }));
-    return {reset(){ added.length=0; renderList(); tIn.value=""; hrIn.value=""; }};
+    return {reset(){ added.length=0; renderList(); tIn.value=""; hrIn.value=""; gIn.value=""; }};
   }
-  wireEntry("#addTitle","#addHours","#addBtn","#addedList");
-  let sheetAdded=0;
-  const sheetEntry=wireEntry("#sheetTitle","#sheetHours","#sheetAddBtn","#sheetAddedList",()=>sheetAdded++);
+  wireEntry("#addTitle","#addHours","#addGenre","#addBtn","#addedList");
+  const sheetEntry=wireEntry("#sheetTitle","#sheetHours","#sheetGenre","#sheetAddBtn","#sheetAddedList");
+  $("#addDone").onclick=()=>{ go("s-home"); showPendingEarned(); };
+
+  /* genre-stretch medals, computed from each book's genre */
+  const OMNI_GOAL=6, pendingEarned=[];
+  const fmtN=h=>Number.isInteger(h)?h:+h.toFixed(1);
+  const hoursIn=g=>LIB.filter(b=>b.genre===g).reduce((s,b)=>s+(b.h||0),0);
+  const firstIn=g=>{ const b=LIB.find(b=>b.genre===g); return b?b.t:null; };
+  function recomputeMedals(quiet){
+    const was=Object.fromEntries(M.map(m=>[m.id,m.earned]));
+    const hoursRule=(id,g,goal,emptyHint)=>{
+      const m=byId(id), h=hoursIn(g), first=firstIn(g);
+      m.earned=h>=goal;
+      m.prog=m.earned?null:[h,goal,`${fmtN(h)} of ${goal} hours · ${first?first+" counted":emptyHint}`];
+    };
+    const oneRule=(id,g)=>{ const m=byId(id), first=firstIn(g); m.earned=!!first; m.sub=first||"Finish one"; };
+    hoursRule("sch","nonfiction",25,"try a history or a how-to");
+    hoursRule("cla","classic",25,"try Austen, Dumas, Tolstoy");
+    oneRule("ya","ya"); oneRule("bio","biography"); oneRule("tr","translation");
+    const omni=byId("omni"), n=new Set(LIB.map(b=>b.genre).filter(Boolean)).size;
+    omni.earned=n>=OMNI_GOAL; omni.prog=omni.earned?null:[n,OMNI_GOAL,`${n} of ${OMNI_GOAL} genres so far`];
+    if(!quiet) M.filter(m=>m.earned&&!was[m.id]).forEach(m=>pendingEarned.push(m));   // newly earned → shown on Done
+    renderMedals();
+  }
+  function showPendingEarned(){
+    const m=pendingEarned.shift(), more=pendingEarned.length; pendingEarned.length=0;
+    if(!m) return;
+    showMedal(m,true);
+    if(more) toast(`And ${more} more medal${more>1?"s":""} earned`);
+  }
 
   /* nav */
   function go(id){
@@ -566,7 +634,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
   /* sheet */
   const sheet=$("#sheet"), scrim=$("#scrim");
-  function openSheet(){ showMenu(); sheetAdded=0; sheetEntry.reset(); sheet.classList.add("open"); scrim.classList.add("open"); }
+  function openSheet(){ showMenu(); sheetEntry.reset(); sheet.classList.add("open"); scrim.classList.add("open"); }
   function closeSheet(){ sheet.classList.remove("open"); scrim.classList.remove("open"); }
   function showMenu(){ $("#menu").style.display="block"; $$(".form").forEach(f=>f.classList.remove("show")); }
   $("#n-plus").onclick=openSheet; scrim.onclick=closeSheet;
@@ -577,7 +645,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   $$("[data-done]").forEach(b=>b.onclick=()=>{
     const k=b.dataset.done; closeSheet(); go("s-home");
     if(k==="live"){ $("#t1").textContent="3h 44m"; $("#t2").textContent="20"; $("#t3").textContent="62.5"; bump(1.5); const nt=$("#noteIn").value.trim(); const h=+hIn.value||0,m=+mIn.value||0; if(nt) notes.push({t:nt,m:`${h?h+"h ":""}${m?m+"m":""}`.trim()}); renderNotes(); $("#noteIn").value=""; toast("Logged. Streak: 12 days and counting"); }
-    if(k==="book"){ if(sheetAdded>0){ const m=M.find(x=>x.id==="ya"); showMedal(m,true); } }
+    if(k==="book"){ showPendingEarned(); }
     if(k==="past"){ bump(20); toast("20 hours added to your lifetime total"); }
   });
 
@@ -585,6 +653,93 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   function logLabel(){ const h=+hIn.value||0, m=+mIn.value||0; $("#logBtn").textContent=`Log ${h?h+"h ":""}${m?m+"m":""}`.trim()||"Log time"; }
   hIn.oninput=mIn.oninput=logLabel;
   let tt; function toast(m){ const t=$("#toast"); t.textContent=m; t.classList.add("show"); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove("show"),2200); }
+
+  /* insight cards — every generator returns null unless it is true for this listener, and all of
+     them are encouraging: no guilt, no "you missed a day". Two are shown per load, rotating. */
+  const hm=h=>{ const H=Math.floor(h), m=Math.round((h-H)*60); return H?`${H}h${m?" "+m+"m":""}`:`${m}m`; };
+  const DAYS=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  const INSIGHTS=[
+    ()=>STATS.monthH>STATS.lastMonthH&&{ic:I.up,b:"You're listening more than last month",s:`Already up ${hm(STATS.monthH-STATS.lastMonthH)} this month.`},
+    ()=>{ if(STATS.streak<2) return null; const next=[7,30,100,365].find(n=>n>STATS.streak);
+          return {ic:I.flame,b:`${STATS.streak}-day streak — keep it going`,s:next?`${next-STATS.streak} more days to a ${next}-day streak.`:"A full year of listening. Remarkable."}; },
+    ()=>{ const next=M.find(m=>m.group==="rank"&&!m.earned&&m.prog); if(!next) return null;
+          const have=M.filter(m=>m.group==="rank"&&m.earned).pop(), left=Math.max(0,Math.ceil(next.prog[1]-total));
+          return {ic:I.star,b:`You're ${left.toLocaleString()} hours from ${next.name}`,s:`${have?have.name+" now. ":""}${next.name} at ${next.prog[1].toLocaleString()} hours.`}; },
+    ()=>{ const w=STATS.typicalByWeekday, i=w.indexOf(Math.max(...w)); if(!(w[i]>0)) return null;
+          return {ic:I.cal,b:`${DAYS[i]}s are your biggest listening day`,s:`About ${hm(w[i])} on a typical ${DAYS[i]}.`}; },
+    ()=>{ const b=LIB.filter(x=>x.when==="month"); if(!b.length) return null;
+          return {ic:I.book,b:`${b.length} book${b.length>1?"s":""} finished this month`,s:esc(b.slice(0,3).map(x=>x.t).join(", "))+(b.length>3?"…":"")}; },
+    ()=>{ const y=byId("y26"); return STATS.yearH>0&&{ic:I.cal,b:`${STATS.yearH.toLocaleString()} hours this year`,s:y&&y.prog?y.prog[2]+".":"A year to be proud of."}; },
+    ()=>{ const n=new Set(LIB.map(b=>b.genre).filter(Boolean)).size; return n>=3&&{ic:I.globe,b:`${n} genres on your shelf`,s:`Range counts toward Omnivore (${OMNI_GOAL} genres).`}; },
+    ()=>STATS.todayH>0&&{ic:I.bolt,b:`${hm(STATS.todayH)} in today already`,s:"Every minute counts toward your streak."}
+  ];
+  function renderInsights(){
+    const list=INSIGHTS.map(f=>f()).filter(Boolean), el=$("#insights");
+    if(!list.length){ el.innerHTML=""; return; }
+    const off=Math.floor(Math.random()*list.length), show=[];
+    for(let i=0;i<Math.min(2,list.length);i++) show.push(list[(off+i)%list.length]);
+    el.innerHTML=show.map(c=>`<div class="card up"><div class="ic">${c.ic}</div><div><b>${c.b}</b><small>${c.s}</small></div></div>`).join("");
+  }
+
+  /* share cards — a tall 1080×1920 PNG for a medal: wood background, the medal glowing in the
+     centre, the big stat, the listener's name, and the Earmark line, all dressed in the tier's colour */
+  const TIER={bronze:["#D9A070","#8A5429"],silver:["#E6E9EE","#8A9199"],gold:["#F0D48A","#A3782B"],platinum:["#E3F2F6","#7FA9B3"],
+    diamond:["#CFEBFA","#4E93B8"],obsidian:["#C9B8E6","#4A3A66"],rainbow:["#F0D48A","#8E7BB0"],locked:["#8A7A66","#2A1E14"]};
+  const rgba=(hex,a)=>{ const n=parseInt(hex.slice(1),16); return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`; };
+  function iconImage(ic,color){
+    return new Promise(res=>{
+      const svg=ic.replace(/currentColor/g,color).replace("<svg",'<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240"');
+      const img=new Image(); img.onload=()=>res(img); img.onerror=()=>res(null);
+      img.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg);
+    });
+  }
+  async function renderCard(m){
+    const W=1080,H=1920,cx=W/2,cy=790,R=230, FONT="'Times New Roman',Times,Tinos,serif";
+    const c=document.createElement("canvas"); c.width=W; c.height=H; const x=c.getContext("2d");
+    const tier=m.earned?m.tier:"locked", [hi,lo]=TIER[tier]||TIER.gold;
+    // wood: the same planks and vertical gradient as the app background
+    const bg=x.createLinearGradient(0,0,0,H); bg.addColorStop(0,"#2B1B10"); bg.addColorStop(.45,"#231811"); bg.addColorStop(1,"#1E140D");
+    x.fillStyle=bg; x.fillRect(0,0,W,H);
+    for(let p=108;p<W;p+=216){ x.fillStyle="rgba(0,0,0,.22)"; x.fillRect(p,0,3,H); x.fillStyle="rgba(255,215,170,.035)"; x.fillRect(p+3,0,3,H); }
+    for(let p=18;p<W;p+=58){ x.fillStyle="rgba(255,210,160,.014)"; x.fillRect(p,0,5,H); }
+    // tier edge-glow: a stroke just outside the frame whose shadow fades inward
+    x.save(); x.shadowColor=rgba(hi,.55); x.shadowBlur=300; x.strokeStyle=hi; x.lineWidth=240; x.strokeRect(-120,-120,W+240,H+240); x.restore();
+    x.strokeStyle=rgba(hi,.35); x.lineWidth=3; x.strokeRect(48,48,W-96,H-96);
+    // centre glow, like .hero .glow in the app
+    const g=x.createRadialGradient(cx,cy,0,cx,cy,580); g.addColorStop(0,rgba(hi,.32)); g.addColorStop(.55,rgba(hi,.08)); g.addColorStop(1,rgba(hi,0));
+    x.fillStyle=g; x.fillRect(0,0,W,H);
+    // medal: metallic ring, matte centre, thin inner ring, icon
+    x.save(); x.shadowColor="rgba(0,0,0,.55)"; x.shadowBlur=40; x.shadowOffsetY=16;
+    if(tier==="rainbow"&&x.createConicGradient){ const cg=x.createConicGradient(200*Math.PI/180,cx,cy); [["#c96a6a",0],["#d4a84b",.2],["#8fbf7a",.4],["#6aa6c9",.6],["#9a86c9",.8],["#c96a6a",1]].forEach(([col,st])=>cg.addColorStop(st,col)); x.fillStyle=cg; }
+    else { const rg=x.createLinearGradient(cx-R,cy-R,cx+R,cy+R); rg.addColorStop(0,hi); rg.addColorStop(.55,lo); rg.addColorStop(1,hi); x.fillStyle=rg; }
+    x.beginPath(); x.arc(cx,cy,R+16,0,Math.PI*2); x.fill(); x.restore();
+    const mg=x.createRadialGradient(cx,cy-R*.3,0,cx,cy,R); mg.addColorStop(0,"#2E2017"); mg.addColorStop(1,"#1A110B");
+    x.fillStyle=mg; x.beginPath(); x.arc(cx,cy,R,0,Math.PI*2); x.fill();
+    x.strokeStyle=rgba(lo,.6); x.lineWidth=3; x.beginPath(); x.arc(cx,cy,R-14,0,Math.PI*2); x.stroke();
+    x.textAlign="center"; x.textBaseline="middle";
+    if(m.ic.trim().startsWith("<svg")){ const img=await iconImage(m.ic,hi); if(img) x.drawImage(img,cx-120,cy-120,240,240); }
+    else { x.fillStyle=hi; x.font=`150px ${FONT}`; x.fillText(m.ic.replace(/<[^>]+>/g,""),cx,cy+8); }
+    // words
+    x.textBaseline="alphabetic";
+    x.fillStyle="#BBA68C"; x.font=`italic 44px ${FONT}`; x.fillText("Medal earned",cx,400);
+    const big=m.group==="rank"?m.sub:m.name, sub=m.group==="rank"?`${m.name} rank`:m.sub;
+    let size=128; x.font=`${size}px ${FONT}`; while(x.measureText(big).width>W-180&&size>60){ size-=6; x.font=`${size}px ${FONT}`; }
+    x.fillStyle="#F1E6D4"; x.fillText(big,cx,cy+R+236);
+    x.fillStyle="#BBA68C"; x.font=`italic 56px ${FONT}`; x.fillText(sub,cx,cy+R+326);
+    x.font=`italic 40px ${FONT}`; x.fillText(new Date().toLocaleDateString(undefined,{month:"long",day:"numeric",year:"numeric"}),cx,cy+R+400);
+    x.fillStyle="#BBA68C"; x.font=`40px ${FONT}`; x.fillText(USER.name,cx,H-210);
+    x.fillStyle="#CFA253"; x.font=`44px ${FONT}`; x.fillText("Earmark — Listen up",cx,H-120);
+    return new Promise((res,rej)=>c.toBlob(b=>b?res(b):rej(new Error("toBlob failed")),"image/png"));
+  }
+  async function cardFile(m){ return new File([await renderCard(m)],`earmark-${m.id}.png`,{type:"image/png"}); }
+  function downloadFile(f){
+    const a=document.createElement("a"), u=URL.createObjectURL(f);
+    a.href=u; a.download=f.name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(u),4000);
+  }
+
+  recomputeMedals(true);   // initial pass: settle the genre medals without announcing them
+  renderInsights();
 })();
 </script>
 </body>
