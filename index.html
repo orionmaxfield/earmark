@@ -87,6 +87,24 @@ svg[stroke="currentColor"]{stroke-width:1.75;stroke-linecap:round;stroke-linejoi
 .splash .brand{font-size:var(--t-48)}
 .splash.out{opacity:0}
 @keyframes splash-in{to{opacity:1}}
+/* onboarding (first run) */
+.ob{position:fixed;inset:0;z-index:55;display:none;overflow:auto;padding:32px var(--gutter) 40px}
+.ob.open{display:block}
+.ob .inner{max-width:430px;margin:0 auto;min-height:100%;display:flex;flex-direction:column}
+.ob-step{display:none;flex:1;flex-direction:column;justify-content:center;animation:ob-in var(--med) var(--ease)}
+.ob-step.on{display:flex}
+@keyframes ob-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.ob .mark{width:88px;height:88px;margin:0 auto 24px;display:block}
+.ob .center{text-align:center}
+.ob h1{font-size:var(--t-32);line-height:1.15}
+.ob h2{font-size:var(--t-32);margin:0;line-height:1.15}
+.ob .lead{color:var(--ink-2);font-size:var(--t-16);margin-top:12px;line-height:1.5}
+.ob .eyebrow{margin-bottom:12px}
+.ob .dots{display:flex;justify-content:center;gap:8px;padding:24px 0 0}
+.ob .dots i{width:6px;height:6px;border-radius:50%;background:var(--line-2)}
+.ob .dots i.on{background:var(--accent)}
+.linkbtn{background:none;border:0;color:var(--accent);font:inherit;font-size:inherit;cursor:pointer;padding:0 4px;min-height:44px;border-radius:var(--r-sm)}
+.notes .none{color:var(--ink-3);font-size:var(--t-14)}
 /* header */
 .brandblock{text-align:center;padding:8px 0 16px}
 .brandrow{display:inline-flex;align-items:center;gap:10px}
@@ -323,6 +341,47 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
 </head>
 <body>
 <div class="splash wood" id="splash" aria-hidden="true"><img src="icons/earmark-mark.png" alt="" width="112" height="112"><div class="brand">Earmark</div><div class="tagline">Listen up</div></div>
+<!-- ONBOARDING: shown once, on the first visit with no saved data -->
+<div class="ob wood" id="onboard" role="dialog" aria-label="Welcome to Earmark">
+  <div class="inner">
+    <section class="ob-step on center" data-step="0">
+      <img class="mark" src="icons/earmark-mark.png" alt="" width="88" height="88">
+      <h1>Welcome to Earmark</h1>
+      <p class="lead">Track every hour you listen, earn medals along the way, and fill a shelf with what you've finished.</p>
+      <div class="field" style="margin-top:24px"><input id="obName" placeholder="Your name" autocomplete="given-name" aria-label="Your name"></div>
+      <button class="cta" id="obNext0">Continue</button>
+    </section>
+    <section class="ob-step" data-step="1">
+      <div class="eyebrow">Step 1 of 3</div>
+      <h2>Hours you've already listened</h2>
+      <p class="lead">If you have hours from Audible, Libby, or anywhere else, add them so your rank starts where you are. No date is attached and they never count toward streaks.</p>
+      <div class="field"><select id="obSrc"><option>Audible</option><option>Libby</option><option>Libro.fm</option><option>Spotify</option><option>Other</option></select><label><input id="obPast" type="number" inputmode="decimal" min="0" placeholder="0" aria-label="Hours"><span>hours</span></label></div>
+      <button class="cta" id="obNext1">Continue</button>
+      <button class="ghost" id="obSkip1">Skip for now</button>
+    </section>
+    <section class="ob-step" data-step="2">
+      <div class="eyebrow">Step 2 of 3</div>
+      <h2>Books you've finished</h2>
+      <p class="lead">Add a few favourites to start your shelf. Hours are optional; when you add them they count toward your total.</p>
+      <!-- TODO: free-type title is a stopgap until titles come from the book database with covers and runtimes. -->
+      <div class="field"><input id="obTitle" placeholder="Book title" autocomplete="off" aria-label="Book title"></div>
+      <div class="field"><select class="genre" id="obGenre" aria-label="Genre (optional)"></select></div>
+      <div class="field"><label><input id="obHours" type="number" inputmode="decimal" min="0" step="0.5" placeholder="Optional" aria-label="Hours it ran"><span>hours</span></label><button class="addbtn" id="obAddBtn">Add</button></div>
+      <div class="added" id="obAddedList" aria-live="polite"></div>
+      <button class="cta" id="obNext2">Continue</button>
+      <button class="ghost" id="obSkip2">Skip for now</button>
+    </section>
+    <section class="ob-step center" data-step="3">
+      <img class="mark" src="icons/earmark-mark.png" alt="" width="88" height="88">
+      <div class="eyebrow">Step 3 of 3</div>
+      <h2 id="obDoneTitle">You're set.</h2>
+      <p class="lead">Tap the gold + whenever you finish a session to log today's listening. Your streak starts with day one, and your first 25 hours earn Bronze.</p>
+      <button class="cta" id="obFinish">Start listening</button>
+    </section>
+    <div class="dots" id="obDots"><i class="on"></i><i></i><i></i><i></i></div>
+  </div>
+</div>
+
 <div class="phone wood">
 
 <!-- HOME -->
@@ -333,19 +392,19 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
     <div class="glow"></div>
     <div class="streakwrap">
       <div>
-        <div class="num" id="streakNum">12</div>
+        <div class="num" id="streakNum">0</div>
         <div class="unit">Day streak</div>
-        <div class="sub">Gold streak at 30 days</div>
+        <div class="sub" id="streakSub"></div>
       </div>
-      <div class="streakmedal"><div class="medal m-silver" id="streakMedal"></div><small>Silver<br>streak</small></div>
+      <div class="streakmedal"><div class="medal m-locked" id="streakMedal"></div><small id="streakLbl">No<br>streak yet</small></div>
     </div>
     <div class="boxes">
-      <div class="box"><b id="t1">2h 14m</b><small>today</small></div>
-      <div class="box"><b id="t2">18.5</b><small>hrs this week</small></div>
-      <div class="box"><b id="t3">61</b><small>hrs this month</small></div>
+      <div class="box"><b id="t1">0h</b><small>today</small></div>
+      <div class="box"><b id="t2">0</b><small>hrs this week</small></div>
+      <div class="box"><b id="t3">0</b><small>hrs this month</small></div>
     </div>
     <div class="notes" id="notes"></div>
-    <div class="totalline"><b id="heroNum">4,312</b><small>hours listened, lifetime</small></div>
+    <div class="totalline"><b id="heroNum">0</b><small>hours listened, lifetime</small></div>
     <button class="share" id="shareStats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12M7 8l5-5 5 5"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg>Share my stats</button>
   </div>
 
@@ -353,9 +412,9 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
 
   <div class="sec">
     <div class="card rank">
-      <div class="row"><div class="name">Obsidian</div><div class="next">Meteorite at 5,000 hours</div></div>
-      <div class="bar"><i style="width:72%"></i></div>
-      <div class="ticks"><span>2,500</span><span>688 hours to go</span><span>5,000</span></div>
+      <div class="row"><div class="name" id="rankName">No rank yet</div><div class="next" id="rankNext">Bronze at 25 hours</div></div>
+      <div class="bar"><i id="rankBar" style="width:0%"></i></div>
+      <div class="ticks" id="rankTicks"><span>0</span><span>25 hours to go</span><span>25</span></div>
     </div>
     <!-- Insight cards: a small rotating set generated from the listener's data (see renderInsights) -->
     <div id="insights"></div>
@@ -381,7 +440,7 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
     <div class="bookcase" id="bookcase"></div>
   </div>
 
-  <p class="proto">Prototype · sample data · nothing is saved yet</p>
+  <p class="proto">Prototype · saved on this device · <button class="linkbtn" id="resetData" type="button">Start over</button></p>
 </section>
 
 <!-- ADD BOOKS (onboarding-style bulk add) -->
@@ -428,7 +487,7 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
       <button class="opt" data-form="f-book"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h12a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3z"/><path d="M4 17a3 3 0 0 1 3-3h12"/></svg></span><span><b>Finished a book</b><small>Puts it on your shelf. Add its hours, or skip them if they're already logged.</small></span></button>
       <button class="opt" data-form="f-past"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 8v4l2 2"/></svg></span><span><b>Add hours from the past</b><small>Audible, Libby, Libro.fm… Counts toward your total and rank only.</small></span></button>
     </div>
-    <div class="form" id="f-live"><h2 style="margin:0">Today's listening</h2><div class="field"><label><input type="number" inputmode="numeric" placeholder="0" value="1"><span>hours</span></label><label><input type="number" inputmode="numeric" placeholder="0" value="30"><span>min</span></label></div><div class="field"><input id="noteIn" placeholder="Note, e.g. Scythe, chapters 18–20"></div><button class="cta" data-done="live" id="logBtn">Log 1h 30m</button><button class="ghost" data-back>Back</button></div>
+    <div class="form" id="f-live"><h2 style="margin:0">Today's listening</h2><div class="field"><label><input type="number" inputmode="numeric" min="0" placeholder="0"><span>hours</span></label><label><input type="number" inputmode="numeric" min="0" max="59" placeholder="0"><span>min</span></label></div><div class="field"><input id="noteIn" placeholder="Note, e.g. Scythe, chapters 18–20"></div><button class="cta" data-done="live" id="logBtn">Log time</button><button class="ghost" data-back>Back</button></div>
     <!-- TODO: this free-type title field is a stopgap. It will later become a real book search
          backed by the book database, returning covers and runtimes instead of typed titles and hours. -->
     <div class="form" id="f-book"><h2 style="margin:0">Finished a book</h2>
@@ -439,7 +498,7 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
       <div class="added" id="sheetAddedList" aria-live="polite"></div>
       <p class="note">Hours you enter count toward your total. Leave them blank if they're already logged.</p>
       <button class="cta" data-done="book">Done</button><button class="ghost" data-back>Back</button></div>
-    <div class="form" id="f-past"><h2 style="margin:0">Hours from the past</h2><div class="field"><select><option>Audible</option><option>Libby</option><option>Libro.fm</option><option>Spotify</option><option>Other</option></select><label><input type="number" inputmode="numeric" placeholder="0" value="20"><span>hours</span></label></div><p class="note">No date attached. Adds to your lifetime total and rank, never to streaks.</p><button class="cta" data-done="past">Add 20 hours</button><button class="ghost" data-back>Back</button></div>
+    <div class="form" id="f-past"><h2 style="margin:0">Hours from the past</h2><div class="field"><select id="pastSrc"><option>Audible</option><option>Libby</option><option>Libro.fm</option><option>Spotify</option><option>Other</option></select><label><input id="pastH" type="number" inputmode="decimal" min="0" placeholder="0"><span>hours</span></label></div><p class="note">No date attached. Adds to your lifetime total and rank, never to streaks.</p><button class="cta" data-done="past" id="pastBtn">Add hours</button><button class="ghost" data-back>Back</button></div>
   </div>
 </div>
 
@@ -480,34 +539,54 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
     moon:`<svg viewBox="0 0 24 24" ${sw1}><path d="M20 15A8 8 0 0 1 9 4a8 8 0 1 0 11 11z"/></svg>`,
     up:`<svg viewBox="0 0 24 24" ${sw1}><path d="M12 19V5M5 12l7-7 7 7"/></svg>`
   };
-  /* sample profile + listening stats; the real app will compute these from logged sessions */
-  const USER={name:"Avery"};
-  const STATS={todayH:2.23, weekH:18.5, monthH:61, lastMonthH:53.67, yearH:541, streak:12,
-    typicalByWeekday:[1.5,2.1,3.5,2.2,2.5,1.9,1.5]};   // Sun..Sat, typical hours on that weekday
+  /* ---- state: everything the app shows comes from here. A new account starts at zero. ---- */
+  const KEY="earmark.state.v1";
+  const fresh=()=>({v:1,onboarded:false,user:{name:""},total:0,todayH:0,weekH:0,monthH:0,lastMonthH:0,yearH:0,
+    bestDayH:0,streak:0,bestStreak:0,lastLog:null,owl:false,byWeekday:[0,0,0,0,0,0,0],weekdayDays:[0,0,0,0,0,0,0],
+    notes:[],books:[],past:[],keys:{day:"",week:"",month:"",year:""}});
+  function load(){ try{ const raw=localStorage.getItem(KEY); if(raw){ const o=JSON.parse(raw); return Object.assign(fresh(),o,{user:Object.assign({name:""},o.user||{}),keys:Object.assign({},fresh().keys,o.keys||{})}); } }catch(e){} return fresh(); }
+  function save(){ try{ localStorage.setItem(KEY,JSON.stringify(ST)); }catch(e){} }
+  const ST=load();
+  const pad=n=>String(n).padStart(2,"0");
+  const dayKey=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  const periodKeys=(d=new Date())=>{ const mon=new Date(d); mon.setDate(d.getDate()-((d.getDay()+6)%7)); return {day:dayKey(d),week:dayKey(mon),month:`${d.getFullYear()}-${pad(d.getMonth()+1)}`,year:String(d.getFullYear())}; };
+  /* roll today / this week / this month / this year over when the calendar moves on; streaks end after a missed day */
+  function rollover(){
+    const k=periodKeys(), was=ST.keys;
+    if(was.day&&was.day!==k.day){ ST.todayH=0; ST.notes=[]; const y=new Date(); y.setDate(y.getDate()-1); if(ST.lastLog&&ST.lastLog!==dayKey(y)&&ST.lastLog!==k.day) ST.streak=0; }
+    if(was.week&&was.week!==k.week) ST.weekH=0;
+    if(was.month&&was.month!==k.month){ ST.lastMonthH=ST.monthH; ST.monthH=0; }
+    if(was.year&&was.year!==k.year) ST.yearH=0;
+    ST.keys=k; save();
+  }
+  rollover();
+  const displayName=()=>ST.user.name.trim()||"Listener";
   const G={year:"This year",rank:"Lifetime rank",streak:"Streaks",feat:"Feats",stretch:"Stretch"};
+  /* medal catalogue — earned/progress are computed from state in recomputeMedals(); nothing is pre-earned */
+  const YEAR_TIERS=[["bronze",100],["silver",250],["gold",500],["platinum",750],["diamond",1000]];
   const M=[
-    {id:"y26",tier:"gold",ic:"<span>26</span>",name:"Gold year",sub:"2026 · 541 hrs",desc:"541 hours in 2026 so far.",earned:true,group:"year",prog:[541,750,"Platinum year at 750 hours"]},
-    {id:"b",tier:"bronze",ic:"<span>25</span>",name:"Bronze",sub:"25 hours",desc:"Your first 25 hours.",earned:true,group:"rank"},
-    {id:"s",tier:"silver",ic:"<span>100</span>",name:"Silver",sub:"100 hours",desc:"100 lifetime hours.",earned:true,group:"rank"},
-    {id:"g",tier:"gold",ic:"<span>250</span>",name:"Gold",sub:"250 hours",desc:"250 lifetime hours.",earned:true,group:"rank"},
-    {id:"p",tier:"platinum",ic:"<span>500</span>",name:"Platinum",sub:"500 hours",desc:"500 lifetime hours.",earned:true,group:"rank"},
-    {id:"d",tier:"diamond",ic:"<span>1k</span>",name:"Diamond",sub:"1,000 hours",desc:"1,000 lifetime hours.",earned:true,group:"rank"},
-    {id:"ob",tier:"obsidian",ic:"<span>2.5k</span>",name:"Obsidian",sub:"2,500 hours",desc:"2,500 lifetime hours. Uncharted territory.",earned:true,group:"rank",prog:[4312,5000,"Meteorite at 5,000 hours"]},
-    {id:"met",tier:"locked",ic:"<span>5k</span>",name:"Meteorite",sub:"5,000 hours",desc:"5,000 lifetime hours.",earned:false,group:"rank",prog:[4312,5000,"688 hours to go"]},
-    {id:"ir",tier:"locked",ic:"<span>10k</span>",name:"Iridium",sub:"10,000 hours",desc:"10,000 lifetime hours.",earned:false,group:"rank",prog:[4312,10000,""]},
-    {id:"os",tier:"locked",ic:"<span>25k</span>",name:"Osmium",sub:"25,000 hours",desc:"25,000 lifetime hours.",earned:false,group:"rank",prog:[4312,25000,""]},
-    {id:"cel",tier:"locked",ic:I.star,name:"Celestial",sub:"50,000 hours",desc:"50,000 lifetime hours.",earned:false,group:"rank",prog:[4312,50000,""]},
-    {id:"s3",tier:"bronze",ic:I.flame,name:"Three days",sub:"3-day streak",desc:"Three days in a row.",earned:true,group:"streak"},
-    {id:"wk",tier:"silver",ic:I.flame,name:"One week",sub:"7-day streak",desc:"Seven days in a row.",earned:true,group:"streak"},
-    {id:"s30",tier:"locked",ic:I.flame,name:"One month",sub:"30-day streak",desc:"Thirty days in a row.",earned:false,group:"streak",prog:[12,30,"18 days to go"]},
-    {id:"s100",tier:"locked",ic:I.flame,name:"Hundred",sub:"100-day streak",desc:"One hundred days in a row.",earned:false,group:"streak",prog:[12,100,""]},
-    {id:"s365",tier:"locked",ic:I.cal,name:"Full year",sub:"365-day streak",desc:"A full year without missing a day.",earned:false,group:"streak",prog:[12,365,""]},
-    {id:"door",tier:"diamond",ic:I.stack,name:"Doorstopper",sub:"A 45-hour book",desc:"Finished a book over 40 hours long.",earned:true,group:"feat"},
-    {id:"ser",tier:"bronze",ic:I.book,name:"Series slayer",sub:"All 5 Stormlight",desc:"Finished every book in a series.",earned:true,group:"feat"},
-    {id:"mar",tier:"locked",ic:I.bolt,name:"Marathon",sub:"8 hours in a day",desc:"Eight hours of listening in one day.",earned:false,group:"feat",prog:[3.7,8,"Best day so far: 3h 44m"]},
-    {id:"spr",tier:"locked",ic:I.bolt,name:"Sprint",sub:"A book in 48 hours",desc:"Start to finish in two days.",earned:false,group:"feat"},
-    {id:"owl",tier:"locked",ic:I.moon,name:"Night owl",sub:"Log after midnight",desc:"A session logged between midnight and 4 a.m.",earned:false,group:"feat"},
-    /* genre-stretch medals: earned/progress are computed from each book's genre in recomputeMedals() */
+    {id:"y26",tier:"bronze",ic:"<span>26</span>",name:"Bronze year",sub:"",desc:"",earned:false,group:"year"},
+    {id:"b",tier:"bronze",ic:"<span>25</span>",name:"Bronze",sub:"25 hours",desc:"Your first 25 hours.",earned:false,group:"rank",thr:25},
+    {id:"s",tier:"silver",ic:"<span>100</span>",name:"Silver",sub:"100 hours",desc:"100 lifetime hours.",earned:false,group:"rank",thr:100},
+    {id:"g",tier:"gold",ic:"<span>250</span>",name:"Gold",sub:"250 hours",desc:"250 lifetime hours.",earned:false,group:"rank",thr:250},
+    {id:"p",tier:"platinum",ic:"<span>500</span>",name:"Platinum",sub:"500 hours",desc:"500 lifetime hours.",earned:false,group:"rank",thr:500},
+    {id:"d",tier:"diamond",ic:"<span>1k</span>",name:"Diamond",sub:"1,000 hours",desc:"1,000 lifetime hours.",earned:false,group:"rank",thr:1000},
+    {id:"ob",tier:"obsidian",ic:"<span>2.5k</span>",name:"Obsidian",sub:"2,500 hours",desc:"2,500 lifetime hours. Uncharted territory.",earned:false,group:"rank",thr:2500},
+    {id:"met",tier:"obsidian",ic:"<span>5k</span>",name:"Meteorite",sub:"5,000 hours",desc:"5,000 lifetime hours.",earned:false,group:"rank",thr:5000},
+    {id:"ir",tier:"obsidian",ic:"<span>10k</span>",name:"Iridium",sub:"10,000 hours",desc:"10,000 lifetime hours.",earned:false,group:"rank",thr:10000},
+    {id:"os",tier:"obsidian",ic:"<span>25k</span>",name:"Osmium",sub:"25,000 hours",desc:"25,000 lifetime hours.",earned:false,group:"rank",thr:25000},
+    {id:"cel",tier:"rainbow",ic:I.star,name:"Celestial",sub:"50,000 hours",desc:"50,000 lifetime hours.",earned:false,group:"rank",thr:50000},
+    {id:"s3",tier:"bronze",ic:I.flame,name:"Three days",sub:"3-day streak",desc:"Three days in a row.",earned:false,group:"streak",thr:3},
+    {id:"wk",tier:"silver",ic:I.flame,name:"One week",sub:"7-day streak",desc:"Seven days in a row.",earned:false,group:"streak",thr:7},
+    {id:"s30",tier:"gold",ic:I.flame,name:"One month",sub:"30-day streak",desc:"Thirty days in a row.",earned:false,group:"streak",thr:30},
+    {id:"s100",tier:"platinum",ic:I.flame,name:"Hundred",sub:"100-day streak",desc:"One hundred days in a row.",earned:false,group:"streak",thr:100},
+    {id:"s365",tier:"diamond",ic:I.cal,name:"Full year",sub:"365-day streak",desc:"A full year without missing a day.",earned:false,group:"streak",thr:365},
+    {id:"door",tier:"diamond",ic:I.stack,name:"Doorstopper",sub:"A 40-hour book",desc:"Finished a book over 40 hours long.",earned:false,group:"feat"},
+    {id:"ser",tier:"bronze",ic:I.book,name:"Series slayer",sub:"Finish a series",desc:"Finished every book in a series.",earned:false,group:"feat"},
+    {id:"mar",tier:"gold",ic:I.bolt,name:"Marathon",sub:"8 hours in a day",desc:"Eight hours of listening in one day.",earned:false,group:"feat"},
+    {id:"spr",tier:"silver",ic:I.bolt,name:"Sprint",sub:"A book in 48 hours",desc:"Start to finish in two days.",earned:false,group:"feat"},
+    {id:"owl",tier:"silver",ic:I.moon,name:"Night owl",sub:"Log after midnight",desc:"A session logged between midnight and 4 a.m.",earned:false,group:"feat"},
+    /* genre-stretch medals */
     {id:"ya",tier:"bronze",ic:I.leaf,name:"Young adult",sub:"Finish one",desc:"Tried a young-adult title.",earned:false,group:"stretch"},
     {id:"sch",tier:"gold",ic:I.cap,name:"Scholar",sub:"25 hrs of learning",desc:"Twenty-five hours of educational or nonfiction listening.",earned:false,group:"stretch"},
     {id:"cla",tier:"gold",ic:I.column,name:"Classical",sub:"25 hrs of classics",desc:"Twenty-five hours of classic literature.",earned:false,group:"stretch"},
@@ -544,7 +623,9 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
     $$("#walls .medalwrap").forEach(w=>{ const m=byId(w.dataset.id); w.classList.toggle("hide", wallFilter==="earned"?!m.earned : wallFilter==="locked"?m.earned : false); });
   }
   function renderMedals(){
-    $("#homeMedals").innerHTML=M.filter(m=>["ob","y26","door","wk","ser"].includes(m.id)).map(m=>medalHTML(m)).join("");
+    const strip=[...M.filter(m=>m.earned).slice(-5)];
+    for(const m of M) if(strip.length<5&&!m.earned&&m.prog) strip.push(m);
+    $("#homeMedals").innerHTML=strip.map(m=>medalHTML(m)).join("");
     const earnedCount=M.filter(m=>m.earned).length;
     $("#wallCount").textContent=`${earnedCount} of ${M.length} earned`;
     $(".seeall").textContent=`See all ${M.length}`;
@@ -597,9 +678,7 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
 
   /* streak medal + today's notes */
   $("#streakMedal").innerHTML=I.flame;
-  const notes=[{t:"Scythe, chapters 15–17",m:"2h 14m"}];
-  function renderNotes(){ $("#notes").innerHTML=`<div class="lbl">Today</div>`+notes.map(n=>`<div>${n.t}<span>${n.m}</span></div>`).join(""); }
-  renderNotes();
+  function renderNotes(){ $("#notes").innerHTML=`<div class="lbl">Today</div>`+(ST.notes.length?ST.notes.map(n=>`<div>${esc(n.t)}<span>${n.m}</span></div>`).join(""):`<div class="none">Nothing logged yet</div>`); }
 
   /* bookshelf */
   const C={red:"#7F3540",teal:"#2C5360",gold:"#A6782A",green:"#44633A",plum:"#524463",rust:"#9E512B",navy:"#2B3A60",moss:"#5F5F2C",wine:"#5F2A39",slate:"#44525C"};
@@ -608,26 +687,8 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
   const GENRES=[["fantasy","Fantasy"],["scifi","Sci-fi"],["litfic","Literary fiction"],["mystery","Mystery & thriller"],["romance","Romance"],
     ["ya","Young adult"],["classic","Classic"],["nonfiction","Nonfiction"],["biography","Biography & memoir"],["translation","In translation"]];
   $$("select.genre").forEach(sel=>sel.innerHTML=`<option value="">Genre (optional)</option>`+GENRES.map(([k,l])=>`<option value="${k}">${l}</option>`).join(""));
-  const LIB=[
-    {t:"Sunrise on the Reaping",a:"Suzanne Collins",h:10,c:C.red,when:"month",genre:"ya"},
-    {t:"Scythe",a:"Neal Shusterman",h:11,c:C.teal,when:"month",genre:"ya"},
-    {t:"Wind and Truth",a:"Brandon Sanderson",h:62,c:C.gold,when:"year",genre:"fantasy"},
-    {t:"Project Hail Mary",a:"Andy Weir",h:16,c:C.green,when:"year",genre:"scifi"},
-    {t:"Atomic Habits",a:"James Clear",h:6,c:C.plum,when:"year",genre:"nonfiction"},
-    {t:"The Black Prism",a:"Brent Weeks",h:22,c:C.rust,when:"year",genre:"fantasy"},
-    {t:"Dungeon Crawler Carl",a:"Matt Dinniman",h:13,c:C.navy,when:"year",genre:"fantasy"},
-    {t:"Rhythm of War",a:"Brandon Sanderson",h:57,c:C.gold,when:"all",genre:"fantasy"},
-    {t:"Oathbringer",a:"Brandon Sanderson",h:55,c:C.gold,when:"all",genre:"fantasy"},
-    {t:"Words of Radiance",a:"Brandon Sanderson",h:48,c:C.gold,when:"all",genre:"fantasy"},
-    {t:"The Way of Kings",a:"Brandon Sanderson",h:45,c:C.gold,when:"all",genre:"fantasy"},
-    {t:"Mistborn",a:"Brandon Sanderson",h:25,c:C.plum,when:"all",genre:"fantasy"},
-    {t:"Red Rising",a:"Pierce Brown",h:16,c:C.wine,when:"all",genre:"scifi"},
-    {t:"Dune",a:"Frank Herbert",h:21,c:C.rust,when:"all",genre:"classic"},
-    {t:"The Name of the Wind",a:"Patrick Rothfuss",h:28,c:C.moss,when:"all",genre:"fantasy"},
-    {t:"Ender's Game",a:"Orson Scott Card",h:12,c:C.slate,when:"all",genre:"scifi"},
-    {t:"The Martian",a:"Andy Weir",h:11,c:C.green,when:"all",genre:"scifi"},
-    {t:"Sapiens",a:"Yuval Noah Harari",h:15,c:C.navy,when:"all",genre:"nonfiction"}
-  ];
+  const LIB=ST.books;   // the shelf is the saved library; a new account starts empty
+  const bucket=b=>{ const k=periodKeys(), d=(b.added||"").slice(0,10); return d.slice(0,7)===k.month?"month":d.slice(0,4)===k.year?"year":"all"; };
   const esc=s=>String(s).replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
   const fmtH=h=>`${Number.isInteger(h)?h:h.toFixed(1)}h`;
   const CLOTH=["#5E3A3C","#3C4F43","#36405A","#4A5560","#514558","#5A5637"];   // muted hardback cloth
@@ -641,7 +702,7 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
   function renderShelf(mode){
     shelfMode=mode;
     const order={month:0,year:1,all:2};
-    const list=LIB.filter(b=>order[b.when]<=order[mode]);
+    const list=LIB.filter(b=>order[bucket(b)]<=order[mode]);
     const perRow=mode==="month"?list.length:6, rows=[];
     for(let i=0;i<list.length;i+=perRow) rows.push(list.slice(i,i+perRow));
     if(!list.length){ $("#bookcase").innerHTML=`<div class="shelf-empty">${I.book}<p>Nothing on this shelf yet.</p><button type="button" data-go="s-add">Add a book</button></div><div class="shelfline"></div>`; $("#bookcase [data-go]").onclick=()=>go("s-add"); return; }
@@ -654,10 +715,10 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
      TODO: this is a stopgap. Replace the typed title/hours with a real book search backed by the
      book database, which will supply the cover art and runtime for each result. */
   function addBook(title,hours,genre){
-    const entry={t:title,a:"",h:hours,c:CLOTH[clothN++%CLOTH.length],when:"month",ph:true,genre:genre||null};
+    const entry={t:title,a:"",h:hours,c:CLOTH[clothN++%CLOTH.length],added:new Date().toISOString(),ph:true,genre:genre||null};
     LIB.unshift(entry);               // newest book sits first on the shelf
     if(hours!=null) bump(hours);      // hours count toward the lifetime total only when given
-    renderShelf(shelfMode);
+    save(); renderShelf(shelfMode);
     recomputeMedals();                // genre-stretch medals may have moved
     renderInsights();
     return entry;
@@ -681,6 +742,7 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
     return {reset(){ added.length=0; renderList(); tIn.value=""; hrIn.value=""; gIn.value=""; }};
   }
   wireEntry("#addTitle","#addHours","#addGenre","#addBtn","#addedList");
+  wireEntry("#obTitle","#obHours","#obGenre","#obAddBtn","#obAddedList");
   const sheetEntry=wireEntry("#sheetTitle","#sheetHours","#sheetGenre","#sheetAddBtn","#sheetAddedList");
   $("#addDone").onclick=()=>{ go("s-home"); showPendingEarned(); };
 
@@ -691,6 +753,24 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
   const firstIn=g=>{ const b=LIB.find(b=>b.genre===g); return b?b.t:null; };
   function recomputeMedals(quiet){
     const was=Object.fromEntries(M.map(m=>[m.id,m.earned]));
+    // lifetime rank: thresholds on the total; the top earned rank shows progress to the next one
+    const ranks=M.filter(m=>m.group==="rank");
+    ranks.forEach(m=>{ m.earned=ST.total>=m.thr; m.prog=m.earned?null:[ST.total,m.thr,`${fmtN(Math.max(0,m.thr-ST.total)).toLocaleString()} hours to go`]; });
+    const top=ranks.filter(m=>m.earned).pop(), nextR=ranks.find(m=>!m.earned);
+    if(top&&nextR) top.prog=[ST.total,nextR.thr,`${nextR.name} at ${nextR.thr.toLocaleString()} hours`];
+    // this year
+    const y=byId("y26"), yr=ST.keys.year||String(new Date().getFullYear()), yh=ST.yearH;
+    const reached=YEAR_TIERS.filter(([,h])=>yh>=h), nextY=YEAR_TIERS.find(([,h])=>yh<h);
+    const cap=t=>t[0].toUpperCase()+t.slice(1);
+    y.earned=reached.length>0; y.tier=(reached.length?reached[reached.length-1]:YEAR_TIERS[0])[0];
+    y.ic=`<span>${yr.slice(2)}</span>`; y.name=`${cap(y.tier)} year`; y.sub=`${yr} · ${fmtN(yh)} hrs`; y.desc=`${fmtN(yh)} hours in ${yr} so far.`;
+    y.prog=nextY?[yh,nextY[1],`${cap(nextY[0])} year at ${nextY[1]} hours`]:null;
+    // streaks: earned on the best streak ever reached
+    M.filter(m=>m.group==="streak").forEach(m=>{ m.earned=ST.bestStreak>=m.thr; m.prog=m.earned?null:[ST.streak,m.thr,ST.streak?`${m.thr-ST.streak} days to go`:""]; });
+    // feats
+    const big=LIB.find(b=>(b.h||0)>=40); const door=byId("door"); door.earned=!!big; door.sub=big?`${esc(big.t)}`:"A 40-hour book";
+    const mar=byId("mar"); mar.earned=ST.bestDayH>=8; mar.prog=mar.earned?null:[ST.bestDayH,8,ST.bestDayH?`Best day so far: ${hm(ST.bestDayH)}`:""];
+    byId("owl").earned=!!ST.owl;
     const hoursRule=(id,g,goal,emptyHint)=>{
       const m=byId(id), h=hoursIn(g), first=firstIn(g);
       m.earned=h>=goal;
@@ -729,18 +809,56 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
   $("#n-plus").onclick=openSheet; scrim.onclick=closeSheet;
   $$(".opt").forEach(o=>o.onclick=()=>{ $("#menu").style.display="none"; $("#"+o.dataset.form).classList.add("show"); });
   $$("[data-back]").forEach(b=>b.onclick=showMenu);
-  let total=4312;
-  function bump(h){ total+=h; $("#heroNum").textContent=Math.round(total).toLocaleString(); }
-  $$("[data-done]").forEach(b=>b.onclick=()=>{
-    const k=b.dataset.done; closeSheet(); go("s-home");
-    if(k==="live"){ $("#t1").textContent="3h 44m"; $("#t2").textContent="20"; $("#t3").textContent="62.5"; bump(1.5); const nt=$("#noteIn").value.trim(); const h=+hIn.value||0,m=+mIn.value||0; if(nt) notes.push({t:nt,m:`${h?h+"h ":""}${m?m+"m":""}`.trim()}); renderNotes(); $("#noteIn").value=""; toast("Logged. Streak: 12 days and counting"); }
-    if(k==="book"){ showPendingEarned(); }
-    if(k==="past"){ bump(20); toast("20 hours added to your lifetime total"); }
-  });
-
+  function bump(h){ ST.total+=h; save(); renderHero(); }
+  /* hero + rank card, all from state */
+  function renderHero(){
+    $("#heroNum").textContent=fmtN(ST.total).toLocaleString();
+    $("#t1").textContent=ST.todayH?hm(ST.todayH):"0h"; $("#t2").textContent=fmtN(ST.weekH); $("#t3").textContent=fmtN(ST.monthH);
+    $("#streakNum").textContent=ST.streak;
+    const streaks=M.filter(m=>m.group==="streak"), best=streaks.filter(m=>ST.bestStreak>=m.thr).pop(), nxt=streaks.find(m=>ST.streak<m.thr);
+    const cap=t=>t[0].toUpperCase()+t.slice(1);
+    $("#streakSub").textContent=nxt?`${cap(nxt.tier)} streak at ${nxt.thr} days`:"Every streak medal earned";
+    $("#streakMedal").className=`medal m-${best?best.tier:"locked"}`; $("#streakMedal").innerHTML=I.flame;
+    $("#streakLbl").innerHTML=best?`${cap(best.tier)}<br>streak`:"No<br>streak yet";
+    const ranks=M.filter(m=>m.group==="rank"), cur=ranks.filter(m=>ST.total>=m.thr).pop(), next=ranks.find(m=>ST.total<m.thr);
+    $("#rankName").textContent=cur?cur.name:"No rank yet";
+    $("#rankNext").textContent=next?`${next.name} at ${next.thr.toLocaleString()} hours`:"Every rank earned";
+    const lo=cur?cur.thr:0, hi=next?next.thr:lo||1;
+    $("#rankBar").style.width=`${next?Math.min(100,Math.round((ST.total-lo)/(hi-lo)*100)):100}%`;
+    $("#rankTicks").innerHTML=next?`<span>${lo.toLocaleString()}</span><span>${fmtN(Math.max(0,hi-ST.total)).toLocaleString()} hours to go</span><span>${hi.toLocaleString()}</span>`:`<span>${lo.toLocaleString()}</span><span>Legend</span><span></span>`;
+  }
   const hIn=$("#f-live input[type=number]:first-of-type"), mIn=$$("#f-live input[type=number]")[1];
   function logLabel(){ const h=+hIn.value||0, m=+mIn.value||0; $("#logBtn").textContent=`Log ${h?h+"h ":""}${m?m+"m":""}`.trim()||"Log time"; }
   hIn.oninput=mIn.oninput=logLabel;
+  $("#pastH").oninput=()=>{ const h=+$("#pastH").value||0; $("#pastBtn").textContent=h?`Add ${fmtN(h)} hours`:"Add hours"; };
+  /* a real listening session: today, week, month, year, total, streak, best day, weekday pattern */
+  function logListening(hours,note){
+    const now=new Date(), k=periodKeys(now), y=new Date(now); y.setDate(now.getDate()-1);
+    ST.todayH+=hours; ST.weekH+=hours; ST.monthH+=hours; ST.yearH+=hours; ST.total+=hours;
+    ST.bestDayH=Math.max(ST.bestDayH,ST.todayH);
+    if(ST.lastLog!==k.day){ ST.streak=(ST.lastLog===dayKey(y))?ST.streak+1:1; ST.lastLog=k.day; ST.weekdayDays[now.getDay()]++; }
+    ST.byWeekday[now.getDay()]+=hours; ST.bestStreak=Math.max(ST.bestStreak,ST.streak);
+    if(now.getHours()<4) ST.owl=true;
+    if(note) ST.notes.push({t:note,m:hm(hours)});
+    save(); renderHero(); renderNotes(); recomputeMedals(); renderInsights();
+  }
+  function addPastHours(hours,src){ ST.past.push({src,h:hours,at:new Date().toISOString()}); ST.total+=hours; save(); renderHero(); recomputeMedals(); renderInsights(); }
+  $$("[data-done]").forEach(b=>b.onclick=()=>{
+    const k=b.dataset.done;
+    if(k==="live"){
+      const h=+hIn.value||0, m=+mIn.value||0, hours=h+m/60;
+      if(hours<=0){ toast("Enter how long you listened"); return; }
+      logListening(hours,$("#noteIn").value.trim());
+      hIn.value=""; mIn.value=""; $("#noteIn").value=""; logLabel();
+      closeSheet(); go("s-home"); toast(`Logged ${hm(hours)}. Streak: ${ST.streak} day${ST.streak===1?"":"s"}`); showPendingEarned(); return;
+    }
+    if(k==="past"){
+      const h=+$("#pastH").value||0; if(h<=0){ toast("Enter the hours to add"); return; }
+      addPastHours(h,$("#pastSrc").value); $("#pastH").value=""; $("#pastBtn").textContent="Add hours";
+      closeSheet(); go("s-home"); toast(`${fmtN(h)} hours added to your lifetime total`); showPendingEarned(); return;
+    }
+    closeSheet(); go("s-home"); showPendingEarned();   // book: the adds already happened
+  });
   let tt; function toast(m){ const t=$("#toast"); t.textContent=m; t.classList.add("show"); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove("show"),2200); }
 
   /* insight cards — every generator returns null unless it is true for this listener, and all of
@@ -748,19 +866,24 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
   const hm=h=>{ const H=Math.floor(h), m=Math.round((h-H)*60); return H?`${H}h${m?" "+m+"m":""}`:`${m}m`; };
   const DAYS=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
   const INSIGHTS=[
-    ()=>STATS.monthH>STATS.lastMonthH&&{ic:I.up,b:"You're listening more than last month",s:`Already up ${hm(STATS.monthH-STATS.lastMonthH)} this month.`},
-    ()=>{ if(STATS.streak<2) return null; const next=[7,30,100,365].find(n=>n>STATS.streak);
-          return {ic:I.flame,b:`${STATS.streak}-day streak — keep it going`,s:next?`${next-STATS.streak} more days to a ${next}-day streak.`:"A full year of listening. Remarkable."}; },
-    ()=>{ const next=M.find(m=>m.group==="rank"&&!m.earned&&m.prog); if(!next) return null;
-          const have=M.filter(m=>m.group==="rank"&&m.earned).pop(), left=Math.max(0,Math.ceil(next.prog[1]-total));
-          return {ic:I.star,b:`You're ${left.toLocaleString()} hours from ${next.name}`,s:`${have?have.name+" now. ":""}${next.name} at ${next.prog[1].toLocaleString()} hours.`}; },
-    ()=>{ const w=STATS.typicalByWeekday, i=w.indexOf(Math.max(...w)); if(!(w[i]>0)) return null;
+    /* starter lines for a brand-new account */
+    ()=>ST.total===0&&{ic:I.star,b:"Your first 25 hours earn Bronze",s:"Log a session with the + button, or add hours from the past."},
+    ()=>ST.streak===0&&ST.total>0&&{ic:I.flame,b:"Start a streak today",s:"Any listening logged today counts as day one."},
+    ()=>!LIB.length&&{ic:I.book,b:"Your shelf is waiting",s:"Add a book you've finished and it goes straight on the shelf."},
+    /* lines that need some history */
+    ()=>ST.monthH>ST.lastMonthH&&ST.lastMonthH>0&&{ic:I.up,b:"You're listening more than last month",s:`Already up ${hm(ST.monthH-ST.lastMonthH)} this month.`},
+    ()=>{ if(ST.streak<2) return null; const next=[3,7,30,100,365].find(n=>n>ST.streak);
+          return {ic:I.flame,b:`${ST.streak}-day streak — keep it going`,s:next?`${next-ST.streak} more day${next-ST.streak===1?"":"s"} to a ${next}-day streak.`:"A full year of listening. Remarkable."}; },
+    ()=>{ const next=M.find(m=>m.group==="rank"&&!m.earned); if(!next||ST.total===0) return null;
+          const have=M.filter(m=>m.group==="rank"&&m.earned).pop(), left=Math.max(0,Math.ceil(next.thr-ST.total));
+          return {ic:I.star,b:`You're ${left.toLocaleString()} hours from ${next.name}`,s:`${have?have.name+" now. ":""}${next.name} at ${next.thr.toLocaleString()} hours.`}; },
+    ()=>{ const w=ST.byWeekday.map((h,i)=>ST.weekdayDays[i]?h/ST.weekdayDays[i]:0), i=w.indexOf(Math.max(...w)); if(!(w[i]>0)||ST.weekdayDays.reduce((a,b)=>a+b,0)<7) return null;
           return {ic:I.cal,b:`${DAYS[i]}s are your biggest listening day`,s:`About ${hm(w[i])} on a typical ${DAYS[i]}.`}; },
-    ()=>{ const b=LIB.filter(x=>x.when==="month"); if(!b.length) return null;
+    ()=>{ const b=LIB.filter(x=>bucket(x)==="month"); if(!b.length) return null;
           return {ic:I.book,b:`${b.length} book${b.length>1?"s":""} finished this month`,s:esc(b.slice(0,3).map(x=>x.t).join(", "))+(b.length>3?"…":"")}; },
-    ()=>{ const y=byId("y26"); return STATS.yearH>0&&{ic:I.cal,b:`${STATS.yearH.toLocaleString()} hours this year`,s:y&&y.prog?y.prog[2]+".":"A year to be proud of."}; },
+    ()=>{ const y=byId("y26"); return ST.yearH>0&&{ic:I.cal,b:`${fmtN(ST.yearH).toLocaleString()} hours this year`,s:y&&y.prog?y.prog[2]+".":"A year to be proud of."}; },
     ()=>{ const n=new Set(LIB.map(b=>b.genre).filter(Boolean)).size; return n>=3&&{ic:I.globe,b:`${n} genres on your shelf`,s:`Range counts toward Omnivore (${OMNI_GOAL} genres).`}; },
-    ()=>STATS.todayH>0&&{ic:I.bolt,b:`${hm(STATS.todayH)} in today already`,s:"Every minute counts toward your streak."}
+    ()=>ST.todayH>0&&{ic:I.bolt,b:`${hm(ST.todayH)} in today already`,s:"Every minute counts toward your streak."}
   ];
   function renderInsights(){
     const list=INSIGHTS.map(f=>f()).filter(Boolean), el=$("#insights");
@@ -819,7 +942,7 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
     x.fillStyle="#F1E6D4"; x.fillText(big,cx,cy+R+236);
     x.fillStyle="#B9A78F"; x.font=`italic 400 56px ${SERIF}`; x.fillText(sub,cx,cy+R+326);
     x.fillStyle="#93836E"; x.font=`400 36px ${SANS}`; x.fillText(new Date().toLocaleDateString(undefined,{month:"long",day:"numeric",year:"numeric"}),cx,cy+R+400);
-    x.fillStyle="#B9A78F"; x.font=`500 38px ${SANS}`; x.fillText(USER.name,cx,H-210);
+    x.fillStyle="#B9A78F"; x.font=`500 38px ${SANS}`; x.fillText(displayName(),cx,H-210);
     x.fillStyle="#C6A15B"; x.font=`500 48px ${SERIF}`; x.fillText("Earmark — Listen up",cx,H-120);
     return new Promise((res,rej)=>c.toBlob(b=>b?res(b):rej(new Error("toBlob failed")),"image/png"));
   }
@@ -830,8 +953,23 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
     setTimeout(()=>URL.revokeObjectURL(u),4000);
   }
 
-  recomputeMedals(true);   // initial pass: settle the genre medals without announcing them
+  renderHero(); renderNotes();
+  recomputeMedals(true);   // initial pass: settle every medal from saved state without announcing
   renderInsights();
+
+  /* onboarding — first visit only (no saved data). Name → past hours → books → done. */
+  const ob=$("#onboard");
+  function obGo(n){ $$(".ob-step").forEach(st=>st.classList.toggle("on",+st.dataset.step===n)); $$("#obDots i").forEach((d,i)=>d.classList.toggle("on",i===n)); ob.scrollTo({top:0}); if(n===3) $("#obDoneTitle").textContent=`You're set, ${displayName()}.`; }
+  if(!ST.onboarded){
+    ob.classList.add("open"); $("#obName").value=ST.user.name;
+    $("#obNext0").onclick=()=>{ ST.user.name=$("#obName").value.trim(); save(); obGo(1); };
+    $("#obName").addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); $("#obNext0").click(); } });
+    $("#obNext1").onclick=()=>{ const h=+$("#obPast").value||0; if(h>0) addPastHours(h,$("#obSrc").value); obGo(2); };
+    $("#obSkip1").onclick=()=>obGo(2);
+    $("#obNext2").onclick=$("#obSkip2").onclick=()=>obGo(3);
+    $("#obFinish").onclick=()=>{ ST.onboarded=true; save(); ob.classList.remove("open"); go("s-home"); showPendingEarned(); };
+  }
+  $("#resetData").onclick=()=>{ if(confirm("Start over? This clears everything saved on this device.")){ try{ localStorage.removeItem(KEY); }catch(e){} location.reload(); } };
 
   /* splash: fades in with the page, holds briefly, fades out; removed either way */
   const splash=$("#splash");
