@@ -148,6 +148,9 @@ button{font-family:inherit}
 .cover b{font-weight:400;font-size:12.5px;line-height:1.1}
 .cover small{font-size:9.5px;opacity:.9;margin-top:3px;font-style:italic}
 .cover .hrs{position:absolute;top:6px;right:6px;font-size:9.5px;background:rgba(0,0,0,.45);padding:1px 5px;border-radius:99px}
+/* placeholder cover: a plain spine with the title only, used until real cover art comes from the book database */
+.cover.ph{background:linear-gradient(165deg,#4A3A2E,#2A1D14);outline:1px dashed rgba(255,235,210,.35);outline-offset:-5px}
+.cover.ph b{font-size:11.5px;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
 
 /* nav */
 .nav{position:fixed;left:0;right:0;bottom:0;padding:8px 0 calc(8px + env(safe-area-inset-bottom,0px));background:#1A110B;border-top:1px solid var(--line);box-shadow:0 -6px 16px rgba(0,0,0,.35)}
@@ -158,8 +161,8 @@ button{font-family:inherit}
 .plus{width:60px;height:60px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;margin-top:-34px;box-shadow:0 6px 16px rgba(0,0,0,.5);border:3px solid #1A110B}
 .plus svg{width:28px;height:28px}
 button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.chk,.cta,.opt,.seg button,.filters button,.fchips button,.nav button,.medalwrap,.cover,.nextup .card,.earned .btn,.tray button,.share{transition:transform .12s ease,opacity .12s ease}
-.chk:active,.cta:active,.opt:active,.medalwrap:active,.cover:active,.nextup .card:active,.earned .btn:active,.tray button:active,.share:active{transform:scale(.97)}
+.cta,.opt,.seg button,.filters button,.addbtn,.nav button,.medalwrap,.cover,.nextup .card,.earned .btn,.share{transition:transform .12s ease,opacity .12s ease}
+.cta:active,.opt:active,.addbtn:active,.medalwrap:active,.cover:active,.nextup .card:active,.earned .btn:active,.share:active{transform:scale(.97)}
 .nav button:active{opacity:.7}
 
 /* sheet */
@@ -190,27 +193,13 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .sw.on{background:var(--accent)} .sw.on:after{left:21px}
 .note{font-size:13.5px;color:var(--ink-2);margin-top:8px;line-height:1.45;font-style:italic}
 
-/* search */
-.search{display:flex;gap:8px;align-items:center;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
-.search input{flex:1;border:0;background:transparent;font:inherit;font-size:17px;color:var(--ink);outline:0}
-.fchips{display:flex;gap:8px;margin:12px 0 4px;overflow-x:auto;scrollbar-width:none}
-.fchips button{flex:0 0 auto;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:99px;padding:6px 12px;font-size:14px;cursor:pointer}
-.fchips button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
-.result{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
-.result .cv{width:40px;height:58px;border-radius:2px;flex:0 0 auto}
-.result b{display:block;font-size:16px;font-weight:400;line-height:1.2}
-.result small{color:var(--ink-2);font-size:13.5px;font-style:italic}
-.result .meta{flex:1}
-.chk{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--line);background:transparent;display:grid;place-items:center;cursor:pointer;flex:0 0 auto;color:var(--accent-ink)}
-.chk.on{background:var(--accent);border-color:var(--accent)}
-.chk svg{width:14px;height:14px;display:none}
-.chk.on svg{display:block}
-.tray{position:fixed;left:0;right:0;bottom:calc(78px + env(safe-area-inset-bottom,0px));display:none;z-index:5}
-@media (min-width:430px){.tray .inner{margin:0 auto}}
-#s-search{padding-bottom:170px}
-.tray.show{display:block}
-.tray .inner{max-width:386px;margin:0 22px;background:var(--accent);color:var(--accent-ink);border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 10px 24px rgba(0,0,0,.4)}
-.tray button{margin-left:auto;border:0;border-radius:8px;background:#1E140D;color:var(--ink);font-size:15px;padding:8px 14px;cursor:pointer}
+/* add books — free-type entry (title + optional hours) and the running list of what's been added */
+.addbtn{flex:0 0 auto;border:0;border-radius:10px;background:var(--accent);color:var(--accent-ink);font-size:16px;padding:12px 18px;cursor:pointer;letter-spacing:.02em}
+.added{margin-top:14px}
+.added .lbl{font-size:13px;color:var(--ink-2);font-style:italic;margin-bottom:2px}
+.added .item{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.added .item b{font-weight:400;font-size:16px;line-height:1.25;word-break:break-word}
+.added .item small{color:var(--ink-2);font-size:13.5px;font-style:italic;flex:0 0 auto}
 
 /* badge wall */
 .filters{display:flex;gap:8px;margin:4px 0 10px}
@@ -310,18 +299,17 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   <p class="proto">Prototype · sample data · nothing is saved yet</p>
 </section>
 
-<!-- SEARCH -->
-<section class="screen" id="s-search">
-  <div class="hdr"><div class="title">Add books</div><div class="tag">Check everything you've finished</div></div>
-  <div class="search">
-    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-    <input id="q" placeholder="Title, author, or series" value="Stormlight">
-  </div>
-  <div class="fchips"><button class="on">Stormlight Archive</button><button>Brandon Sanderson</button><button>Neal Shusterman</button></div>
-  <div id="results"></div>
-  <p class="note" style="margin-top:14px">Books you add go on your shelf and count toward achievements. Hours come with them unless you turn that off — useful when the hours are already in an import.</p>
+<!-- ADD BOOKS (onboarding-style bulk add) -->
+<!-- TODO: this free-type title field is a stopgap. It will later become a real book search
+     backed by the book database, returning covers and runtimes instead of typed titles and hours. -->
+<section class="screen" id="s-add">
+  <div class="hdr"><div class="title">Add books</div><div class="tag">Type in everything you've finished</div></div>
+  <div class="field"><input id="addTitle" placeholder="Book title" autocomplete="off" aria-label="Book title"></div>
+  <div class="field"><label><input id="addHours" type="number" inputmode="decimal" min="0" step="0.5" placeholder="Optional" aria-label="Hours it ran"><span>hours</span></label><button class="addbtn" id="addBtn">Add</button></div>
+  <div class="added" id="addedList" aria-live="polite"></div>
+  <p class="note" style="margin-top:14px">Each book goes on your shelf and counts toward achievements. Add the hours it ran if you know them and they count toward your total; leave hours blank to add the book only.</p>
+  <button class="cta" data-go="s-home" style="margin-top:18px">Done</button>
 </section>
-<div class="tray" id="tray"><div class="inner"><span id="trayText">0 selected</span><button id="trayAdd">Add to shelf</button></div></div>
 
 <!-- BADGES -->
 <section class="screen" id="s-badges">
@@ -335,7 +323,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 <!-- NAV -->
 <nav class="nav" aria-label="Main">
   <div class="inner">
-    <button data-go="s-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>Search</button>
+    <button data-go="s-add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h12a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3z"/><path d="M4 17a3 3 0 0 1 3-3h12"/></svg>Add books</button>
     <button id="n-plus" aria-label="Add hours"><span class="plus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></span></button>
     <button data-go="s-home" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Profile</button>
   </div>
@@ -353,7 +341,14 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       <button class="opt" data-form="f-past"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 8v4l2 2"/></svg></span><span><b>Add hours from the past</b><small>Audible, Libby, Libro.fm… Counts toward your total and rank only.</small></span></button>
     </div>
     <div class="form" id="f-live"><h2 style="margin:0">Today's listening</h2><div class="field"><label><input type="number" inputmode="numeric" placeholder="0" value="1"><span>hours</span></label><label><input type="number" inputmode="numeric" placeholder="0" value="30"><span>min</span></label></div><div class="field"><input id="noteIn" placeholder="Note, e.g. Scythe, chapters 18–20"></div><button class="cta" data-done="live" id="logBtn">Log 1h 30m</button><button class="ghost" data-back>Back</button></div>
-    <div class="form" id="f-book"><h2 style="margin:0">Finished a book</h2><div class="field"><input placeholder="Search title or author" value="Scythe — Neal Shusterman"></div><div class="switch"><div>Add its 10h 32m to my total<small>Turn off if you already logged these hours</small></div><button class="sw on" id="swHours" aria-pressed="true"></button></div><button class="cta" data-done="book">Add to shelf</button><button class="ghost" data-back>Back</button></div>
+    <!-- TODO: this free-type title field is a stopgap. It will later become a real book search
+         backed by the book database, returning covers and runtimes instead of typed titles and hours. -->
+    <div class="form" id="f-book"><h2 style="margin:0">Finished a book</h2>
+      <div class="field"><input id="sheetTitle" placeholder="Book title" autocomplete="off" aria-label="Book title"></div>
+      <div class="field"><label><input id="sheetHours" type="number" inputmode="decimal" min="0" step="0.5" placeholder="Optional" aria-label="Hours it ran"><span>hours</span></label><button class="addbtn" id="sheetAddBtn">Add</button></div>
+      <div class="added" id="sheetAddedList" aria-live="polite"></div>
+      <p class="note">Hours you enter count toward your total. Leave them blank if they're already logged.</p>
+      <button class="cta" data-done="book">Done</button><button class="ghost" data-back>Back</button></div>
     <div class="form" id="f-past"><h2 style="margin:0">Hours from the past</h2><div class="field"><select><option>Audible</option><option>Libby</option><option>Libro.fm</option><option>Spotify</option><option>Other</option></select><label><input type="number" inputmode="numeric" placeholder="0" value="20"><span>hours</span></label></div><p class="note">No date attached. Adds to your lifetime total and rank, never to streaks.</p><button class="cta" data-done="past">Add 20 hours</button><button class="ghost" data-back>Back</button></div>
   </div>
 </div>
@@ -509,58 +504,80 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     {t:"The Martian",a:"Andy Weir",h:11,c:C.green,when:"all"},
     {t:"Sapiens",a:"Yuval Noah Harari",h:15,c:C.navy,when:"all"}
   ];
+  const esc=s=>String(s).replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+  const fmtH=h=>`${Number.isInteger(h)?h:h.toFixed(1)}h`;
+  function coverHTML(b){
+    // Free-typed books have no cover art yet: render a plain placeholder spine with the title only.
+    if(b.ph) return `<div class="cover ph">${b.h!=null?`<span class="hrs">${fmtH(b.h)}</span>`:""}<b>${esc(b.t)}</b></div>`;
+    return `<div class="cover" style="background:linear-gradient(165deg,${b.c},#1a0f0a)"><span class="hrs">${b.h}h</span><b>${b.t}</b><small>${b.a}</small></div>`;
+  }
+  let shelfMode="month";
   function renderShelf(mode){
+    shelfMode=mode;
     const order={month:0,year:1,all:2};
     const list=LIB.filter(b=>order[b.when]<=order[mode]);
     const perRow=mode==="month"?list.length:6, rows=[];
     for(let i=0;i<list.length;i+=perRow) rows.push(list.slice(i,i+perRow));
-    $("#bookcase").innerHTML=rows.map(r=>`<div class="row">${r.map(b=>`<div class="cover" style="background:linear-gradient(165deg,${b.c},#1a0f0a)"><span class="hrs">${b.h}h</span><b>${b.t}</b><small>${b.a}</small></div>`).join("")}</div><div class="shelfline"></div>`).join("");
+    $("#bookcase").innerHTML=rows.map(r=>`<div class="row">${r.map(coverHTML).join("")}</div><div class="shelfline"></div>`).join("");
   }
   renderShelf("month");
   $$(".seg button").forEach(b=>b.onclick=()=>{ $$(".seg button").forEach(x=>x.classList.remove("on")); b.classList.add("on"); renderShelf(b.dataset.shelf); });
 
-  /* search */
-  const RES=[
-    {t:"The Way of Kings",a:"Brandon Sanderson",h:"45h 30m",c:C.gold},{t:"Words of Radiance",a:"Brandon Sanderson",h:"48h 13m",c:C.gold},
-    {t:"Oathbringer",a:"Brandon Sanderson",h:"55h 5m",c:C.gold},{t:"Rhythm of War",a:"Brandon Sanderson",h:"57h 26m",c:C.gold},
-    {t:"Wind and Truth",a:"Brandon Sanderson",h:"62h 2m",c:C.gold},{t:"Edgedancer",a:"Brandon Sanderson",h:"5h 48m",c:C.plum},{t:"Dawnshard",a:"Brandon Sanderson",h:"5h 29m",c:C.plum}
-  ];
-  const picked=new Set();
-  function renderResults(){
-    $("#results").innerHTML=RES.map((r,i)=>`<div class="result"><div class="cv" style="background:linear-gradient(165deg,${r.c},#1a0f0a)"></div><div class="meta"><b>${r.t}</b><small>${r.a} · ${r.h}</small></div><button class="chk ${picked.has(i)?"on":""}" data-i="${i}" aria-pressed="${picked.has(i)}" aria-label="Mark finished"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m5 12 4 4L19 7"/></svg></button></div>`).join("");
-    $$(".chk").forEach(c=>c.onclick=()=>{ const i=+c.dataset.i; picked.has(i)?picked.delete(i):picked.add(i); renderResults(); });
-    $("#tray").classList.toggle("show",picked.size>0 && $("#s-search").classList.contains("active"));
-    $("#trayText").textContent=`${picked.size} selected`;
+  /* free-type book entry — shared by the Add books screen and the plus-button sheet.
+     TODO: this is a stopgap. Replace the typed title/hours with a real book search backed by the
+     book database, which will supply the cover art and runtime for each result. */
+  function addBook(title,hours){
+    const entry={t:title,a:"",h:hours,when:"month",ph:true};
+    LIB.unshift(entry);               // newest book sits first on the shelf
+    if(hours!=null) bump(hours);      // hours count toward the lifetime total only when given
+    renderShelf(shelfMode);
+    return entry;
   }
-  renderResults();
-  $$(".fchips button").forEach(b=>b.onclick=()=>{ $$(".fchips button").forEach(x=>x.classList.remove("on")); b.classList.add("on"); $("#q").value=b.textContent; });
-  $("#trayAdd").onclick=()=>{ toast(`${picked.size} books added to your shelf`); picked.clear(); renderResults(); };
+  function wireEntry(titleSel,hoursSel,btnSel,listSel,onAdd){
+    const tIn=$(titleSel), hrIn=$(hoursSel), list=$(listSel), added=[];
+    function renderList(){
+      list.innerHTML=added.length?`<div class="lbl">Added</div>`+added.map(b=>`<div class="item"><b>${esc(b.t)}</b><small>${b.h!=null?fmtH(b.h)+" · counted":"no hours"}</small></div>`).join(""):"";
+    }
+    function submit(){
+      const title=tIn.value.trim(); if(!title){ tIn.focus(); return; }
+      const raw=hrIn.value.trim(), n=parseFloat(raw);
+      const hours=raw!==""&&isFinite(n)&&n>0?n:null;   // blank or invalid → book only, no hours
+      const b=addBook(title,hours); added.push(b); renderList();
+      tIn.value=""; hrIn.value=""; tIn.focus();
+      toast(hours!=null?`${title} added · ${fmtH(hours)} to your total`:`${title} added to your shelf`);
+      if(onAdd) onAdd();
+    }
+    $(btnSel).onclick=submit;
+    [tIn,hrIn].forEach(i=>i.addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); submit(); } }));
+    return {reset(){ added.length=0; renderList(); tIn.value=""; hrIn.value=""; }};
+  }
+  wireEntry("#addTitle","#addHours","#addBtn","#addedList");
+  let sheetAdded=0;
+  const sheetEntry=wireEntry("#sheetTitle","#sheetHours","#sheetAddBtn","#sheetAddedList",()=>sheetAdded++);
 
   /* nav */
   function go(id){
     $("#earned").classList.remove("open");
     $$(".screen").forEach(s=>s.classList.toggle("active",s.id===id));
     $$(".nav button[data-go]").forEach(b=>b.classList.toggle("on",b.dataset.go===id));
-    $("#tray").classList.toggle("show",picked.size>0 && id==="s-search");
     window.scrollTo({top:0});
   }
   $$("[data-go]").forEach(b=>b.onclick=()=>go(b.dataset.go));
 
   /* sheet */
   const sheet=$("#sheet"), scrim=$("#scrim");
-  function openSheet(){ showMenu(); sheet.classList.add("open"); scrim.classList.add("open"); }
+  function openSheet(){ showMenu(); sheetAdded=0; sheetEntry.reset(); sheet.classList.add("open"); scrim.classList.add("open"); }
   function closeSheet(){ sheet.classList.remove("open"); scrim.classList.remove("open"); }
   function showMenu(){ $("#menu").style.display="block"; $$(".form").forEach(f=>f.classList.remove("show")); }
   $("#n-plus").onclick=openSheet; scrim.onclick=closeSheet;
   $$(".opt").forEach(o=>o.onclick=()=>{ $("#menu").style.display="none"; $("#"+o.dataset.form).classList.add("show"); });
   $$("[data-back]").forEach(b=>b.onclick=showMenu);
-  const sw=$("#swHours"); sw.onclick=()=>{ sw.classList.toggle("on"); sw.setAttribute("aria-pressed",sw.classList.contains("on")); };
   let total=4312;
   function bump(h){ total+=h; $("#heroNum").textContent=Math.round(total).toLocaleString(); }
   $$("[data-done]").forEach(b=>b.onclick=()=>{
     const k=b.dataset.done; closeSheet(); go("s-home");
     if(k==="live"){ $("#t1").textContent="3h 44m"; $("#t2").textContent="20"; $("#t3").textContent="62.5"; bump(1.5); const nt=$("#noteIn").value.trim(); const h=+hIn.value||0,m=+mIn.value||0; if(nt) notes.push({t:nt,m:`${h?h+"h ":""}${m?m+"m":""}`.trim()}); renderNotes(); $("#noteIn").value=""; toast("Logged. Streak: 12 days and counting"); }
-    if(k==="book"){ if(sw.classList.contains("on")) bump(10.5); const m=M.find(x=>x.id==="ya"); showMedal(m,true); }
+    if(k==="book"){ if(sheetAdded>0){ const m=M.find(x=>x.id==="ya"); showMedal(m,true); } }
     if(k==="past"){ bump(20); toast("20 hours added to your lifetime total"); }
   });
 
