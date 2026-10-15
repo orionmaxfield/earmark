@@ -6,6 +6,9 @@
 <title>Earmark — Listen Up</title>
 <meta name="theme-color" content="#06162C">
 <meta name="apple-mobile-web-app-title" content="Earmark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png">
 <link rel="shortcut icon" href="icons/favicon.ico">
@@ -119,8 +122,8 @@ svg[stroke="currentColor"]{stroke-width:1.75;stroke-linecap:round;stroke-linejoi
 
 /* hero */
 .hero{text-align:center;padding:24px 0 24px;position:relative}
-.hero .glow{position:absolute;left:50%;top:24px;width:280px;height:220px;transform:translateX(-50%);border-radius:50%;
-  background:radial-gradient(closest-side,rgba(0,231,179,.10),rgba(0,231,179,.03) 55%,transparent);pointer-events:none}
+.hero .glow{position:absolute;left:50%;top:8px;width:300px;height:240px;transform:translateX(-50%);border-radius:50%;
+  background:radial-gradient(closest-side,var(--hg,rgba(0,231,179,.10)),var(--hg2,rgba(0,231,179,.03)) 55%,transparent);pointer-events:none;transition:background var(--med) var(--ease)}
 .streakwrap{display:flex;align-items:center;justify-content:center;gap:24px;position:relative}
 .hero .num{font-size:var(--t-hero);font-weight:800;line-height:.95;letter-spacing:-.04em;font-variant-numeric:tabular-nums;
   background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
@@ -325,6 +328,86 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
 .toast{position:fixed;left:50%;top:16px;transform:translate(-50%,-16px);opacity:0;background:var(--bg-raised);color:var(--ink);border:1px solid var(--line-2);padding:12px 16px;border-radius:var(--r-sm);z-index:50;transition:transform var(--med) var(--ease),opacity var(--med) var(--ease);pointer-events:none;max-width:90%;text-align:center;font-size:var(--t-14);font-weight:600;box-shadow:var(--sh-2)}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 .proto{font-size:var(--t-12);color:var(--ink-3);text-align:center;margin-top:32px;letter-spacing:.02em}
+/* streak: one badge, the streak number in the middle, coloured by the streak tier reached */
+.streakwrap{flex-direction:column;gap:0}
+.streakbadge{width:148px;height:148px;margin:12px auto 18px}
+.streakbadge:before{inset:-7px}
+.streakbadge .sb{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--m-hi)}
+.streakbadge .sb svg{position:static;width:20px;height:20px}
+.streakbadge .sb b{font-size:56px;font-weight:800;line-height:1;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.streakbadge.m-locked .sb{color:var(--ink-3)}
+.streakbadge.m-locked .sb b{color:var(--ink-2)}   /* under 3 days: a calm, unlit medal */
+
+/* app feel: no tap flash, no rubber-band page, no double-tap zoom on controls */
+html{-webkit-tap-highlight-color:transparent}
+.phone{overflow-x:clip}
+button,.cover,.medalwrap,.bookrow,.nav,.handle{touch-action:manipulation;-webkit-user-select:none;user-select:none}
+html.locked,html.locked body{overflow:hidden}
+.screen{transition:transform var(--med) var(--ease)}
+.screen.swiping{transition:none}
+.sheet .inner{max-height:92vh;max-height:92dvh;overflow-y:auto;overscroll-behavior:contain}
+.sheet.dragging,.earned .ebox.dragging{transition:none}
+.handle{position:relative;cursor:grab}
+.handle:before{content:"";position:absolute;inset:-14px -80px}
+.earned .ebox{transition:transform var(--med) var(--ease),opacity var(--med) var(--ease)}
+
+/* pushed screens get a back button */
+.hdr{position:relative}
+.backbtn{position:relative;left:-10px;margin:-8px 0 4px;width:max-content;display:none;align-items:center;gap:2px;min-height:44px;padding:0 10px 0 4px;border:0;background:transparent;color:var(--ink-2);font-size:var(--t-16);font-weight:600;border-radius:var(--r-sm);cursor:pointer}
+.backbtn svg{width:24px;height:24px}
+
+/* bookshelf screen: grid of three, or a list one by one */
+.shelfrow{display:flex;margin-top:12px}
+.shelfbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:4px 0 16px}
+.viewseg button{display:grid;place-items:center;min-width:48px;min-height:36px;padding:0 12px}
+.viewseg svg{width:18px;height:18px}
+.pillbtn{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 16px;border-radius:var(--r-pill);border:1px solid var(--line-2);background:transparent;color:var(--ink);font-size:var(--t-14);font-weight:600;cursor:pointer}
+.pillbtn svg{width:18px;height:18px}
+.shelfgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px 14px;padding:16px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);box-shadow:var(--sh-1)}
+.shelfgrid .cover{width:100%;height:auto;aspect-ratio:74/108}
+.shelfgrid .cover.ph b{font-size:12.5px}
+.shelflist{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);box-shadow:var(--sh-1);overflow:hidden}
+.bookrow{display:flex;align-items:center;gap:12px;width:100%;min-height:76px;padding:12px 16px;border:0;border-bottom:1px solid var(--line);background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer;transition:background-color var(--fast) var(--ease)}
+.bookrow:last-child{border-bottom:0}
+.bookrow:active{background:var(--surface-2)}
+.bookrow .cover{width:40px;height:58px;padding:0;flex:0 0 auto;cursor:inherit}
+.bookrow .cover b,.bookrow .cover .hrs{display:none}
+.bookrow .cover.ph:before{top:8px;left:9px;right:6px} .bookrow .cover.ph:after{bottom:8px;left:9px;right:6px}
+.bookrow .meta{flex:1;min-width:0}
+.bookrow .meta b{display:block;font-size:var(--t-16);font-weight:600;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bookrow .meta small{display:block;color:var(--ink-3);font-size:var(--t-12);font-weight:500;margin-top:2px}
+.bookrow .chev{width:18px;height:18px;color:var(--ink-3);flex:0 0 auto}
+.shelf-empty.card{padding:32px 16px}
+
+body.can-back .screen.active .backbtn{display:flex}
+
+/* native feel: instant taps, no accidental text selection, iPhone safe areas */
+html{touch-action:manipulation;-webkit-text-size-adjust:100%}
+body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+input,textarea,select{-webkit-user-select:text;user-select:text}
+.screen{padding-left:max(var(--gutter),env(safe-area-inset-left,0px));padding-right:max(var(--gutter),env(safe-area-inset-right,0px))}
+.nav{padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
+.toast{top:calc(env(safe-area-inset-top,0px) + 12px)}
+.ob{padding-top:calc(32px + env(safe-area-inset-top,0px));padding-bottom:calc(40px + env(safe-area-inset-bottom,0px))}
+.earned{padding:calc(24px + env(safe-area-inset-top,0px)) 24px calc(24px + env(safe-area-inset-bottom,0px))}
+.sheet .inner{max-height:calc(100dvh - env(safe-area-inset-top,0px) - 12px)}
+
+/* bookshelf filter + sort */
+.sortsel{-webkit-appearance:none;appearance:none;min-height:36px;padding:0 34px 0 14px;border-radius:var(--r-pill);border:1px solid var(--line-2);color:var(--ink);font:inherit;font-size:var(--t-14);font-weight:600;cursor:pointer;
+  background:transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23A9B6C9' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center/14px}
+.sortsel option{background:var(--surface);color:var(--ink)}
+.cover.ph small{display:block;max-width:100%;margin-top:6px;font-size:9.5px;font-weight:500;opacity:.72;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bookrow .cover small{display:none}
+.bookrow .meta .au{display:block;color:var(--ink-2);font-size:var(--t-14);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.flrow{display:flex;justify-content:space-between;align-items:flex-end}
+.flrow .flabel{margin-bottom:-4px}
+.linkmini{background:none;border:0;color:var(--ink-2);font:inherit;font-size:var(--t-12);font-weight:600;min-height:32px;padding:0 4px;margin-bottom:-8px;cursor:pointer}
+
+/* book editor */
+.flabel{display:block;margin:16px 0 -4px;font-size:var(--t-12);font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.field input[type=date]{color-scheme:dark}
+.ghost.danger{color:#FF9494}
+
 @media (prefers-reduced-motion:reduce){
   *,*:before,*:after{transition:none !important;animation:none !important}
 }
@@ -356,6 +439,7 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
       <p class="lead">Add a few favourites to start your shelf. Hours are optional; when you add them they count toward your total.</p>
       <!-- TODO: free-type title is a stopgap until titles come from the book database with covers and runtimes. -->
       <div class="field"><input id="obTitle" placeholder="Book title" autocomplete="off" aria-label="Book title"></div>
+      <div class="field"><input id="obAuthor" placeholder="Author (optional)" autocomplete="off" aria-label="Author"></div>
       <div class="field"><select class="genre" id="obGenre" aria-label="Genre (optional)"></select></div>
       <div class="field"><label><input id="obHours" type="number" inputmode="decimal" min="0" step="0.5" placeholder="Optional" aria-label="Hours it ran"><span>hours</span></label><button class="addbtn" id="obAddBtn">Add</button></div>
       <div class="added" id="obAddedList" aria-live="polite"></div>
@@ -366,7 +450,7 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
       <img class="mark" src="icons/earmark-mark.png" alt="" width="88" height="88">
       <div class="eyebrow">Step 3 of 3</div>
       <h2 id="obDoneTitle">You're set.</h2>
-      <p class="lead">Tap the gold + whenever you finish a session to log today's listening. Your streak starts with day one, and your first 25 hours earn Bronze.</p>
+      <p class="lead">Tap the + whenever you finish a session to log today's listening. Your streak starts with day one, and your first 25 hours earn Bronze.</p>
       <button class="cta" id="obFinish">Start listening</button>
     </section>
     <div class="dots" id="obDots"><i class="on"></i><i></i><i></i><i></i></div>
@@ -382,12 +466,9 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
   <div class="hero">
     <div class="glow"></div>
     <div class="streakwrap">
-      <div>
-        <div class="num" id="streakNum">0</div>
-        <div class="unit">Day streak</div>
-        <div class="sub" id="streakSub"></div>
-      </div>
-      <div class="streakmedal"><div class="medal m-locked" id="streakMedal"></div><small id="streakLbl">No<br>streak yet</small></div>
+      <div class="medal streakbadge m-locked" id="streakMedal" role="img" aria-label="0-day streak"><div class="sb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-9z"/></svg><b id="streakNum">0</b></div></div>
+      <div class="unit">Day streak</div>
+      <div class="sub" id="streakSub"></div>
     </div>
     <div class="boxes">
       <div class="box"><b id="t1">0h</b><small>today</small></div>
@@ -414,7 +495,7 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
   <div class="rail thin"></div>
 
   <div class="sec">
-    <div class="sechead"><h2>Achievements</h2><button class="seeall" data-go="s-badges">See all 27</button></div>
+    <div class="sechead"><h2>Achievements</h2><button class="seeall" id="seeAllMedals" data-go="s-badges">See all</button></div>
     <div class="medals" id="homeMedals"></div>
     <div class="nextup">
       <div class="card" id="closest"></div>
@@ -425,33 +506,52 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
   <div class="rail thin"></div>
 
   <div class="sec">
-    <div class="sechead"><h2>Your bookshelf</h2>
-      <div class="seg"><button class="on" data-shelf="month">Month</button><button data-shelf="year">Year</button><button data-shelf="all">All</button></div>
-    </div>
+    <div class="sechead"><h2>Your bookshelf</h2><button class="seeall" data-go="s-shelf">See all</button></div>
+    <div class="shelfrow"><div class="seg" id="shelfSeg"><button class="on" data-shelf="month">Month</button><button data-shelf="year">Year</button><button data-shelf="all">All</button></div></div>
     <div class="bookcase" id="bookcase"></div>
   </div>
 
   <p class="proto">Prototype · saved on this device · <button class="linkbtn" id="resetData" type="button">Start over</button></p>
 </section>
 
+<!-- BOOKSHELF: every book, as a grid of three or a list one by one -->
+<section class="screen" id="s-shelf">
+  <div class="hdr"><button class="backbtn" data-nav-back aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m15 5-7 7 7 7"/></svg>Back</button><div class="title">Bookshelf</div><div class="tag" id="shelfSum">No books yet</div></div>
+  <div class="shelfbar">
+    <div class="seg viewseg" id="viewSeg" role="group" aria-label="Shelf view">
+      <button data-view="grid" aria-label="Grid view" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4" y="4" width="6" height="7" rx="1"/><rect x="14" y="4" width="6" height="7" rx="1"/><rect x="4" y="14" width="6" height="7" rx="1"/><rect x="14" y="14" width="6" height="7" rx="1"/></svg></button>
+      <button data-view="list" aria-label="List view" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/></svg></button>
+    </div>
+    <button class="pillbtn" data-go="s-add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 5v14M5 12h14"/></svg>Add books</button>
+  </div>
+  <div class="shelfbar">
+    <div class="seg" id="shelfFilter" role="group" aria-label="Show books finished"><button data-f="month">Month</button><button data-f="year">Year</button><button data-f="all">All</button></div>
+    <select id="shelfSort" class="sortsel" aria-label="Sort books"><option value="newest">Newest</option><option value="oldest">Oldest</option><option value="longest">Longest</option><option value="title">Title</option></select>
+  </div>
+  <div id="shelfAll"></div>
+</section>
+
 <!-- ADD BOOKS (onboarding-style bulk add) -->
 <!-- TODO: this free-type title field is a stopgap. It will later become a real book search
      backed by the book database, returning covers and runtimes instead of typed titles and hours. -->
 <section class="screen" id="s-add">
-  <div class="hdr"><div class="title">Add books</div><div class="tag">Type in everything you've finished</div></div>
+  <div class="hdr"><button class="backbtn" data-nav-back aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m15 5-7 7 7 7"/></svg>Back</button><div class="title">Add books</div><div class="tag">Type in everything you've finished</div></div>
   <div class="field"><input id="addTitle" placeholder="Book title" autocomplete="off" aria-label="Book title"></div>
+  <div class="field"><input id="addAuthor" placeholder="Author (optional)" autocomplete="off" aria-label="Author"></div>
   <!-- TODO: genre is a manual pick for now. It will be fetched automatically from the book database
        (along with cover art and runtime) once titles come from a real search. -->
   <div class="field"><select class="genre" id="addGenre" aria-label="Genre (optional)"></select></div>
+  <label class="flabel" for="addDate">Finished · optional</label>
+  <div class="field"><input id="addDate" type="date"></div>
   <div class="field"><label><input id="addHours" type="number" inputmode="decimal" min="0" step="0.5" placeholder="Optional" aria-label="Hours it ran"><span>hours</span></label><button class="addbtn" id="addBtn">Add</button></div>
   <div class="added" id="addedList" aria-live="polite"></div>
-  <p class="note" style="margin-top:14px">Each book goes on your shelf and counts toward achievements. Add the hours it ran if you know them and they count toward your total; leave hours blank to add the book only.</p>
+  <p class="note" style="margin-top:14px">Each book goes on your shelf and counts toward achievements. Add the hours it ran if you know them and they count toward your total; leave hours blank to add the book only. Leave the date blank for books from a while back.</p>
   <button class="cta" id="addDone" style="margin-top:18px">Done</button>
 </section>
 
 <!-- BADGES -->
 <section class="screen" id="s-badges">
-  <div class="hdr"><div class="title">Achievements</div><div class="tag" id="wallCount">10 of 27 earned</div></div>
+  <div class="hdr"><button class="backbtn" data-nav-back aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m15 5-7 7 7 7"/></svg>Back</button><div class="title">Achievements</div><div class="tag" id="wallCount">10 of 27 earned</div></div>
   <div class="filters"><button class="on" data-f="all">All</button><button data-f="earned">Earned</button><button data-f="locked">Not yet</button></div>
   <div id="walls"></div>
 </section>
@@ -461,7 +561,7 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
 <!-- NAV -->
 <nav class="nav" aria-label="Main">
   <div class="inner">
-    <button data-go="s-add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h12a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3z"/><path d="M4 17a3 3 0 0 1 3-3h12"/></svg>Add books</button>
+    <button data-go="s-shelf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 4v16M9.5 4v16M14 5.5l3.8 14.5M3 20h18"/></svg>Bookshelf</button>
     <button id="n-plus" aria-label="Add hours"><span class="plus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></span></button>
     <button data-go="s-home" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Profile</button>
   </div>
@@ -483,6 +583,7 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
          backed by the book database, returning covers and runtimes instead of typed titles and hours. -->
     <div class="form" id="f-book"><h2 style="margin:0">Finished a book</h2>
       <div class="field"><input id="sheetTitle" placeholder="Book title" autocomplete="off" aria-label="Book title"></div>
+      <div class="field"><input id="sheetAuthor" placeholder="Author (optional)" autocomplete="off" aria-label="Author"></div>
       <!-- TODO: genre is a manual pick for now; later it comes automatically from the book database. -->
       <div class="field"><select class="genre" id="sheetGenre" aria-label="Genre (optional)"></select></div>
       <div class="field"><label><input id="sheetHours" type="number" inputmode="decimal" min="0" step="0.5" placeholder="Optional" aria-label="Hours it ran"><span>hours</span></label><button class="addbtn" id="sheetAddBtn">Add</button></div>
@@ -490,6 +591,29 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
       <p class="note">Hours you enter count toward your total. Leave them blank if they're already logged.</p>
       <button class="cta" data-done="book">Done</button><button class="ghost" data-back>Back</button></div>
     <div class="form" id="f-past"><h2 style="margin:0">Hours from the past</h2><div class="field"><select id="pastSrc"><option>Audible</option><option>Libby</option><option>Libro.fm</option><option>Spotify</option><option>Other</option></select><label><input id="pastH" type="number" inputmode="decimal" min="0" placeholder="0"><span>hours</span></label></div><p class="note">No date attached. Adds to your lifetime total and rank, never to streaks.</p><button class="cta" data-done="past" id="pastBtn">Add hours</button><button class="ghost" data-back>Back</button></div>
+  </div>
+</div>
+
+<!-- BOOK EDITOR -->
+<div class="sheet" id="bookSheet" role="dialog" aria-label="Edit book">
+  <div class="inner">
+    <div class="handle"></div>
+    <h2 style="margin:0 0 4px">Edit book</h2>
+    <label class="flabel" for="bkTitle">Title</label>
+    <div class="field"><input id="bkTitle" placeholder="Book title" autocomplete="off"></div>
+    <label class="flabel" for="bkAuthor">Author</label>
+    <div class="field"><input id="bkAuthor" placeholder="Optional" autocomplete="off"></div>
+    <label class="flabel" for="bkSeries">Series</label>
+    <div class="field"><input id="bkSeries" placeholder="Optional, e.g. The Stormlight Archive" autocomplete="off"></div>
+    <label class="flabel" for="bkGenre">Genre</label>
+    <div class="field"><select class="genre" id="bkGenre"></select></div>
+    <label class="flabel" for="bkH">Length</label>
+    <div class="field"><label><input id="bkH" type="number" inputmode="numeric" min="0" placeholder="0"><span>hours</span></label><label><input id="bkM" type="number" inputmode="numeric" min="0" max="59" placeholder="0" aria-label="Minutes"><span>min</span></label></div>
+    <div class="flrow"><label class="flabel" for="bkDate">Finished</label><button class="linkmini" id="bkNoDate" type="button">No date</button></div>
+    <div class="field"><input id="bkDate" type="date"></div>
+    <p class="note">Changing the length updates your lifetime total, rank and medals. Books without a date count toward your total but never toward streaks.</p>
+    <button class="cta" id="bkSave">Save changes</button>
+    <button class="ghost danger" id="bkDelete">Delete book</button>
   </div>
 </div>
 
@@ -528,18 +652,45 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
     column:`<svg viewBox="0 0 24 24" ${sw1}><path d="M4 21h16M5 8h14M6 8v13M10 8v13M14 8v13M18 8v13"/><path d="M3 8l9-4 9 4"/></svg>`,
     person:`<svg viewBox="0 0 24 24" ${sw1}><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>`,
     moon:`<svg viewBox="0 0 24 24" ${sw1}><path d="M20 15A8 8 0 0 1 9 4a8 8 0 1 0 11 11z"/></svg>`,
-    up:`<svg viewBox="0 0 24 24" ${sw1}><path d="M12 19V5M5 12l7-7 7 7"/></svg>`
+    up:`<svg viewBox="0 0 24 24" ${sw1}><path d="M12 19V5M5 12l7-7 7 7"/></svg>`,
+    sun:`<svg viewBox="0 0 24 24" ${sw1}><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6 6 6M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/></svg>`,
+    heart:`<svg viewBox="0 0 24 24" ${sw1}><path d="M12 20s-7.5-4.6-7.5-10.2A4.2 4.2 0 0 1 12 7.3a4.2 4.2 0 0 1 7.5 2.5C19.5 15.4 12 20 12 20z"/></svg>`,
+    search:`<svg viewBox="0 0 24 24" ${sw1}><circle cx="11" cy="11" r="6"/><path d="m20 20-4.6-4.6"/></svg>`,
+    planet:`<svg viewBox="0 0 24 24" ${sw1}><circle cx="12" cy="12" r="5"/><path d="M5.3 15.2C3 17.3 2.3 19.1 3 19.9c1.4 1.4 7.2-1.8 12.2-6.8S21.3 4.4 19.9 3c-.8-.8-2.6-.1-4.7 2.2"/></svg>`,
+    feather:`<svg viewBox="0 0 24 24" ${sw1}><path d="M19.5 4.5C12 4.5 7 9.5 7 17l-3 3"/><path d="M7 17c6 0 10.5-4 12.5-12.5"/><path d="M11 13h5.5"/></svg>`,
+    mountain:`<svg viewBox="0 0 24 24" ${sw1}><path d="M2.5 19.5 9 8l4 7 2.2-3.5 6.3 8z"/><path d="m7.4 10.8 1.6 1.2 1.6-1.2"/></svg>`,
+    clock:`<svg viewBox="0 0 24 24" ${sw1}><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>`,
+    repeat:`<svg viewBox="0 0 24 24" ${sw1}><path d="M4 11V9.5A3.5 3.5 0 0 1 7.5 6H19"/><path d="m16 3 3 3-3 3"/><path d="M20 13v1.5a3.5 3.5 0 0 1-3.5 3.5H5"/><path d="m8 21-3-3 3-3"/></svg>`,
+    week:`<svg viewBox="0 0 24 24" ${sw1}><rect x="3" y="5" width="18" height="15" rx="2"/><path d="M3 10h18M7 14h.01M11 14h.01M15 14h.01M7 17h.01M11 17h.01M15 17h.01"/></svg>`,
+    weekend:`<svg viewBox="0 0 24 24" ${sw1}><rect x="3" y="5" width="18" height="15" rx="2"/><path d="M3 10h18"/><rect x="14" y="13" width="4" height="4" rx=".5"/></svg>`,
+    pair:`<svg viewBox="0 0 24 24" ${sw1}><rect x="4" y="4" width="7" height="16" rx="1"/><rect x="13" y="4" width="7" height="16" rx="1"/><path d="M6.5 8h2M15.5 8h2"/></svg>`,
+    chevR:`<svg class="chev" viewBox="0 0 24 24" ${sw1}><path d="m9 6 6 6-6 6"/></svg>`,
+    compass:`<svg viewBox="0 0 24 24" ${sw1}><circle cx="12" cy="12" r="8.5"/><path d="m15.5 8.5-2 5-5 2 2-5z"/></svg>`,
+    map:`<svg viewBox="0 0 24 24" ${sw1}><path d="M3 6.5 9 4l6 2.5L21 4v13.5L15 20l-6-2.5L3 20z"/><path d="M9 4v13.5M15 6.5V20"/></svg>`,
+    hourglass:`<svg viewBox="0 0 24 24" ${sw1}><path d="M6.5 3h11M6.5 21h11"/><path d="M8 3c0 5 8 5.5 8 9s-8 4-8 9M16 3c0 5-8 5.5-8 9s8 4 8 9"/></svg>`,
+    shuffle:`<svg viewBox="0 0 24 24" ${sw1}><path d="M3 7h4l10 10h4M3 17h4l2.5-2.5M14.5 9.5 17 7h4"/><path d="m18 4 3 3-3 3M18 14l3 3-3 3"/></svg>`,
+    note:`<svg viewBox="0 0 24 24" ${sw1}><path d="M6 3.5h8.5L19 8v12.5H6z"/><path d="M14.5 3.5V8H19M9 12.5h7M9 16h4.5"/></svg>`,
+    flag:`<svg viewBox="0 0 24 24" ${sw1}><path d="M5.5 21V4M5.5 4.5h11.5l-2.5 4 2.5 4H5.5"/></svg>`
   };
   /* ---- state: everything the app shows comes from here. A new account starts at zero. ---- */
   const KEY="earmark.state.v1";
   const fresh=()=>({v:1,onboarded:false,user:{name:""},total:0,todayH:0,weekH:0,monthH:0,lastMonthH:0,yearH:0,
     bestDayH:0,streak:0,bestStreak:0,lastLog:null,owl:false,byWeekday:[0,0,0,0,0,0,0],weekdayDays:[0,0,0,0,0,0,0],
-    notes:[],books:[],past:[],keys:{day:"",week:"",month:"",year:""}});
+    notes:[],books:[],past:[],keys:{day:"",week:"",month:"",year:""},
+    createdAt:new Date().toISOString(),logDays:[],notesWritten:0,comeback:false,earlyBird:false,
+    shelfView:"grid",shelfFilter:"all",shelfSort:"newest"});
+  /* TODO: set this to the public launch date (e.g. "2027-03-01"). Accounts created before it are
+     Founding Listeners; while it is null, every account is (we are still in early testing). */
+  const PUBLIC_LAUNCH=null;
   function load(){ try{ const raw=localStorage.getItem(KEY); if(raw){ const o=JSON.parse(raw); return Object.assign(fresh(),o,{user:Object.assign({name:""},o.user||{}),keys:Object.assign({},fresh().keys,o.keys||{})}); } }catch(e){} return fresh(); }
   function save(){ try{ localStorage.setItem(KEY,JSON.stringify(ST)); }catch(e){} }
   const ST=load();
+  const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+  ST.books.forEach(b=>{ if(!b.id) b.id=uid(); });   // books saved before editing existed get an id
   const pad=n=>String(n).padStart(2,"0");
   const dayKey=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  const parseDay=k=>{ const [y,m,d]=k.split("-").map(Number); return new Date(y,m-1,d); };
+  const daysBetween=(a,b)=>Math.round((parseDay(b)-parseDay(a))/864e5);
   const periodKeys=(d=new Date())=>{ const mon=new Date(d); mon.setDate(d.getDate()-((d.getDay()+6)%7)); return {day:dayKey(d),week:dayKey(mon),month:`${d.getFullYear()}-${pad(d.getMonth()+1)}`,year:String(d.getFullYear())}; };
   /* roll today / this week / this month / this year over when the calendar moves on; streaks end after a missed day */
   function rollover(){
@@ -551,8 +702,11 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
     ST.keys=k; save();
   }
   rollover();
+  // books saved before dates were optional: their date finished is the day they were added
+  ST.books.forEach(b=>{ if(!("finished" in b)) b.finished=b.added?dayKey(new Date(b.added)):null; });
+  if(ST.lastLog&&!ST.logDays.includes(ST.lastLog)) ST.logDays.push(ST.lastLog);
   const displayName=()=>ST.user.name.trim()||"Listener";
-  const G={year:"This year",rank:"Lifetime rank",streak:"Streaks",feat:"Feats",stretch:"Stretch"};
+  const G={year:"This year",rank:"Lifetime rank",time:"Time milestones",streak:"Streaks",consist:"Consistency",feat:"Feats",books:"Books finished",series:"Series & authors",stretch:"Genres",special:"Special"};
   /* medal catalogue — earned/progress are computed from state in recomputeMedals(); nothing is pre-earned */
   const YEAR_TIERS=[["bronze",100],["silver",250],["gold",500],["platinum",750],["diamond",1000]];
   const M=[
@@ -583,7 +737,41 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
     {id:"cla",tier:"gold",ic:I.column,name:"Classical",sub:"25 hrs of classics",desc:"Twenty-five hours of classic literature.",earned:false,group:"stretch"},
     {id:"bio",tier:"silver",ic:I.person,name:"Biography",sub:"Finish one",desc:"A life told from start to finish.",earned:false,group:"stretch"},
     {id:"tr",tier:"silver",ic:I.globe,name:"In translation",sub:"Finish one",desc:"A book written in another language.",earned:false,group:"stretch"},
-    {id:"omni",tier:"rainbow",ic:I.star,name:"Omnivore",sub:"6 genres",desc:"Sampled across six different genres.",earned:false,group:"stretch",lockedLook:true}
+    {id:"wwk",tier:"gold",ic:I.mountain,name:"Worldwalker",sub:"25 hrs of fantasy",desc:"Twenty-five hours of fantasy.",earned:false,group:"stretch"},
+    {id:"stf",tier:"gold",ic:I.planet,name:"Starfarer",sub:"25 hrs of science fiction",desc:"Twenty-five hours of science fiction.",earned:false,group:"stretch"},
+    {id:"det",tier:"gold",ic:I.search,name:"Detective",sub:"25 hrs of mystery",desc:"Twenty-five hours of mysteries and thrillers.",earned:false,group:"stretch"},
+    {id:"ttv",tier:"gold",ic:I.hourglass,name:"Time Traveler",sub:"25 hrs of history",desc:"Twenty-five hours of history.",earned:false,group:"stretch"},
+    {id:"ghop",tier:"silver",ic:I.shuffle,name:"Genre Hopper",sub:"5 genres in a month",desc:"Finished books in five different genres in one month.",earned:false,group:"stretch"},
+    {id:"omni",tier:"rainbow",ic:I.star,name:"Omnivore",sub:"6 genres",desc:"Sampled across six different genres.",earned:false,group:"stretch",lockedLook:true},
+    /* books finished */
+    {id:"bk1",tier:"bronze",ic:"<span>1</span>",name:"First Book",sub:"1 book",desc:"Your first finished book on the shelf.",earned:false,group:"books"},
+    {id:"bk10",tier:"silver",ic:"<span>10</span>",name:"Bookworm",sub:"10 books",desc:"Ten books finished.",earned:false,group:"books"},
+    {id:"bk25",tier:"gold",ic:"<span>25</span>",name:"Shelf Builder",sub:"25 books",desc:"Twenty-five books finished.",earned:false,group:"books"},
+    {id:"bk50",tier:"platinum",ic:"<span>50</span>",name:"Library",sub:"50 books",desc:"Fifty books finished.",earned:false,group:"books"},
+    {id:"bk100",tier:"diamond",ic:"<span>100</span>",name:"Centurion",sub:"100 books",desc:"One hundred books finished.",earned:false,group:"books"},
+    {id:"bk250",tier:"obsidian",ic:"<span>250</span>",name:"Archivist",sub:"250 books",desc:"Two hundred and fifty books finished.",earned:false,group:"books"},
+    /* time milestones — all hours, imported included */
+    {id:"tw",tier:"silver",ic:"<span>7d</span>",name:"A Week of Listening",sub:"168 hours",desc:"168 hours: a full week of listening, imported hours included.",earned:false,group:"time"},
+    {id:"tm",tier:"gold",ic:"<span>30d</span>",name:"A Month of Listening",sub:"720 hours",desc:"720 hours: a full month of listening, imported hours included.",earned:false,group:"time"},
+    {id:"ty",tier:"diamond",ic:"<span>1y</span>",name:"A Year of Listening",sub:"8,760 hours",desc:"8,760 hours: a full year of listening, imported hours included.",earned:false,group:"time"},
+    /* consistency — live, dated listening only */
+    {id:"pw",tier:"gold",ic:I.week,name:"Perfect Week",sub:"All 7 days of a week",desc:"Listened every day of a calendar week, Monday to Sunday.",earned:false,group:"consist"},
+    {id:"pm",tier:"platinum",ic:I.cal,name:"Perfect Month",sub:"Every day of a month",desc:"Listened every day of a calendar month.",earned:false,group:"consist"},
+    {id:"ww",tier:"silver",ic:I.weekend,name:"Weekend Warrior",sub:"4 full weekends",desc:"Listened on both Saturday and Sunday, four weekends.",earned:false,group:"consist"},
+    {id:"cb",tier:"bronze",ic:I.repeat,name:"Comeback",sub:"Back after a week away",desc:"Welcome back. You picked it up again after a week or more away.",earned:false,group:"consist"},
+    /* session feats — live */
+    {id:"eb",tier:"silver",ic:I.sun,name:"Early Bird",sub:"Log before 7 a.m.",desc:"A session logged before 7 in the morning.",earned:false,group:"feat"},
+    {id:"hmar",tier:"silver",ic:I.bolt,name:"Half Marathon",sub:"4 hours in a day",desc:"Four hours of listening in one day.",earned:false,group:"feat"},
+    {id:"bng",tier:"gold",ic:I.pair,name:"Binge",sub:"3 books in 7 days",desc:"Finished three books within seven days.",earned:false,group:"feat"},
+    /* series and authors */
+    {id:"tri",tier:"bronze",ic:"<span>III</span>",name:"Trilogy",sub:"3 books in one series",desc:"Three books from the same series.",earned:false,group:"series"},
+    {id:"saga",tier:"gold",ic:"<span>X</span>",name:"Saga",sub:"10 books in one series",desc:"Ten books from the same series.",earned:false,group:"series"},
+    {id:"aul",tier:"silver",ic:I.feather,name:"Author Loyalist",sub:"5 books by one author",desc:"Five books by the same author.",earned:false,group:"series"},
+    {id:"exp",tier:"silver",ic:I.compass,name:"Explorer",sub:"10 different authors",desc:"Books by ten different authors.",earned:false,group:"series"},
+    {id:"wan",tier:"gold",ic:I.map,name:"Wanderer",sub:"25 different authors",desc:"Books by twenty-five different authors.",earned:false,group:"series"},
+    /* special */
+    {id:"fl",tier:"obsidian",ic:I.flag,name:"Founding Listener",sub:"Here before launch",desc:"One of the first listeners, here before Earmark's public launch. This one can't be earned later.",earned:false,group:"special"},
+    {id:"nt",tier:"bronze",ic:I.note,name:"Note Taker",sub:"10 daily notes",desc:"Ten notes written alongside your listening.",earned:false,group:"special"},
   ];
   const byId=id=>M.find(m=>m.id===id);
   function medalHTML(m,cls=""){
@@ -603,7 +791,8 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
     const lockedWithProg=M.filter(m=>!m.earned&&m.prog&&m.prog[1]>0);
     const closest=lockedWithProg.sort((a,b)=>pct(b)-pct(a))[0];
     if(closest) nextCard($("#closest"),"Closest to unlocking",closest);
-    const pool=M.filter(m=>!m.earned&&m.group==="stretch"&&m.id!=="omni");
+    // something new: any badge you can go after directly, not the long hour and streak ladders
+    const pool=M.filter(m=>!m.earned&&m!==closest&&!["year","rank","time","streak"].includes(m.group)&&!["fl","ser"].includes(m.id));
     if((!rnd||rnd.earned)&&pool.length) rnd=pool[Math.floor(Math.random()*pool.length)];
     if(rnd) nextCard($("#random"),"Try something new",rnd);
   }
@@ -619,7 +808,7 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
     $("#homeMedals").innerHTML=strip.map(m=>medalHTML(m)).join("");
     const earnedCount=M.filter(m=>m.earned).length;
     $("#wallCount").textContent=`${earnedCount} of ${M.length} earned`;
-    $(".seeall").textContent=`See all ${M.length}`;
+    $("#seeAllMedals").textContent=`See all ${M.length}`;
     $("#walls").innerHTML=Object.keys(G).map((g,i)=>{
       const list=M.filter(m=>m.group===g);
       const e=list.filter(m=>m.earned).length;
@@ -638,7 +827,7 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
   function showMedal(m,justEarned){
     shownMedal=m;
     const t=m.earned?m.tier:"locked";
-    $("#eTitle").innerHTML= justEarned?`Congratulations.<br>You earned a ${m.tier} medal.` : (m.earned?"Earned":"Not yet earned");
+    $("#eTitle").innerHTML= justEarned?`Congratulations.<br>You earned ${/^[aeiou]/.test(m.tier)?"an":"a"} ${m.tier} medal.` : (m.earned?"Earned":"Not yet earned");
     $("#eMedal").className=`medal m-${t}`; $("#eMedal").innerHTML=m.ic;
     $("#eName").textContent=m.name; $("#eDesc").textContent=m.desc||m.sub;
     $("#eProg").innerHTML=m.prog?`${m.prog[2]}<div class="bar" style="margin-top:8px"><i style="width:${Math.round(pct(m)*100)}%"></i></div>`:"";
@@ -651,7 +840,7 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
   });
   $("#eClose").onclick=()=>$("#earned").classList.remove("open");
   $("#earned").addEventListener("click",e=>{ if(e.target.id==="earned") $("#earned").classList.remove("open"); });
-  document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ $("#earned").classList.remove("open"); closeSheet(); } });
+  document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ $("#earned").classList.remove("open"); closePanel(); } });
   $("#eSave").onclick=async()=>{
     if(!shownMedal) return;
     try{ downloadFile(await cardFile(shownMedal)); toast("Card saved"); }
@@ -668,7 +857,6 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
   $("#shareStats").onclick=()=>toast("Sharing your stats card (prototype)");
 
   /* streak medal + today's notes */
-  $("#streakMedal").innerHTML=I.flame;
   function renderNotes(){ $("#notes").innerHTML=`<div class="lbl">Today</div>`+(ST.notes.length?ST.notes.map(n=>`<div>${esc(n.t)}<span>${n.m}</span></div>`).join(""):`<div class="none">Nothing logged yet</div>`); }
 
   /* bookshelf */
@@ -676,67 +864,144 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
   /* genre options for the manual pick; keys are what each book's `genre` field holds.
      TODO: once titles come from the book database, `genre` is filled automatically from its metadata. */
   const GENRES=[["fantasy","Fantasy"],["scifi","Sci-fi"],["litfic","Literary fiction"],["mystery","Mystery & thriller"],["romance","Romance"],
-    ["ya","Young adult"],["classic","Classic"],["nonfiction","Nonfiction"],["biography","Biography & memoir"],["translation","In translation"]];
+    ["ya","Young adult"],["classic","Classic"],["nonfiction","Nonfiction"],["history","History"],["biography","Biography & memoir"],["translation","In translation"]];
   $$("select.genre").forEach(sel=>sel.innerHTML=`<option value="">Genre (optional)</option>`+GENRES.map(([k,l])=>`<option value="${k}">${l}</option>`).join(""));
   const LIB=ST.books;   // the shelf is the saved library; a new account starts empty
-  const bucket=b=>{ const k=periodKeys(), d=(b.added||"").slice(0,10); return d.slice(0,7)===k.month?"month":d.slice(0,4)===k.year?"year":"all"; };
+  // shelf period by date finished; undated (backlog) books only appear under All
+  const bucket=b=>{ if(!b.finished) return "all"; const k=periodKeys(); return b.finished.slice(0,7)===k.month?"month":b.finished.slice(0,4)===k.year?"year":"all"; };
+  const tsOf=b=>b.finished?parseDay(b.finished).getTime():null;
+  function sortBooks(list,mode){
+    const by={
+      newest:(a,b)=>((tsOf(b)??-Infinity)-(tsOf(a)??-Infinity))||(b.added||"").localeCompare(a.added||""),
+      oldest:(a,b)=>((tsOf(a)??Infinity)-(tsOf(b)??Infinity))||(a.added||"").localeCompare(b.added||""),
+      longest:(a,b)=>((b.h||0)-(a.h||0))||a.t.localeCompare(b.t),
+      title:(a,b)=>a.t.localeCompare(b.t,undefined,{sensitivity:"base"})
+    };
+    return [...list].sort(by[mode]||by.newest);
+  }
   const esc=s=>String(s).replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
   const fmtH=h=>`${Number.isInteger(h)?h:h.toFixed(1)}h`;
   const CLOTH=["#1B3556","#17485A","#2A3A52","#1D4F55","#2F3D5C","#22466B"];   // muted navy, teal and slate covers
   let clothN=0;
   const coverTone=t=>{ let h=0; for(const ch of String(t)) h=(h*31+ch.charCodeAt(0))>>>0; return CLOTH[h%CLOTH.length]; };
-  function coverHTML(b){
+  function coverHTML(b,inRow){
     // Free-typed books have no cover art yet: render a cloth-bound hardback placeholder with the title only.
-    if(b.ph) return `<div class="cover ph" style="--cloth:${coverTone(b.t)}">${b.h!=null?`<span class="hrs">${fmtH(b.h)}</span>`:""}<b>${esc(b.t)}</b></div>`;
+    // Covers on a shelf open the book editor; inside a list row the row itself is the button.
+    const tap=inRow?"":` data-book="${b.id}" role="button" tabindex="0" aria-label="Edit ${esc(b.t)}"`;
+    if(b.ph) return `<div class="cover ph" style="--cloth:${coverTone(b.t)}"${tap}>${b.h!=null?`<span class="hrs">${fmtH(b.h)}</span>`:""}<b>${esc(b.t)}</b>${b.author?`<small>${esc(b.author)}</small>`:""}</div>`;
     return `<div class="cover" style="background:linear-gradient(165deg,${b.c},#06162C)"><span class="hrs">${b.h}h</span><b>${b.t}</b><small>${b.a}</small></div>`;
   }
   let shelfMode="month";
   function renderShelf(mode){
     shelfMode=mode;
     const order={month:0,year:1,all:2};
-    const list=LIB.filter(b=>order[bucket(b)]<=order[mode]);
+    const list=sortBooks(LIB.filter(b=>order[bucket(b)]<=order[mode]),"newest");
     const perRow=mode==="month"?list.length:6, rows=[];
     for(let i=0;i<list.length;i+=perRow) rows.push(list.slice(i,i+perRow));
-    if(!list.length){ $("#bookcase").innerHTML=`<div class="shelf-empty">${I.book}<p>Nothing on this shelf yet.</p><button type="button" data-go="s-add">Add a book</button></div><div class="shelfline"></div>`; $("#bookcase [data-go]").onclick=()=>go("s-add"); return; }
+    if(!list.length){
+      $("#bookcase").innerHTML=LIB.length
+        ? `<div class="shelf-empty">${I.book}<p>Nothing finished ${mode==="month"?"this month":"this year"} yet.</p><button type="button" data-go="s-shelf">See all books</button></div><div class="shelfline"></div>`
+        : `<div class="shelf-empty">${I.book}<p>Nothing on this shelf yet.</p><button type="button" data-go="s-add">Add a book</button></div><div class="shelfline"></div>`;
+      return;
+    }
     $("#bookcase").innerHTML=rows.map(r=>`<div class="row">${r.map(coverHTML).join("")}</div><div class="shelfline"></div>`).join("");
   }
   renderShelf("month");
-  $$(".seg button").forEach(b=>b.onclick=()=>{ $$(".seg button").forEach(x=>x.classList.remove("on")); b.classList.add("on"); renderShelf(b.dataset.shelf); });
+  $$("#shelfSeg button").forEach(b=>b.onclick=()=>{ $$("#shelfSeg button").forEach(x=>x.classList.remove("on")); b.classList.add("on"); renderShelf(b.dataset.shelf); });
+
+  /* bookshelf screen — the whole library, newest first, as a grid of three or a list */
+  const GENRE_LABEL=Object.fromEntries(GENRES);
+  const finishedLabel=b=>b.finished?parseDay(b.finished).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"}):"No date";
+  function renderShelfAll(){
+    const v=ST.shelfView==="list"?"list":"grid";
+    $$("#viewSeg button").forEach(b=>{ const on=b.dataset.view===v; b.classList.toggle("on",on); b.setAttribute("aria-pressed",on); });
+    const hrs=LIB.reduce((t,b)=>t+(b.h||0),0);
+    $("#shelfSum").textContent=LIB.length?`${LIB.length} book${LIB.length===1?"":"s"}${hrs?` · ${fmtN(hrs).toLocaleString()} hours`:""}`:"No books yet";
+    const f=["month","year","all"].includes(ST.shelfFilter)?ST.shelfFilter:"all", order={month:0,year:1,all:2};
+    $$("#shelfFilter button").forEach(b=>b.classList.toggle("on",b.dataset.f===f));
+    $("#shelfSort").value=ST.shelfSort||"newest";
+    if(!LIB.length){ $("#shelfAll").innerHTML=`<div class="card shelf-empty">${I.book}<p>Your shelf is empty.</p><button type="button" data-go="s-add">Add a book</button></div>`; return; }
+    const list=sortBooks(LIB.filter(b=>order[bucket(b)]<=order[f]),ST.shelfSort);
+    if(!list.length){ $("#shelfAll").innerHTML=`<div class="card shelf-empty">${I.book}<p>Nothing finished ${f==="month"?"this month":"this year"} yet.</p><button type="button" id="showAllBooks">Show all books</button></div>`; $("#showAllBooks").onclick=()=>{ ST.shelfFilter="all"; save(); renderShelfAll(); }; return; }
+    $("#shelfAll").innerHTML=v==="grid"
+      ? `<div class="shelfgrid">${list.map(b=>coverHTML(b)).join("")}</div>`
+      : `<div class="shelflist">${list.map(b=>`<button class="bookrow" data-book="${b.id}">${coverHTML(b,true)}<span class="meta"><b>${esc(b.t)}</b>${b.author?`<span class="au">${esc(b.author)}</span>`:""}<small>${[b.h!=null?hm(b.h):"",finishedLabel(b)].filter(Boolean).join(" · ")}</small></span>${I.chevR}</button>`).join("")}</div>`;
+  }
+  $$("#viewSeg button").forEach(b=>b.onclick=()=>{ ST.shelfView=b.dataset.view; save(); renderShelfAll(); });
+  $$("#shelfFilter button").forEach(b=>b.onclick=()=>{ ST.shelfFilter=b.dataset.f; save(); renderShelfAll(); });
+  $("#shelfSort").onchange=()=>{ ST.shelfSort=$("#shelfSort").value; save(); renderShelfAll(); };
+
+  /* book editor: tap any book to change its title, genre, hours or finish date, or delete it */
+  let editing=null, delArmed=false;
+  function openBook(id){
+    const b=LIB.find(x=>x.id===id); if(!b) return;
+    editing=b; delArmed=false; $("#bkDelete").textContent="Delete book";
+    $("#bkTitle").value=b.t; $("#bkAuthor").value=b.author||""; $("#bkSeries").value=b.series||""; $("#bkGenre").value=b.genre||"";
+    const H=b.h?Math.floor(b.h):0, Mi=b.h?Math.round((b.h-H)*60):0;
+    $("#bkH").value=b.h?(Mi===60?H+1:H):""; $("#bkM").value=b.h?(Mi===60?0:Mi):"";
+    $("#bkDate").value=b.finished||""; $("#bkDate").max=dayKey(new Date());
+    openPanel($("#bookSheet"));
+  }
+  $("#bkNoDate").onclick=()=>{ $("#bkDate").value=""; };
+  function afterBooksChanged(){ save(); renderHero(); renderShelf(shelfMode); renderShelfAll(); recomputeMedals(); renderInsights(); }
+  $("#bkSave").onclick=()=>{
+    const b=editing; if(!b) return;
+    const t=$("#bkTitle").value.trim(); if(!t){ $("#bkTitle").focus(); toast("A book needs a title"); return; }
+    const H=Math.max(0,parseInt($("#bkH").value,10)||0), Mi=Math.min(59,Math.max(0,parseInt($("#bkM").value,10)||0));
+    const len=H+Mi/60, h=len>0?len:null;
+    const delta=(h||0)-(b.h||0); ST.total=Math.max(0,ST.total+delta);   // hours on a book count toward the lifetime total and rank
+    b.t=t; b.author=$("#bkAuthor").value.trim()||null; b.series=$("#bkSeries").value.trim()||null; b.genre=$("#bkGenre").value||null; b.h=h;
+    b.finished=$("#bkDate").value||null;   // blank = backlog: counts toward totals, never toward streaks
+    closePanel(); afterBooksChanged();
+    toast(Math.abs(delta)>1e-9?`Saved · ${delta>0?"+":"−"}${hm(Math.abs(delta))} on your total`:"Saved");
+    showPendingEarned();
+  };
+  $("#bkDelete").onclick=()=>{
+    if(!delArmed){ delArmed=true; $("#bkDelete").textContent="Tap again to delete"; return; }
+    const b=editing, i=LIB.indexOf(b); if(i<0) return;
+    LIB.splice(i,1); ST.total=Math.max(0,ST.total-(b.h||0));
+    closePanel(); afterBooksChanged(); toast(`${b.t} removed from your shelf`);
+  };
+  document.addEventListener("click",e=>{ const c=e.target.closest("[data-book]"); if(c) openBook(c.dataset.book); });
+  document.addEventListener("keydown",e=>{ if((e.key==="Enter"||e.key===" ")&&e.target.matches&&e.target.matches("div[data-book]")){ e.preventDefault(); openBook(e.target.dataset.book); } });
 
   /* free-type book entry — shared by the Add books screen and the plus-button sheet.
      TODO: this is a stopgap. Replace the typed title/hours with a real book search backed by the
      book database, which will supply the cover art and runtime for each result. */
-  function addBook(title,hours,genre){
-    const entry={t:title,a:"",h:hours,c:CLOTH[clothN++%CLOTH.length],added:new Date().toISOString(),ph:true,genre:genre||null};
+  function addBook(title,hours,genre,author,finished){
+    const entry={id:uid(),t:title,author:author||null,series:null,h:hours,c:CLOTH[clothN++%CLOTH.length],added:new Date().toISOString(),finished:finished||null,ph:true,genre:genre||null};
     LIB.unshift(entry);               // newest book sits first on the shelf
     if(hours!=null) bump(hours);      // hours count toward the lifetime total only when given
-    save(); renderShelf(shelfMode);
+    save(); renderShelf(shelfMode); renderShelfAll();
     recomputeMedals();                // genre-stretch medals may have moved
     renderInsights();
     return entry;
   }
-  function wireEntry(titleSel,hoursSel,genreSel,btnSel,listSel){
-    const tIn=$(titleSel), hrIn=$(hoursSel), gIn=$(genreSel), list=$(listSel), added=[];
+  // dated: books from "Finished a book" are finished today; elsewhere the date is optional (blank = backlog)
+  function wireEntry({title,author,hours,genre,date,btn,list,dated=false}){
+    const tIn=$(title), aIn=$(author), hrIn=$(hours), gIn=$(genre), dIn=date?$(date):null, listEl=$(list), added=[];
+    if(dIn) dIn.max=dayKey(new Date());
     function renderList(){
-      list.innerHTML=added.length?`<div class="lbl">Added</div>`+added.map(b=>`<div class="item"><b>${esc(b.t)}</b><small>${b.h!=null?fmtH(b.h)+" · counted":"no hours"}</small></div>`).join("")
+      listEl.innerHTML=added.length?`<div class="lbl">Added</div>`+added.map(b=>`<div class="item"><b>${esc(b.t)}</b><small>${b.h!=null?fmtH(b.h)+" · counted":"no hours"}</small></div>`).join("")
         :`<div class="empty">${I.book}<span>Books you add will appear here.</span></div>`;
     }
     function submit(){
-      const title=tIn.value.trim(); if(!title){ tIn.focus(); return; }
+      const t=tIn.value.trim(); if(!t){ tIn.focus(); return; }
       const raw=hrIn.value.trim(), n=parseFloat(raw);
       const hours=raw!==""&&isFinite(n)&&n>0?n:null;   // blank or invalid → book only, no hours
-      const b=addBook(title,hours,gIn.value); added.push(b); renderList();
-      tIn.value=""; hrIn.value=""; gIn.value=""; tIn.focus();
-      toast(hours!=null?`${title} added · ${fmtH(hours)} to your total`:`${title} added to your shelf`);
+      const finished=dIn&&dIn.value?dIn.value:(dated?dayKey(new Date()):null);
+      const b=addBook(t,hours,gIn.value,aIn.value.trim(),finished); added.push(b); renderList();
+      tIn.value=""; aIn.value=""; hrIn.value=""; gIn.value=""; if(dIn) dIn.value=""; tIn.focus();
+      toast(hours!=null?`${t} added · ${fmtH(hours)} to your total`:`${t} added to your shelf`);
     }
-    $(btnSel).onclick=submit;
-    [tIn,hrIn].forEach(i=>i.addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); submit(); } }));
-    return {reset(){ added.length=0; renderList(); tIn.value=""; hrIn.value=""; gIn.value=""; }};
+    $(btn).onclick=submit;
+    [tIn,aIn,hrIn].forEach(i=>i.addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); submit(); } }));
+    return {reset(){ added.length=0; renderList(); tIn.value=""; aIn.value=""; hrIn.value=""; gIn.value=""; if(dIn) dIn.value=""; }};
   }
-  wireEntry("#addTitle","#addHours","#addGenre","#addBtn","#addedList");
-  wireEntry("#obTitle","#obHours","#obGenre","#obAddBtn","#obAddedList");
-  const sheetEntry=wireEntry("#sheetTitle","#sheetHours","#sheetGenre","#sheetAddBtn","#sheetAddedList");
-  $("#addDone").onclick=()=>{ go("s-home"); showPendingEarned(); };
+  wireEntry({title:"#addTitle",author:"#addAuthor",hours:"#addHours",genre:"#addGenre",date:"#addDate",btn:"#addBtn",list:"#addedList"});
+  wireEntry({title:"#obTitle",author:"#obAuthor",hours:"#obHours",genre:"#obGenre",btn:"#obAddBtn",list:"#obAddedList"});
+  const sheetEntry=wireEntry({title:"#sheetTitle",author:"#sheetAuthor",hours:"#sheetHours",genre:"#sheetGenre",btn:"#sheetAddBtn",list:"#sheetAddedList",dated:true});
+  $("#addDone").onclick=()=>{ back(); showPendingEarned(); };
 
   /* genre-stretch medals, computed from each book's genre */
   const OMNI_GOAL=6, pendingEarned=[];
@@ -766,12 +1031,49 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
     const hoursRule=(id,g,goal,emptyHint)=>{
       const m=byId(id), h=hoursIn(g), first=firstIn(g);
       m.earned=h>=goal;
-      m.prog=m.earned?null:[h,goal,`${fmtN(h)} of ${goal} hours · ${first?first+" counted":emptyHint}`];
+      m.prog=m.earned?null:[h,goal,`${fmtN(h)} of ${goal} hours · ${first?esc(first)+" counted":emptyHint}`];
     };
-    const oneRule=(id,g)=>{ const m=byId(id), first=firstIn(g); m.earned=!!first; m.sub=first||"Finish one"; };
+    const oneRule=(id,g)=>{ const m=byId(id), first=firstIn(g); m.earned=!!first; m.sub=first?esc(first):"Finish one"; };
     hoursRule("sch","nonfiction",25,"try a history or a how-to");
     hoursRule("cla","classic",25,"try Austen, Dumas, Tolstoy");
     oneRule("ya","ya"); oneRule("bio","biography"); oneRule("tr","translation");
+    hoursRule("wwk","fantasy",25,"try an epic fantasy");
+    hoursRule("stf","scifi",25,"try a space opera");
+    hoursRule("det","mystery",25,"try a classic whodunit");
+    hoursRule("ttv","history",25,"try a narrative history");
+    const reach=(id,v,goal,label)=>{ const m=byId(id); m.earned=v>=goal; m.prog=m.earned?null:[v,goal,label]; };
+    const maxOf=o=>Math.max(0,...Object.values(o));
+    // genre hopper: dated books, five genres inside one calendar month
+    const gm={}; LIB.forEach(b=>{ if(b.finished&&b.genre){ (gm[b.finished.slice(0,7)]=gm[b.finished.slice(0,7)]||new Set()).add(b.genre); } });
+    const hop=Math.max(0,...Object.values(gm).map(x=>x.size)); reach("ghop",hop,5,`${hop} of 5 genres in one month`);
+    // books finished
+    const nb=LIB.length; [["bk1",1],["bk10",10],["bk25",25],["bk50",50],["bk100",100],["bk250",250]].forEach(([id,g])=>reach(id,nb,g,`${nb} of ${g} books`));
+    // time milestones count every hour, imported included
+    [["tw",168],["tm",720],["ty",8760]].forEach(([id,g])=>reach(id,ST.total,g,`${fmtN(ST.total).toLocaleString()} of ${g.toLocaleString()} hours`));
+    // consistency — only live, dated listening days
+    const days=new Set(ST.logDays), wkC={}, moC={};
+    days.forEach(k=>{ const d=parseDay(k), mon=new Date(d); mon.setDate(d.getDate()-((d.getDay()+6)%7)); wkC[dayKey(mon)]=(wkC[dayKey(mon)]||0)+1; moC[k.slice(0,7)]=(moC[k.slice(0,7)]||0)+1; });
+    const bestWk=maxOf(wkC); reach("pw",bestWk,7,bestWk?`Best week so far: ${bestWk} of 7 days`:"");
+    let mFull=false, mBest=[0,30,""];
+    Object.entries(moC).forEach(([mk,c])=>{ const [yy,mm]=mk.split("-").map(Number), dim=new Date(yy,mm,0).getDate(); if(c>=dim) mFull=true; if(c/dim>mBest[0]/mBest[1]) mBest=[c,dim,`${c} of ${dim} days in ${new Date(yy,mm-1,1).toLocaleDateString(undefined,{month:"long"})}`]; });
+    const pmM=byId("pm"); pmM.earned=mFull; pmM.prog=mFull?null:mBest;
+    let wkends=0; days.forEach(k=>{ const d=parseDay(k); if(d.getDay()===6){ d.setDate(d.getDate()+1); if(days.has(dayKey(d))) wkends++; } });
+    reach("ww",wkends,4,`${wkends} of 4 weekends`);
+    byId("cb").earned=!!ST.comeback;
+    // session feats — live
+    byId("eb").earned=!!ST.earlyBird;
+    reach("hmar",ST.bestDayH,4,ST.bestDayH?`Best day so far: ${hm(ST.bestDayH)}`:"");
+    const fin=LIB.filter(b=>b.finished).map(tsOf).sort((a,b)=>a-b);
+    let run=0; for(let i=0;i<fin.length;i++){ let j=i; while(j+1<fin.length&&fin[j+1]-fin[i]<=6*864e5) j++; run=Math.max(run,j-i+1); }
+    reach("bng",run,3,`${run} of 3 books within a week`);
+    // series and authors
+    const norm=v=>(v||"").trim().toLowerCase(), tally=key=>{ const t={}; LIB.forEach(b=>{ const v=norm(b[key]); if(v) t[v]=(t[v]||0)+1; }); return t; };
+    const ser=tally("series"), aut=tally("author"), topS=maxOf(ser), topA=maxOf(aut), nA=Object.keys(aut).length;
+    reach("tri",topS,3,`${topS} of 3 in one series`); reach("saga",topS,10,`${topS} of 10 in one series`);
+    reach("aul",topA,5,`${topA} of 5 by one author`); reach("exp",nA,10,`${nA} of 10 authors`); reach("wan",nA,25,`${nA} of 25 authors`);
+    // special
+    byId("fl").earned=!PUBLIC_LAUNCH||ST.createdAt<PUBLIC_LAUNCH;
+    reach("nt",ST.notesWritten,10,`${ST.notesWritten} of 10 notes`);
     const omni=byId("omni"), n=new Set(LIB.map(b=>b.genre).filter(Boolean)).size;
     omni.earned=n>=OMNI_GOAL; omni.prog=omni.earned?null:[n,OMNI_GOAL,`${n} of ${OMNI_GOAL} genres so far`];
     if(!quiet) M.filter(m=>m.earned&&!was[m.id]).forEach(m=>pendingEarned.push(m));   // newly earned → shown on Done
@@ -785,20 +1087,99 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
   }
 
   /* nav */
-  function go(id){
+  /* navigation: the tab bar switches tabs (and clears history); links inside the app push a screen,
+     and Back — the button or a swipe from the left edge — returns to the previous one, as on iOS */
+  const TABS=new Set(["s-home","s-shelf"]);
+  let current="s-home", hist=[];
+  function show(id){
+    current=id;
     $("#earned").classList.remove("open");
-    $$(".screen").forEach(s=>s.classList.toggle("active",s.id===id));
-    $$(".nav button[data-go]").forEach(b=>b.classList.toggle("on",b.dataset.go===id));
+    $$(".screen").forEach(s=>{ s.classList.toggle("active",s.id===id); s.style.transform=""; });
+    const tab=TABS.has(id)?id:([...hist].reverse().find(x=>TABS.has(x))||"s-home");
+    $$(".nav button[data-go]").forEach(b=>b.classList.toggle("on",b.dataset.go===tab));
+    document.body.classList.toggle("can-back",hist.length>0);
+    if(id==="s-shelf") renderShelfAll();
     window.scrollTo({top:0});
   }
-  $$("[data-go]").forEach(b=>b.onclick=()=>go(b.dataset.go));
+  function go(id,{tab=false}={}){
+    if(tab){ hist=[]; show(id); return; }
+    if(id===current) return;
+    hist.push(current); show(id);
+  }
+  function back(){ if(hist.length) show(hist.pop()); else show("s-home"); }
+  document.addEventListener("click",e=>{
+    const g=e.target.closest("[data-go]"); if(g){ go(g.dataset.go,{tab:!!g.closest(".nav")}); return; }
+    if(e.target.closest("[data-nav-back]")) back();
+  });
+  let edge=null;   // swipe right from the left edge to go back
+  document.addEventListener("touchstart",e=>{
+    if(e.touches.length!==1||openP||$("#earned").classList.contains("open")||!hist.length) return;
+    const t=e.touches[0]; if(t.clientX>28) return;
+    edge={x:t.clientX,y:t.clientY,dx:0,on:false,el:$("#"+current)};
+  },{passive:true});
+  document.addEventListener("touchmove",e=>{
+    if(!edge) return; const t=e.touches[0], dx=t.clientX-edge.x, dy=t.clientY-edge.y;
+    if(!edge.on){ if(Math.abs(dy)>Math.abs(dx)&&Math.abs(dy)>10){ edge=null; return; } if(dx<=10) return; edge.on=true; edge.el.classList.add("swiping"); }
+    if(e.cancelable) e.preventDefault();
+    edge.dx=Math.max(0,dx); edge.el.style.transform=`translateX(${edge.dx}px)`;
+  },{passive:false});
+  const edgeEnd=()=>{ if(!edge) return; const s=edge; edge=null; if(!s.on) return; s.el.classList.remove("swiping"); if(s.dx>innerWidth*.3) back(); else s.el.style.transform=""; };
+  document.addEventListener("touchend",edgeEnd); document.addEventListener("touchcancel",edgeEnd);
 
   /* sheet */
   const sheet=$("#sheet"), scrim=$("#scrim");
-  function openSheet(){ showMenu(); sheetEntry.reset(); sheet.classList.add("open"); scrim.classList.add("open"); }
-  function closeSheet(){ sheet.classList.remove("open"); scrim.classList.remove("open"); }
+  let openP=null;
+  function openPanel(p){
+    if(openP&&openP!==p) openP.classList.remove("open");
+    openP=p; p.querySelector(".inner").scrollTop=0; p.classList.add("open"); scrim.classList.add("open");
+    document.documentElement.classList.add("locked");
+  }
+  function closePanel(){ if(openP) openP.classList.remove("open"); openP=null; scrim.classList.remove("open"); scrim.style.opacity=""; document.documentElement.classList.remove("locked"); }
+  function openSheet(){ showMenu(); sheetEntry.reset(); openPanel(sheet); }
+  function closeSheet(){ closePanel(); }
+  /* drag down to dismiss — follows the finger, closes past ~30% of its height or on a quick flick,
+     springs back otherwise; only starts when the content is scrolled to the top, like iOS sheets */
+  let suppressClick=false;
+  document.addEventListener("click",e=>{ if(suppressClick){ e.stopPropagation(); e.preventDefault(); } },true);
+  function dragDismiss(zone,{mover=zone,scroller=null,onClose,fade=null,threshold=null}){
+    let y0=null,x0=0,dy=0,on=false,lastY=0,lastT=0,vy=0;
+    const begin=(x,y,target)=>{ y0=target.closest("input,select,textarea")?null:y; x0=x; dy=0; on=false; lastY=y; lastT=performance.now(); vy=0; };
+    const move=(x,y,ev)=>{
+      if(y0==null) return;
+      const d=y-y0, dx=x-x0;
+      if(!on){
+        if(Math.abs(dx)>Math.abs(d)&&Math.abs(dx)>8){ y0=null; return; }
+        if(d>8&&(!scroller||scroller.scrollTop<=0)){ on=true; y0=y; mover.classList.add("dragging"); }
+        else { if(d<-8||(d>8&&scroller&&scroller.scrollTop>0)) y0=null; return; }
+      }
+      const now=performance.now(); vy=(y-lastY)/Math.max(1,now-lastT); lastY=y; lastT=now;
+      dy=Math.max(0,y-y0);
+      if(ev.cancelable) ev.preventDefault();
+      mover.style.transform=`translateY(${dy}px)`;
+      if(fade) fade(Math.min(1,dy/(mover.offsetHeight||1)));
+    };
+    const end=()=>{
+      if(y0==null) return; y0=null; if(!on) return; on=false;
+      mover.classList.remove("dragging"); mover.style.transform=""; if(fade) fade(null);
+      suppressClick=true; setTimeout(()=>{ suppressClick=false; },350);
+      if(dy>(threshold||mover.offsetHeight*.3)||(vy>.5&&dy>24)) onClose();   // far enough, or a real flick
+    };
+    zone.addEventListener("touchstart",e=>{ if(e.touches.length===1) begin(e.touches[0].clientX,e.touches[0].clientY,e.target); },{passive:true});
+    zone.addEventListener("touchmove",e=>{ if(e.touches.length===1) move(e.touches[0].clientX,e.touches[0].clientY,e); },{passive:false});
+    zone.addEventListener("touchend",end); zone.addEventListener("touchcancel",end);
+    zone.addEventListener("pointerdown",e=>{
+      if(e.pointerType!=="mouse"||e.button!==0) return;
+      begin(e.clientX,e.clientY,e.target);
+      const mv=ev=>move(ev.clientX,ev.clientY,ev), up=()=>{ removeEventListener("pointermove",mv); removeEventListener("pointerup",up); end(); };
+      addEventListener("pointermove",mv); addEventListener("pointerup",up);
+    });
+  }
+  const scrimFade=p=>{ scrim.style.opacity=p==null?"":String(1-p); };
+  [sheet,$("#bookSheet")].forEach(p=>dragDismiss(p,{scroller:p.querySelector(".inner"),onClose:closePanel,fade:scrimFade}));
+  const ebox=$("#earned .ebox");
+  dragDismiss($("#earned"),{mover:ebox,threshold:120,onClose:()=>$("#earned").classList.remove("open"),fade:p=>{ ebox.style.opacity=p==null?"":String(1-p*.9); }});
   function showMenu(){ $("#menu").style.display="block"; $$(".form").forEach(f=>f.classList.remove("show")); }
-  $("#n-plus").onclick=openSheet; scrim.onclick=closeSheet;
+  $("#n-plus").onclick=openSheet; scrim.onclick=closePanel;
   $$(".opt").forEach(o=>o.onclick=()=>{ $("#menu").style.display="none"; $("#"+o.dataset.form).classList.add("show"); });
   $$("[data-back]").forEach(b=>b.onclick=showMenu);
   function bump(h){ ST.total+=h; save(); renderHero(); }
@@ -806,12 +1187,16 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
   function renderHero(){
     $("#heroNum").textContent=fmtN(ST.total).toLocaleString();
     $("#t1").textContent=ST.todayH?hm(ST.todayH):"0h"; $("#t2").textContent=fmtN(ST.weekH); $("#t3").textContent=fmtN(ST.monthH);
+    // streak: the badge colour follows the streak tier the current streak has reached
     $("#streakNum").textContent=ST.streak;
-    const streaks=M.filter(m=>m.group==="streak"), best=streaks.filter(m=>ST.bestStreak>=m.thr).pop(), nxt=streaks.find(m=>ST.streak<m.thr);
-    const cap=t=>t[0].toUpperCase()+t.slice(1);
-    $("#streakSub").textContent=nxt?`${cap(nxt.tier)} streak at ${nxt.thr} days`:"Every streak medal earned";
-    $("#streakMedal").className=`medal m-${best?best.tier:"locked"}`; $("#streakMedal").innerHTML=I.flame;
-    $("#streakLbl").innerHTML=best?`${cap(best.tier)}<br>streak`:"No<br>streak yet";
+    const streaks=M.filter(m=>m.group==="streak"), sCur=streaks.filter(m=>ST.streak>=m.thr).pop(), nxt=streaks.find(m=>ST.streak<m.thr);
+    const cap=t=>t[0].toUpperCase()+t.slice(1), tier=sCur?sCur.tier:"locked";
+    $("#streakMedal").className=`medal streakbadge m-${tier}`;
+    $("#streakMedal").setAttribute("aria-label",`${ST.streak}-day streak${sCur?`, ${sCur.tier} tier`:""}`);
+    $("#streakSub").textContent=sCur&&nxt?`${cap(sCur.tier)} streak · next medal in ${nxt.thr-ST.streak} day${nxt.thr-ST.streak===1?"":"s"}`:nxt?`${cap(nxt.tier)} streak at ${nxt.thr} days`:"Every streak medal earned";
+    const GLOW={bronze:"212,164,122",silver:"226,229,234",gold:"233,211,155",platinum:"222,233,236",diamond:"205,227,238"}, gl=$(".hero .glow");
+    const rgb=GLOW[tier]||"169,182,201", a=GLOW[tier]?.16:.05;   // unlit: only a faint cool glow
+    gl.style.setProperty("--hg",`rgba(${rgb},${a})`); gl.style.setProperty("--hg2",`rgba(${rgb},${a/3})`);
     const ranks=M.filter(m=>m.group==="rank"), cur=ranks.filter(m=>ST.total>=m.thr).pop(), next=ranks.find(m=>ST.total<m.thr);
     $("#rankName").textContent=cur?cur.name:"No rank yet";
     $("#rankNext").textContent=next?`${next.name} at ${next.thr.toLocaleString()} hours`:"Every rank earned";
@@ -828,11 +1213,18 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
     const now=new Date(), k=periodKeys(now), y=new Date(now); y.setDate(now.getDate()-1);
     ST.todayH+=hours; ST.weekH+=hours; ST.monthH+=hours; ST.yearH+=hours; ST.total+=hours;
     ST.bestDayH=Math.max(ST.bestDayH,ST.todayH);
-    if(ST.lastLog!==k.day){ ST.streak=(ST.lastLog===dayKey(y))?ST.streak+1:1; ST.lastLog=k.day; ST.weekdayDays[now.getDay()]++; }
+    let welcome=false;
+    if(ST.lastLog!==k.day){
+      if(ST.lastLog&&daysBetween(ST.lastLog,k.day)>=8){ ST.comeback=true; welcome=true; }   // a week or more away
+      ST.streak=(ST.lastLog===dayKey(y))?ST.streak+1:1; ST.lastLog=k.day; ST.weekdayDays[now.getDay()]++;
+      if(!ST.logDays.includes(k.day)) ST.logDays.push(k.day);
+    }
     ST.byWeekday[now.getDay()]+=hours; ST.bestStreak=Math.max(ST.bestStreak,ST.streak);
     if(now.getHours()<4) ST.owl=true;
-    if(note) ST.notes.push({t:note,m:hm(hours)});
+    if(now.getHours()>=4&&now.getHours()<7) ST.earlyBird=true;
+    if(note){ ST.notes.push({t:note,m:hm(hours)}); ST.notesWritten++; }
     save(); renderHero(); renderNotes(); recomputeMedals(); renderInsights();
+    return welcome;
   }
   function addPastHours(hours,src){ ST.past.push({src,h:hours,at:new Date().toISOString()}); ST.total+=hours; save(); renderHero(); recomputeMedals(); renderInsights(); }
   $$("[data-done]").forEach(b=>b.onclick=()=>{
@@ -840,16 +1232,16 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
     if(k==="live"){
       const h=+hIn.value||0, m=+mIn.value||0, hours=h+m/60;
       if(hours<=0){ toast("Enter how long you listened"); return; }
-      logListening(hours,$("#noteIn").value.trim());
+      const welcome=logListening(hours,$("#noteIn").value.trim());
       hIn.value=""; mIn.value=""; $("#noteIn").value=""; logLabel();
-      closeSheet(); go("s-home"); toast(`Logged ${hm(hours)}. Streak: ${ST.streak} day${ST.streak===1?"":"s"}`); showPendingEarned(); return;
+      closeSheet(); go("s-home",{tab:true}); toast(welcome?`Welcome back. Logged ${hm(hours)}.`:`Logged ${hm(hours)}. Streak: ${ST.streak} day${ST.streak===1?"":"s"}`); showPendingEarned(); return;
     }
     if(k==="past"){
       const h=+$("#pastH").value||0; if(h<=0){ toast("Enter the hours to add"); return; }
       addPastHours(h,$("#pastSrc").value); $("#pastH").value=""; $("#pastBtn").textContent="Add hours";
-      closeSheet(); go("s-home"); toast(`${fmtN(h)} hours added to your lifetime total`); showPendingEarned(); return;
+      closeSheet(); go("s-home",{tab:true}); toast(`${fmtN(h)} hours added to your lifetime total`); showPendingEarned(); return;
     }
-    closeSheet(); go("s-home"); showPendingEarned();   // book: the adds already happened
+    closeSheet(); go("s-home",{tab:true}); showPendingEarned();   // book: the adds already happened
   });
   let tt; function toast(m){ const t=$("#toast"); t.textContent=m; t.classList.add("show"); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove("show"),2200); }
 
@@ -949,7 +1341,7 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
     setTimeout(()=>URL.revokeObjectURL(u),4000);
   }
 
-  renderHero(); renderNotes();
+  renderHero(); renderNotes(); renderShelfAll();
   recomputeMedals(true);   // initial pass: settle every medal from saved state without announcing
   renderInsights();
 
@@ -963,7 +1355,10 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
     $("#obNext1").onclick=()=>{ const h=+$("#obPast").value||0; if(h>0) addPastHours(h,$("#obSrc").value); obGo(2); };
     $("#obSkip1").onclick=()=>obGo(2);
     $("#obNext2").onclick=$("#obSkip2").onclick=()=>obGo(3);
-    $("#obFinish").onclick=()=>{ ST.onboarded=true; save(); ob.classList.remove("open"); go("s-home"); showPendingEarned(); };
+    $("#obFinish").onclick=()=>{ ST.onboarded=true; save(); ob.classList.remove("open"); go("s-home",{tab:true});
+      // welcome with the Founding Listener medal while early testing lasts
+      const fl=byId("fl"); if(fl.earned&&!pendingEarned.includes(fl)) pendingEarned.unshift(fl);
+      showPendingEarned(); };
   }
   $("#resetData").onclick=()=>{ if(confirm("Start over? This clears everything saved on this device.")){ try{ localStorage.removeItem(KEY); }catch(e){} location.reload(); } };
 
