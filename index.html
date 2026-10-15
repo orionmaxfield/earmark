@@ -237,7 +237,7 @@ svg[stroke="currentColor"]{stroke-width:1.75;stroke-linecap:round;stroke-linejoi
 .shelf-empty button{min-height:44px;padding:0 16px;border-radius:var(--r-sm);border:1px solid var(--line-2);background:transparent;color:var(--ink);font-size:var(--t-14);font-weight:600;cursor:pointer}
 
 /* nav */
-.nav{position:fixed;left:0;right:0;bottom:0;padding:8px 0 calc(8px + env(safe-area-inset-bottom,0px));background:var(--bg-nav);border-top:1px solid var(--line);box-shadow:0 -8px 24px rgba(0,0,0,.3)}
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:15;padding:8px 0 calc(8px + env(safe-area-inset-bottom,0px));background:var(--bg-nav);border-top:1px solid var(--line);box-shadow:0 -8px 24px rgba(0,0,0,.3)}
 .nav .inner{max-width:430px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:end}
 .nav button{border:0;background:transparent;color:var(--ink-3);font-size:var(--t-12);font-weight:600;letter-spacing:.02em;display:flex;flex-direction:column;align-items:center;gap:4px;min-height:48px;padding:6px;border-radius:var(--r-sm);cursor:pointer}
 .nav button.on{color:var(--accent)}
@@ -408,8 +408,75 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
 .field input[type=date]{color-scheme:dark}
 .ghost.danger{color:#FF9494}
 
+/* home: settings gear + goals */
+#s-home{position:relative}
+.gear{position:absolute;top:10px;right:max(8px,env(safe-area-inset-right,0px));width:44px;height:44px;display:grid;place-items:center;border:0;background:transparent;color:var(--ink-2);border-radius:50%;cursor:pointer;z-index:2}
+.gear svg{width:24px;height:24px}
+.gear:active{background:var(--surface)}
+.goals{margin-top:12px;text-align:left;display:grid;gap:14px}
+.goals[hidden]{display:none}
+.goal .gl{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.goal .gl span{color:var(--ink-3);font-size:var(--t-12);font-weight:600;letter-spacing:.08em;text-transform:uppercase}
+.goal .gl b{font-size:var(--t-14);font-weight:600}
+.goal .gl b.met{color:var(--accent)}
+.goal .bar{margin-top:8px}
+
+/* settings — grouped iPhone-style rows */
+.sgh{margin:24px 4px 8px;font-size:var(--t-12);font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.sgroup{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);overflow:hidden;box-shadow:var(--sh-1)}
+.srow{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:52px;padding:10px 16px;border:0;border-bottom:1px solid var(--line);background:transparent;color:var(--ink);font:inherit;font-size:var(--t-16);text-align:left;text-decoration:none;cursor:pointer;transition:background-color var(--fast) var(--ease)}
+.srow:last-child{border-bottom:0}
+.srow .sl{flex:1;min-width:0}
+.srow .sv{color:var(--ink-2);font-size:15px;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.srow .chev{width:18px;height:18px;color:var(--ink-3);flex:0 0 auto}
+.srow.danger .sl{color:#FF9494}
+.srow.static{cursor:default}
+.srow:not(.static):active{background:var(--surface-2)}
+.srow.stack{flex-direction:column;align-items:stretch;gap:10px}
+.sinput{flex:1;min-width:0;text-align:right;background:transparent;border:0;color:var(--ink-2);font:inherit;font-size:var(--t-16);padding:6px 0}
+.snum{width:72px;text-align:right;background:var(--well);border:1px solid var(--line-2);border-radius:var(--r-sm);color:var(--ink);font:inherit;font-size:var(--t-16);padding:6px 8px;min-height:36px}
+.sinput:focus-visible,.snum:focus-visible{outline:2px solid var(--accent);outline-offset:1px;border-radius:6px}
+.sseg{display:flex}
+.sseg button{flex:1;min-height:36px;font-size:var(--t-14)}
+.sgnote{margin:8px 4px 0;font-size:13px;color:var(--ink-3);line-height:1.45}
+.prose{margin-top:8px}
+.prose h3{font-size:var(--t-16);font-weight:700;margin:20px 0 4px}
+.prose h3:first-child{margin-top:0}
+.prose p{color:var(--ink-2);font-size:15px;line-height:1.55;margin-top:6px}
+
+/* alerts */
+.alert{position:fixed;inset:0;z-index:70;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(2,8,20,.62)}
+.alert.open{display:flex}
+.alert .abox{width:100%;max-width:300px;background:var(--bg-raised);border:1px solid var(--line-2);border-radius:16px;box-shadow:var(--sh-3);text-align:center;overflow:hidden;animation:mint var(--med) var(--ease)}
+.alert h3{font-size:17px;font-weight:700;margin:20px 16px 6px}
+.alert p{font-size:var(--t-14);color:var(--ink-2);margin:0 16px 18px;line-height:1.45}
+.abtns{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line-2)}
+.abtns button{min-height:48px;border:0;background:transparent;color:var(--accent);font:inherit;font-size:var(--t-16);font-weight:600;cursor:pointer}
+.abtns button+button{border-left:1px solid var(--line-2)}
+.abtns button.danger{color:#FF8A8A}
+
+/* achievements: search, collapsible groups, secret badges */
+.wallsearch{margin:0 0 12px}
+.wgroup{border-bottom:1px solid var(--line)}
+.wallhead{width:100%;display:flex;align-items:center;gap:10px;min-height:56px;padding:8px 0;background:none;border:0;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.wallhead h2{flex:1;margin:0;font-size:var(--t-20)}
+.wallhead .chev{width:18px;height:18px;color:var(--ink-3);transition:transform var(--fast) var(--ease)}
+.wgroup.open .wallhead .chev{transform:rotate(90deg)}
+.wgroup .wall{display:none;padding:4px 0 20px}
+.wgroup.open .wall{display:grid}
+.wallempty{padding:32px 0;text-align:center;color:var(--ink-2)}
+.medalwrap.secret .medal span{color:var(--ink-3)}
+
+/* pushed screens slide in from the right, like a navigation stack */
+@keyframes inFwd{from{transform:translateX(100%)}to{transform:none}}
+@keyframes inBack{from{transform:translateX(-24%);opacity:.5}to{transform:none;opacity:1}}
+.screen.in-fwd{animation:inFwd 280ms var(--ease)}
+.screen.in-back{animation:inBack 240ms var(--ease)}
+
+/* reduce motion: follow the phone, or the in-app setting */
+html.rm-on *,html.rm-on *:before,html.rm-on *:after{transition:none !important;animation:none !important}
 @media (prefers-reduced-motion:reduce){
-  *,*:before,*:after{transition:none !important;animation:none !important}
+  html:not(.rm-off) *,html:not(.rm-off) *:before,html:not(.rm-off) *:after{transition:none !important;animation:none !important}
 }
 </style>
 </head>
@@ -438,8 +505,8 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
       <h2>Books you've finished</h2>
       <p class="lead">Add a few favourites to start your shelf. Hours are optional; when you add them they count toward your total.</p>
       <!-- TODO: free-type title is a stopgap until titles come from the book database with covers and runtimes. -->
-      <div class="field"><input id="obTitle" placeholder="Book title" autocomplete="off" aria-label="Book title"></div>
-      <div class="field"><input id="obAuthor" placeholder="Author (optional)" autocomplete="off" aria-label="Author"></div>
+      <div class="field"><input id="obTitle" autocapitalize="words" placeholder="Book title" autocomplete="off" aria-label="Book title"></div>
+      <div class="field"><input id="obAuthor" autocapitalize="words" placeholder="Author (optional)" autocomplete="off" aria-label="Author"></div>
       <div class="field"><select class="genre" id="obGenre" aria-label="Genre (optional)"></select></div>
       <div class="field"><label><input id="obHours" type="number" inputmode="decimal" min="0" step="0.5" placeholder="Optional" aria-label="Hours it ran"><span>hours</span></label><button class="addbtn" id="obAddBtn">Add</button></div>
       <div class="added" id="obAddedList" aria-live="polite"></div>
@@ -461,6 +528,7 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
 
 <!-- HOME -->
 <section class="screen active" id="s-home">
+  <button class="gear" data-go="s-settings" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
   <div class="brandblock"><div class="brandrow"><img src="icons/earmark-mark.png" alt="" width="32" height="32"><div class="brand">Ear<span class="mk">mark</span></div></div><div class="tagline">Listen up<span class="dot">.</span></div></div>
 
   <div class="hero">
@@ -474,6 +542,10 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
       <div class="box"><b id="t1">0h</b><small>today</small></div>
       <div class="box"><b id="t2">0</b><small>hrs this week</small></div>
       <div class="box"><b id="t3">0</b><small>hrs this month</small></div>
+    </div>
+    <div class="goals card" id="goals">
+      <div class="goal"><div class="gl"><span>Daily goal</span><b id="gDay"></b></div><div class="bar"><i id="gDayBar" style="width:0%"></i></div></div>
+      <div class="goal"><div class="gl"><span>Weekly goal</span><b id="gWeek"></b></div><div class="bar"><i id="gWeekBar" style="width:0%"></i></div></div>
     </div>
     <div class="notes" id="notes"></div>
     <div class="totalline"><b id="heroNum">0</b><small>hours listened, lifetime</small></div>
@@ -511,7 +583,7 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
     <div class="bookcase" id="bookcase"></div>
   </div>
 
-  <p class="proto">Prototype · saved on this device · <button class="linkbtn" id="resetData" type="button">Start over</button></p>
+  <p class="proto">Prototype · saved on this device</p>
 </section>
 
 <!-- BOOKSHELF: every book, as a grid of three or a list one by one -->
@@ -536,8 +608,8 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
      backed by the book database, returning covers and runtimes instead of typed titles and hours. -->
 <section class="screen" id="s-add">
   <div class="hdr"><button class="backbtn" data-nav-back aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m15 5-7 7 7 7"/></svg>Back</button><div class="title">Add books</div><div class="tag">Type in everything you've finished</div></div>
-  <div class="field"><input id="addTitle" placeholder="Book title" autocomplete="off" aria-label="Book title"></div>
-  <div class="field"><input id="addAuthor" placeholder="Author (optional)" autocomplete="off" aria-label="Author"></div>
+  <div class="field"><input id="addTitle" autocapitalize="words" placeholder="Book title" autocomplete="off" aria-label="Book title"></div>
+  <div class="field"><input id="addAuthor" autocapitalize="words" placeholder="Author (optional)" autocomplete="off" aria-label="Author"></div>
   <!-- TODO: genre is a manual pick for now. It will be fetched automatically from the book database
        (along with cover art and runtime) once titles come from a real search. -->
   <div class="field"><select class="genre" id="addGenre" aria-label="Genre (optional)"></select></div>
@@ -549,9 +621,74 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
   <button class="cta" id="addDone" style="margin-top:18px">Done</button>
 </section>
 
+<!-- SETTINGS -->
+<section class="screen" id="s-settings">
+  <div class="hdr"><button class="backbtn" data-nav-back aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m15 5-7 7 7 7"/></svg>Back</button><div class="title">Settings</div></div>
+  <div class="sgh">Account</div>
+  <div class="sgroup">
+    <label class="srow static"><span class="sl">Display name</span><input id="setName" class="sinput" autocomplete="name" autocapitalize="words" placeholder="Your name"></label>
+    <div class="srow static"><span class="sl">Email</span><span class="sv" id="setEmail">Not connected</span></div>
+    <button class="srow" id="setSignOut" type="button"><span class="sl">Sign out</span><span class="sv">Coming soon</span></button>
+    <button class="srow danger" id="setDelete" type="button"><span class="sl">Delete account</span></button>
+  </div>
+  <p class="sgnote">Your account lives on this device for now. Signing in from other devices is coming soon.</p>
+
+  <div class="sgh">Listening goals</div>
+  <div class="sgroup">
+    <label class="srow static"><span class="sl">Daily goal</span><span class="sv"><input id="setDaily" class="snum" type="number" inputmode="numeric" min="1" max="1440"> min</span></label>
+    <label class="srow static"><span class="sl">Weekly goal</span><span class="sv"><input id="setWeekly" class="snum" type="number" inputmode="decimal" min="0.5" max="168" step="0.5"> hours</span></label>
+    <div class="srow static"><span class="sl">Show goal progress on Home</span><button class="sw" id="setShowGoals" role="switch" aria-label="Show goal progress on Home"></button></div>
+  </div>
+
+  <div class="sgh">Streaks</div>
+  <div class="sgroup">
+    <label class="srow static"><span class="sl">Minimum to count a day</span><span class="sv"><input id="setMinMin" class="snum" type="number" inputmode="numeric" min="1" max="600"> min</span></label>
+    <div class="srow static stack"><span class="sl">Week starts on</span><div class="seg sseg" data-set="weekStart" role="group" aria-label="Week starts on"><button data-v="sun">Sunday</button><button data-v="mon">Monday</button></div></div>
+  </div>
+
+  <div class="sgh">Display</div>
+  <div class="sgroup">
+    <div class="srow static stack"><span class="sl">Show time as</span><div class="seg sseg" data-set="timeFormat" role="group" aria-label="Show time as"><button data-v="hm">1 h 30 m</button><button data-v="dec">1.5 h</button></div></div>
+    <div class="srow static stack"><span class="sl">Bookshelf view</span><div class="seg sseg" data-set="shelfView" role="group" aria-label="Bookshelf view"><button data-v="grid">Grid</button><button data-v="list">List</button></div></div>
+    <div class="srow static stack"><span class="sl">Bookshelf shows</span><div class="seg sseg" data-set="shelfFilter" role="group" aria-label="Bookshelf shows"><button data-v="month">Month</button><button data-v="year">Year</button><button data-v="all">All</button></div></div>
+    <div class="srow static stack"><span class="sl">Reduce motion</span><div class="seg sseg" data-set="reduceMotion" role="group" aria-label="Reduce motion"><button data-v="system">Auto</button><button data-v="on">On</button><button data-v="off">Off</button></div></div>
+  </div>
+
+  <div class="sgh">Data</div>
+  <div class="sgroup">
+    <button class="srow" id="setImport" type="button"><span class="sl">Add hours from the past</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button>
+    <button class="srow" id="setExport" type="button"><span class="sl">Export my data</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button>
+    <button class="srow danger" id="setReset" type="button"><span class="sl">Reset all data</span></button>
+  </div>
+
+  <div class="sgh">Notifications</div>
+  <div class="sgroup"><div class="srow static"><span class="sl">Listening reminders</span><span class="sv">Coming soon</span></div></div>
+  <p class="sgnote">Gentle reminders to keep your streak going are on the way.</p>
+
+  <div class="sgh">Help &amp; feedback</div>
+  <div class="sgroup">
+    <a class="srow" id="setFeedback" href="#"><span class="sl">Send feedback</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></a>
+    <button class="srow" data-go="s-help" type="button"><span class="sl">How streaks and hours work</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button>
+  </div>
+
+  <div class="sgh">About</div>
+  <div class="sgroup">
+    <div class="srow static"><span class="sl">Version</span><span class="sv" id="setVersion"></span></div>
+    <div class="srow static" id="setFounding" hidden><span class="sl">Founding Listener</span><span class="sv">Thank you for being early</span></div>
+  </div>
+  <p class="sgnote">Earmark is made for people who love listening. Designed and built by the Earmark team. Set in Plus Jakarta Sans.</p>
+</section>
+
+<!-- HELP: how streaks and hours work -->
+<section class="screen" id="s-help">
+  <div class="hdr"><button class="backbtn" data-nav-back aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m15 5-7 7 7 7"/></svg>Back</button><div class="title">How it works</div></div>
+  <div class="card prose" id="helpBody"></div>
+</section>
+
 <!-- BADGES -->
 <section class="screen" id="s-badges">
   <div class="hdr"><button class="backbtn" data-nav-back aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m15 5-7 7 7 7"/></svg>Back</button><div class="title">Achievements</div><div class="tag" id="wallCount">10 of 27 earned</div></div>
+  <div class="field wallsearch"><input id="wallSearch" type="search" placeholder="Search medals" aria-label="Search medals" autocomplete="off"></div>
   <div class="filters"><button class="on" data-f="all">All</button><button data-f="earned">Earned</button><button data-f="locked">Not yet</button></div>
   <div id="walls"></div>
 </section>
@@ -563,7 +700,7 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
   <div class="inner">
     <button data-go="s-shelf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 4v16M9.5 4v16M14 5.5l3.8 14.5M3 20h18"/></svg>Bookshelf</button>
     <button id="n-plus" aria-label="Add hours"><span class="plus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></span></button>
-    <button data-go="s-home" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Profile</button>
+    <button data-go="s-home" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3.5 11 12 3.8l8.5 7.2"/><path d="M5.8 9.2V20h12.4V9.2"/><path d="M10 20v-5.5h4V20"/></svg>Home</button>
   </div>
 </nav>
 
@@ -582,8 +719,8 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
     <!-- TODO: this free-type title field is a stopgap. It will later become a real book search
          backed by the book database, returning covers and runtimes instead of typed titles and hours. -->
     <div class="form" id="f-book"><h2 style="margin:0">Finished a book</h2>
-      <div class="field"><input id="sheetTitle" placeholder="Book title" autocomplete="off" aria-label="Book title"></div>
-      <div class="field"><input id="sheetAuthor" placeholder="Author (optional)" autocomplete="off" aria-label="Author"></div>
+      <div class="field"><input id="sheetTitle" autocapitalize="words" placeholder="Book title" autocomplete="off" aria-label="Book title"></div>
+      <div class="field"><input id="sheetAuthor" autocapitalize="words" placeholder="Author (optional)" autocomplete="off" aria-label="Author"></div>
       <!-- TODO: genre is a manual pick for now; later it comes automatically from the book database. -->
       <div class="field"><select class="genre" id="sheetGenre" aria-label="Genre (optional)"></select></div>
       <div class="field"><label><input id="sheetHours" type="number" inputmode="decimal" min="0" step="0.5" placeholder="Optional" aria-label="Hours it ran"><span>hours</span></label><button class="addbtn" id="sheetAddBtn">Add</button></div>
@@ -600,11 +737,13 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
     <div class="handle"></div>
     <h2 style="margin:0 0 4px">Edit book</h2>
     <label class="flabel" for="bkTitle">Title</label>
-    <div class="field"><input id="bkTitle" placeholder="Book title" autocomplete="off"></div>
+    <div class="field"><input id="bkTitle" autocapitalize="words" placeholder="Book title" autocomplete="off"></div>
     <label class="flabel" for="bkAuthor">Author</label>
-    <div class="field"><input id="bkAuthor" placeholder="Optional" autocomplete="off"></div>
+    <div class="field"><input id="bkAuthor" autocapitalize="words" placeholder="Optional" autocomplete="off"></div>
     <label class="flabel" for="bkSeries">Series</label>
-    <div class="field"><input id="bkSeries" placeholder="Optional, e.g. The Stormlight Archive" autocomplete="off"></div>
+    <div class="field"><input id="bkSeries" autocapitalize="words" placeholder="Optional, e.g. The Stormlight Archive" autocomplete="off"></div>
+    <label class="flabel" for="bkNum">Book number in series</label>
+    <div class="field"><input id="bkNum" type="number" inputmode="numeric" min="1" step="1" placeholder="Optional, e.g. 1"></div>
     <label class="flabel" for="bkGenre">Genre</label>
     <div class="field"><select class="genre" id="bkGenre"></select></div>
     <label class="flabel" for="bkH">Length</label>
@@ -615,6 +754,11 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
     <button class="cta" id="bkSave">Save changes</button>
     <button class="ghost danger" id="bkDelete">Delete book</button>
   </div>
+</div>
+
+<!-- ALERT -->
+<div class="alert" id="alert" role="alertdialog" aria-modal="true" aria-labelledby="aTitle">
+  <div class="abox"><h3 id="aTitle"></h3><p id="aMsg"></p><div class="abtns"><button id="aCancel" type="button">Cancel</button><button id="aOk" type="button">OK</button></div></div>
 </div>
 
 <!-- MEDAL DETAIL / EARNED -->
@@ -670,19 +814,46 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
     hourglass:`<svg viewBox="0 0 24 24" ${sw1}><path d="M6.5 3h11M6.5 21h11"/><path d="M8 3c0 5 8 5.5 8 9s-8 4-8 9M16 3c0 5-8 5.5-8 9s8 4 8 9"/></svg>`,
     shuffle:`<svg viewBox="0 0 24 24" ${sw1}><path d="M3 7h4l10 10h4M3 17h4l2.5-2.5M14.5 9.5 17 7h4"/><path d="m18 4 3 3-3 3M18 14l3 3-3 3"/></svg>`,
     note:`<svg viewBox="0 0 24 24" ${sw1}><path d="M6 3.5h8.5L19 8v12.5H6z"/><path d="M14.5 3.5V8H19M9 12.5h7M9 16h4.5"/></svg>`,
-    flag:`<svg viewBox="0 0 24 24" ${sw1}><path d="M5.5 21V4M5.5 4.5h11.5l-2.5 4 2.5 4H5.5"/></svg>`
+    flag:`<svg viewBox="0 0 24 24" ${sw1}><path d="M5.5 21V4M5.5 4.5h11.5l-2.5 4 2.5 4H5.5"/></svg>`,
+    ghost:`<svg viewBox="0 0 24 24" ${sw1}><path d="M6 20V11a6 6 0 0 1 12 0v9l-2-1.5-2 1.5-2-1.5-2 1.5-2-1.5z"/><path d="M10 11h.01M14 11h.01"/></svg>`,
+    pen:`<svg viewBox="0 0 24 24" ${sw1}><path d="M4 20l4-1 11-11-3-3L5 16z"/><path d="M14 6l3 3"/></svg>`,
+    sprout:`<svg viewBox="0 0 24 24" ${sw1}><path d="M12 21v-9"/><path d="M12 12C12 8 9 6 5 6c0 4 3 6 7 6zM12 10c0-3 2.5-5 6-5 0 3.5-2.5 5-6 5z"/></svg>`,
+    briefcase:`<svg viewBox="0 0 24 24" ${sw1}><rect x="3.5" y="7.5" width="17" height="12" rx="2"/><path d="M9 7.5V6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v1.5M3.5 13h17"/></svg>`,
+    flask:`<svg viewBox="0 0 24 24" ${sw1}><path d="M9.5 3.5h5M10.5 3.5v6L5 19a1.3 1.3 0 0 0 1.1 2h11.8a1.3 1.3 0 0 0 1.1-2l-5.5-9.5v-6"/><path d="M7.5 15h9"/></svg>`,
+    candle:`<svg viewBox="0 0 24 24" ${sw1}><rect x="9" y="10" width="6" height="11" rx="1"/><path d="M12 10V8M12 3c1.5 1.6 1.5 3.2 0 4-1.5-.8-1.5-2.4 0-4z"/></svg>`,
+    smile:`<svg viewBox="0 0 24 24" ${sw1}><circle cx="12" cy="12" r="8.5"/><path d="M8.5 14a4 4 0 0 0 7 0M9.5 10h.01M14.5 10h.01"/></svg>`,
+    cactus:`<svg viewBox="0 0 24 24" ${sw1}><path d="M10 21V5a2 2 0 0 1 4 0v16M10 13H8a2 2 0 0 1-2-2V9M14 11h2a2 2 0 0 0 2-2V7M7 21h10"/></svg>`,
+    mic:`<svg viewBox="0 0 24 24" ${sw1}><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M9 21h6"/></svg>`,
+    balloon:`<svg viewBox="0 0 24 24" ${sw1}><path d="M12 3a5.5 5.5 0 0 0-5.5 5.5c0 4 3.5 7 5.5 7s5.5-3 5.5-7A5.5 5.5 0 0 0 12 3z"/><path d="M12 15.5 11 17h2zM12 17c0 2-2 2-2 4"/></svg>`,
+    bulb:`<svg viewBox="0 0 24 24" ${sw1}><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9V16h7v-2.1A6 6 0 0 0 12 3z"/></svg>`,
+    head:`<svg viewBox="0 0 24 24" ${sw1}><path d="M14 21v-3h2.5a1.5 1.5 0 0 0 1.5-1.5V14l1.5-.5-1.5-3A7 7 0 1 0 7 15.5V21"/><path d="M11 8.5a2 2 0 1 1 2 2V12"/></svg>`,
+    sunset:`<svg viewBox="0 0 24 24" ${sw1}><path d="M3 18h18M6 18a6 6 0 0 1 12 0M12 5v3M4.9 9.9l1.4 1.4M19.1 9.9l-1.4 1.4M8 21h8"/></svg>`,
+    gift:`<svg viewBox="0 0 24 24" ${sw1}><rect x="3.5" y="9" width="17" height="4" rx="1"/><path d="M5 13v7.5h14V13M12 9v11.5M12 9c-2-4-6-4-6-1.5S9.5 9 12 9zM12 9c2-4 6-4 6-1.5S14.5 9 12 9z"/></svg>`,
+    flower:`<svg viewBox="0 0 24 24" ${sw1}><path d="M7 5l2.5 2L12 4l2.5 3L17 5v4a5 5 0 0 1-10 0z"/><path d="M12 14v7M12 18c-2.5 0-4-1.5-4-3.5M12 18c2.5 0 4-1.5 4-3.5"/></svg>`,
+    snow:`<svg viewBox="0 0 24 24" ${sw1}><path d="M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9M9.5 4.5 12 6l2.5-1.5M9.5 19.5 12 18l2.5 1.5"/></svg>`,
+    cake:`<svg viewBox="0 0 24 24" ${sw1}><path d="M4 21h16M5 21v-7a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v7M5 16c1.5 1 3 1 4.5 0s3-1 4.5 0 3 1 5 0M12 12V8M12 3.5c1 1.2 1 2.4 0 3-1-.6-1-1.8 0-3z"/></svg>`,
+    scale:`<svg viewBox="0 0 24 24" ${sw1}><path d="M12 4v16M8 20h8M5 7h14M5 7l-2.5 6a3 3 0 0 0 5 0zM19 7l-2.5 6a3 3 0 0 0 5 0z"/></svg>`,
+    download:`<svg viewBox="0 0 24 24" ${sw1}><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19.5h14"/></svg>`,
+    share:`<svg viewBox="0 0 24 24" ${sw1}><path d="M12 15V4M8 7.5 12 4l4 3.5"/><path d="M6 11H5v9h14v-9h-1"/></svg>`
   };
   /* ---- state: everything the app shows comes from here. A new account starts at zero. ---- */
   const KEY="earmark.state.v1";
+  const APP_VERSION="0.9.0 (beta)";
+  const FEEDBACK_EMAIL="orionsmaxfield@gmail.com";   // "Send feedback" opens a new email to this address
+  const SETTINGS_DEFAULT={email:"",dailyGoalMin:30,weeklyGoalH:5,showGoals:true,streakMinMin:5,weekStart:"mon",timeFormat:"hm",reduceMotion:"system"};
   const fresh=()=>({v:1,onboarded:false,user:{name:""},total:0,todayH:0,weekH:0,monthH:0,lastMonthH:0,yearH:0,
     bestDayH:0,streak:0,bestStreak:0,lastLog:null,owl:false,byWeekday:[0,0,0,0,0,0,0],weekdayDays:[0,0,0,0,0,0,0],
     notes:[],books:[],past:[],keys:{day:"",week:"",month:"",year:""},
     createdAt:new Date().toISOString(),logDays:[],notesWritten:0,comeback:false,earlyBird:false,
-    shelfView:"grid",shelfFilter:"all",shelfSort:"newest"});
+    shelfView:"grid",shelfFilter:"all",shelfSort:"newest",
+    // every logged listening session: {id, at (ISO time), d (local day), m (minutes), note}
+    sessions:[],legacy:{days:[],bestStreak:0,bestDayH:0,owl:false,earlyBird:false,comeback:false},carry:{},migratedSessions:false,
+    shares:0,yearReviewViewed:false,wallOpen:{},
+    settings:{...SETTINGS_DEFAULT}});
   /* TODO: set this to the public launch date (e.g. "2027-03-01"). Accounts created before it are
      Founding Listeners; while it is null, every account is (we are still in early testing). */
   const PUBLIC_LAUNCH=null;
-  function load(){ try{ const raw=localStorage.getItem(KEY); if(raw){ const o=JSON.parse(raw); return Object.assign(fresh(),o,{user:Object.assign({name:""},o.user||{}),keys:Object.assign({},fresh().keys,o.keys||{})}); } }catch(e){} return fresh(); }
+  function load(){ try{ const raw=localStorage.getItem(KEY); if(raw){ const o=JSON.parse(raw); return Object.assign(fresh(),o,{user:Object.assign({name:""},o.user||{}),keys:Object.assign({},fresh().keys,o.keys||{}),settings:Object.assign({},SETTINGS_DEFAULT,o.settings||{}),legacy:Object.assign({},fresh().legacy,o.legacy||{})}); } }catch(e){} return fresh(); }
   function save(){ try{ localStorage.setItem(KEY,JSON.stringify(ST)); }catch(e){} }
   const ST=load();
   const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
@@ -691,14 +862,25 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
   const dayKey=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
   const parseDay=k=>{ const [y,m,d]=k.split("-").map(Number); return new Date(y,m-1,d); };
   const daysBetween=(a,b)=>Math.round((parseDay(b)-parseDay(a))/864e5);
-  const periodKeys=(d=new Date())=>{ const mon=new Date(d); mon.setDate(d.getDate()-((d.getDay()+6)%7)); return {day:dayKey(d),week:dayKey(mon),month:`${d.getFullYear()}-${pad(d.getMonth()+1)}`,year:String(d.getFullYear())}; };
-  /* roll today / this week / this month / this year over when the calendar moves on; streaks end after a missed day */
+  // the week starts on Sunday or Monday, from Settings
+  const weekKeyOf=d=>{ const st=ST.settings.weekStart==="sun"?0:1, w=new Date(d); w.setDate(d.getDate()-((d.getDay()-st+7)%7)); return dayKey(w); };
+  const periodKeys=(d=new Date())=>({day:dayKey(d),week:weekKeyOf(d),month:`${d.getFullYear()}-${pad(d.getMonth()+1)}`,year:String(d.getFullYear())});
+  const prevMonthKey=mk=>{ const [y,m]=mk.split("-").map(Number); return m===1?`${y-1}-12`:`${y}-${pad(m-1)}`; };
+  /* accounts from before the session log: keep what they earned as a floor, and carry this
+     period's running totals until the calendar moves on. New listening is logged per session. */
+  if(!ST.migratedSessions){
+    const days=new Set(ST.logDays||[]); if(ST.lastLog) days.add(ST.lastLog);
+    if(ST.lastLog&&ST.streak>1){ const d=parseDay(ST.lastLog); for(let i=1;i<ST.streak;i++){ d.setDate(d.getDate()-1); days.add(dayKey(d)); } }
+    ST.legacy={days:[...days],bestStreak:ST.bestStreak||0,bestDayH:ST.bestDayH||0,owl:!!ST.owl,earlyBird:!!ST.earlyBird,comeback:!!ST.comeback};
+    const k=ST.keys;
+    if(k.day) ST.carry={day:{k:k.day,h:ST.todayH||0},week:{k:k.week,h:ST.weekH||0},month:{k:k.month,h:ST.monthH||0},year:{k:k.year,h:ST.yearH||0},lastMonth:{k:prevMonthKey(k.month),h:ST.lastMonthH||0}};
+    ST.notes=(ST.notes||[]).map(n=>({t:n.t,m:n.m}));
+    ST.migratedSessions=true;
+  }
+  /* today's notes start fresh each day; every total is derived from the session log in derive() */
   function rollover(){
     const k=periodKeys(), was=ST.keys;
-    if(was.day&&was.day!==k.day){ ST.todayH=0; ST.notes=[]; const y=new Date(); y.setDate(y.getDate()-1); if(ST.lastLog&&ST.lastLog!==dayKey(y)&&ST.lastLog!==k.day) ST.streak=0; }
-    if(was.week&&was.week!==k.week) ST.weekH=0;
-    if(was.month&&was.month!==k.month){ ST.lastMonthH=ST.monthH; ST.monthH=0; }
-    if(was.year&&was.year!==k.year) ST.yearH=0;
+    if(was.day&&was.day!==k.day) ST.notes=[];
     ST.keys=k; save();
   }
   rollover();
@@ -706,7 +888,22 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
   ST.books.forEach(b=>{ if(!("finished" in b)) b.finished=b.added?dayKey(new Date(b.added)):null; });
   if(ST.lastLog&&!ST.logDays.includes(ST.lastLog)) ST.logDays.push(ST.lastLog);
   const displayName=()=>ST.user.name.trim()||"Listener";
-  const G={year:"This year",rank:"Lifetime rank",time:"Time milestones",streak:"Streaks",consist:"Consistency",feat:"Feats",books:"Books finished",series:"Series & authors",stretch:"Genres",special:"Special"};
+  /* title case on save: capitalise each word, keep small words lowercase unless first or last (or after
+     a colon), never touch a word the person already capitalised (McCarthy, iPhone, J.R.R.) */
+  const SMALL_WORDS=new Set(["a","an","and","the","of","in","on","to","for","or","but"]);
+  function titleCase(str){
+    const w=String(str||"").trim().split(/\s+/).filter(Boolean);
+    return w.map((x,i)=>{
+      if(/[A-Z]/.test(x)) return x;                                  // capitalised on purpose
+      if(/^([a-z]\.)+[a-z]?\.?$/.test(x)) return x.toUpperCase();   // initials typed lowercase: j.r.r. → J.R.R.
+      const core=x.replace(/^[^a-z0-9]+|[^a-z0-9]+$/gi,"");
+      const edge=i===0||i===w.length-1||/:$/.test(w[i-1]);
+      if(!edge&&SMALL_WORDS.has(core)) return x;
+      return x.replace(/[a-z]/,c=>c.toUpperCase()).replace(/-([a-z])/g,(m,c)=>"-"+c.toUpperCase());
+    }).join(" ");
+  }
+  const G={year:"This year",rank:"Lifetime rank",time:"Time milestones",streak:"Streaks",consist:"Consistency",daily:"Daily feats",volume:"Weekly & monthly",feat:"Feats",tod:"Time of day",calendar:"Calendar",
+    books:"Books finished",length:"Book length",speed:"Speed",series:"Series & authors",stretch:"Genres",mastery:"Genre mastery",variety:"Variety",habits:"Logging habits",anniv:"Anniversaries",share:"Sharing",special:"Special",secret:"Secret"};
   /* medal catalogue — earned/progress are computed from state in recomputeMedals(); nothing is pre-earned */
   const YEAR_TIERS=[["bronze",100],["silver",250],["gold",500],["platinum",750],["diamond",1000]];
   const M=[
@@ -755,7 +952,7 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
     {id:"tm",tier:"gold",ic:"<span>30d</span>",name:"A Month of Listening",sub:"720 hours",desc:"720 hours: a full month of listening, imported hours included.",earned:false,group:"time"},
     {id:"ty",tier:"diamond",ic:"<span>1y</span>",name:"A Year of Listening",sub:"8,760 hours",desc:"8,760 hours: a full year of listening, imported hours included.",earned:false,group:"time"},
     /* consistency — live, dated listening only */
-    {id:"pw",tier:"gold",ic:I.week,name:"Perfect Week",sub:"All 7 days of a week",desc:"Listened every day of a calendar week, Monday to Sunday.",earned:false,group:"consist"},
+    {id:"pw",tier:"gold",ic:I.week,name:"Perfect Week",sub:"All 7 days of a week",desc:"Listened every day of a calendar week.",earned:false,group:"consist"},
     {id:"pm",tier:"platinum",ic:I.cal,name:"Perfect Month",sub:"Every day of a month",desc:"Listened every day of a calendar month.",earned:false,group:"consist"},
     {id:"ww",tier:"silver",ic:I.weekend,name:"Weekend Warrior",sub:"4 full weekends",desc:"Listened on both Saturday and Sunday, four weekends.",earned:false,group:"consist"},
     {id:"cb",tier:"bronze",ic:I.repeat,name:"Comeback",sub:"Back after a week away",desc:"Welcome back. You picked it up again after a week or more away.",earned:false,group:"consist"},
@@ -773,8 +970,116 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
     {id:"fl",tier:"obsidian",ic:I.flag,name:"Founding Listener",sub:"Here before launch",desc:"One of the first listeners, here before Earmark's public launch. This one can't be earned later.",earned:false,group:"special"},
     {id:"nt",tier:"bronze",ic:I.note,name:"Note Taker",sub:"10 daily notes",desc:"Ten notes written alongside your listening.",earned:false,group:"special"},
   ];
-  const byId=id=>M.find(m=>m.id===id);
+  /* 100 more — (live) ones count only logged, dated listening; secret ones stay hidden until earned */
+  const B=(id,tier,ic,name,sub,desc,group,x={})=>Object.assign({id,tier,ic,name,sub,desc,earned:false,group},x), T=t=>`<span>${t}</span>`;
+  M.push(
+    B("s14","silver",I.flame,"Fortnight","14-day streak","Fourteen days in a row.","streak",{thr:14}),
+    B("s21","silver",I.flame,"Habit Formed","21-day streak","Twenty-one days in a row. Officially a habit.","streak",{thr:21}),
+    B("s50","gold",I.flame,"Steadfast","50-day streak","Fifty days in a row.","streak",{thr:50}),
+    B("s60","gold",I.flame,"Two Months Strong","60-day streak","Sixty days in a row.","streak",{thr:60}),
+    B("s200","platinum",I.flame,"Unbroken","200-day streak","Two hundred days in a row.","streak",{thr:200}),
+    B("s500","diamond",I.flame,"Evergreen","500-day streak","Five hundred days in a row.","streak",{thr:500}),
+    B("s730","diamond",I.cal,"Two Years Strong","730-day streak","Two full years without missing a day.","streak",{thr:730}),
+    B("s1000","rainbow",I.star,"Thousand Days","1,000-day streak","One thousand days in a row.","streak",{thr:1000}),
+    B("dWarm","bronze",T("1h"),"Warm Up","1 hour in a day","An hour of listening in one day.","daily"),
+    B("dDouble","bronze",T("2h"),"Double Feature","2 hours in a day","Two hours of listening in one day.","daily"),
+    B("dDeep","gold",T("6h"),"Deep Dive","6 hours in a day","Six hours of listening in one day.","daily"),
+    B("dShift","platinum",T("10h"),"Full Shift","10 hours in a day","Ten hours of listening in one day.","daily"),
+    B("dDawn","diamond",T("12h"),"Dawn to Dusk","12 hours in a day","Twelve hours of listening in one day.","daily"),
+    B("dHour","silver",I.repeat,"Hour a Day","1+ hour daily for a week","At least an hour every day, seven days in a row.","daily"),
+    B("dSteady","gold",I.repeat,"Steady Habit","2+ hours daily for a week","At least two hours every day, seven days in a row.","daily"),
+    B("dIron","diamond",I.bolt,"Iron Ears","8+ hours on 5 days in a week","Eight hours or more on five days of the same week.","daily"),
+    B("vW20","silver",T("20h"),"Big Week","20 hours in a week","Twenty hours of listening in one week.","volume"),
+    B("vW40","gold",T("40h"),"Huge Week","40 hours in a week","Forty hours of listening in one week.","volume"),
+    B("vW60","diamond",T("60h"),"Legendary Week","60 hours in a week","Sixty hours of listening in one week.","volume"),
+    B("vM50","silver",T("50h"),"Big Month","50 hours in a month","Fifty hours of listening in one month.","volume"),
+    B("vM100","gold",T("100h"),"Huge Month","100 hours in a month","One hundred hours of listening in one month.","volume"),
+    B("vM200","diamond",T("200h"),"Legendary Month","200 hours in a month","Two hundred hours of listening in one month.","volume"),
+    B("vPBW","silver",I.up,"Personal Best Week","Beat your best week","A week that topped every week before it.","volume"),
+    B("vPBM","gold",I.up,"Personal Best Month","Beat your best month","A month that topped every month before it.","volume"),
+    B("bk5","bronze",T("5"),"Handful","5 books","Five books finished.","books"),
+    B("bk500","obsidian",T("500"),"Grand Library","500 books","Five hundred books finished.","books"),
+    B("bk1000","rainbow",T("1k"),"Legend of the Stacks","1,000 books","One thousand books finished.","books"),
+    B("bkSeason","silver",I.cal,"Season Reader","A book a month for 3 months","A finished book every month, three months in a row.","books"),
+    B("bk12","gold",I.cal,"Twelve for Twelve","A book every month of a year","A finished book in every month of one calendar year.","books"),
+    B("bkY50","platinum",I.stack,"Fifty in a Year","50 books in a year","Fifty books finished in one calendar year.","books"),
+    B("bkY100","diamond",I.stack,"Hundred in a Year","100 books in a year","One hundred books finished in one calendar year.","books"),
+    B("lnShort","bronze",T("&lt;2h"),"Short Story","A book under 2 hours","Finished a book shorter than two hours.","length"),
+    B("lnNov","bronze",I.book,"Novella","A 2–5 hour book","Finished a book between two and five hours long.","length"),
+    B("lnStack","silver",I.pair,"Short Stack","5 books under 5 hours","Five books, each under five hours.","length"),
+    B("lnLong","silver",T("20h"),"Long Haul","A 20+ hour book","Finished a book of twenty hours or more.","length"),
+    B("lnEpic","gold",T("40h"),"Epic","A 40+ hour book","Finished a book of forty hours or more.","length"),
+    B("lnColossus","platinum",T("60h"),"Colossus","A 60+ hour book","Finished a book of sixty hours or more.","length"),
+    B("lnTome","diamond",I.stack,"Tome Collector","10 books of 20+ hours","Ten books of twenty hours or more.","length"),
+    B("spHat","gold",T("3"),"Hat Trick","3 books in 3 days","Finished three books within three days.","speed"),
+    B("spStack","platinum",T("5"),"Stack Attack","5 books in a week","Finished five books within seven days.","speed"),
+    B("spTen","diamond",T("10"),"Ten in a Month","10 books in a month","Finished ten books in one calendar month.","speed"),
+    B("tdSun","silver",I.sun,"Sunrise Listener","Log between 4 and 5 a.m.","A session logged before five in the morning.","tod"),
+    B("tdMid","silver",I.moon,"Midnight Oil","Log after midnight","A session logged after midnight.","tod"),
+    B("tdLunch","bronze",T("12"),"Lunch Break","11 a.m.–1 p.m. on 5 days","Sessions logged over lunch on five different days.","tod"),
+    B("tdGold","bronze",I.sunset,"Golden Hour","6–8 p.m. on 5 days","Sessions logged in the early evening on five different days.","tod"),
+    B("tdClock","gold",I.clock,"Around the Clock","Morning, afternoon and night","Sessions logged in the morning, afternoon and night within one week.","tod"),
+    B("caNY","silver",I.star,"New Year's Listener","Listen on January 1","Started the year with a story.","calendar"),
+    B("caXmas","silver",I.gift,"Holiday Listener","Listen on December 25","Listened on Christmas Day.","calendar"),
+    B("caLeap","gold",T("29"),"Leap Day","Listen on February 29","Listened on the rarest day of the calendar.","calendar"),
+    B("caSpring","silver",I.flower,"Spring Bloom","50 hours March–May","Fifty hours of listening in one spring.","calendar"),
+    B("caSummer","silver",I.sun,"Summer Reading","50 hours June–August","Fifty hours of listening in one summer.","calendar"),
+    B("caFall","silver",I.leaf,"Fall Harvest","50 hours September–November","Fifty hours of listening in one autumn.","calendar"),
+    B("caWinter","silver",I.snow,"Winter Hibernation","50 hours December–February","Fifty hours of listening in one winter.","calendar"),
+    B("caFour","diamond",I.globe,"Four Seasons","All four seasons in a year","Every seasonal medal in the same year.","calendar"),
+    B("an1","bronze",I.cake,"One Year with Earmark","1 year","A full year since you joined.","anniv"),
+    B("an2","silver",I.cake,"Two Years","2 years","Two years with Earmark.","anniv"),
+    B("an3","gold",I.cake,"Three Years","3 years","Three years with Earmark.","anniv"),
+    B("an5","platinum",I.cake,"Five Years","5 years","Five years with Earmark.","anniv"),
+    B("an10","diamond",I.cake,"Ten Years","10 years","Ten years with Earmark.","anniv"),
+    B("gRom","gold",I.heart,"Heartstrings","25 hrs of romance","Twenty-five hours of romance.","stretch"),
+    B("gHor","gold",I.ghost,"Brave Soul","25 hrs of horror","Twenty-five hours of horror.","stretch"),
+    B("gMem","gold",I.pen,"Life Stories","25 hrs of memoir","Twenty-five hours of memoir.","stretch"),
+    B("gSelf","gold",I.sprout,"Growth Mindset","25 hrs of self-help","Twenty-five hours of self-help.","stretch"),
+    B("gBiz","gold",I.briefcase,"Boardroom","25 hrs of business","Twenty-five hours of business.","stretch"),
+    B("gSci","gold",I.flask,"Curious Mind","25 hrs of science","Twenty-five hours of science.","stretch"),
+    B("gRel","gold",I.candle,"Seeker","25 hrs of religion & spirituality","Twenty-five hours of religion and spirituality.","stretch"),
+    B("gHum","gold",I.smile,"Laugh Track","25 hrs of humor","Twenty-five hours of humor.","stretch"),
+    B("gTc","gold",I.search,"Case Closed","25 hrs of true crime","Twenty-five hours of true crime.","stretch"),
+    B("gWest","gold",I.cactus,"Trailblazer","25 hrs of westerns","Twenty-five hours of westerns.","stretch"),
+    B("gCast","gold",I.mic,"Full Cast","25 hrs of full-cast audio","Twenty-five hours of full-cast or dramatized audio.","stretch"),
+    B("gKids","gold",I.balloon,"Storytime","25 hrs of children's books","Twenty-five hours of children's books.","stretch"),
+    B("gPhil","gold",I.bulb,"Big Questions","25 hrs of philosophy","Twenty-five hours of philosophy.","stretch"),
+    B("gPsy","gold",I.head,"Mind Reader","25 hrs of psychology","Twenty-five hours of psychology.","stretch"),
+    B("mFan","platinum",I.mountain,"Realm Keeper","100 hrs of fantasy","One hundred hours of fantasy.","mastery"),
+    B("mSci","platinum",I.planet,"Star Captain","100 hrs of science fiction","One hundred hours of science fiction.","mastery"),
+    B("mMys","platinum",I.search,"Master Sleuth","100 hrs of mystery & thriller","One hundred hours of mysteries and thrillers.","mastery"),
+    B("mNon","platinum",I.cap,"Professor","100 hrs of nonfiction","One hundred hours of nonfiction of any kind.","mastery"),
+    B("vaSampler","gold",T("10"),"Sampler","10 different genres","Books from ten different genres.","variety"),
+    B("vaSpectrum","rainbow",I.globe,"Full Spectrum","Every genre","A book from every genre in the list.","variety",{lockedLook:true}),
+    B("vaBalanced","silver",I.scale,"Balanced Diet","Fiction and nonfiction in a month","Finished fiction and nonfiction in the same month.","variety"),
+    B("vaNew","gold",I.person,"New Voices","5 new authors in a month","Five authors you hadn't read before, in one month.","variety"),
+    B("vaPalate","bronze",I.shuffle,"Palate Cleanser","3 genres in a row","Three books in a row, each from a different genre.","variety"),
+    B("srBox","silver",T("V"),"Box Set","5 books in one series","Five books from the same series.","series"),
+    B("srSuper","gold",T("10"),"Superfan","10 books by one author","Ten books by the same author.","series"),
+    B("srDevotee","diamond",T("25"),"Devotee","25 books by one author","Twenty-five books by the same author.","series"),
+    B("srCollector","gold",I.stack,"Series Collector","Books from 10 series","Books from ten different series.","series"),
+    B("srSampler","silver",T("#1"),"Series Sampler","The first book of 5 series","The first book of five different series.","series"),
+    B("lgFirst","bronze",I.clock,"First Log","Log your first session","Logged your first listening session.","habits"),
+    B("lgImport","bronze",I.download,"Importer","Add your past hours","Added your past listening hours.","habits"),
+    B("lgStocker","silver",I.book,"Shelf Stocker","Add 10 past books","Added ten books from before Earmark.","habits"),
+    B("lgJournal","gold",I.note,"Journaler","50 daily notes","Fifty notes written alongside your listening.","habits"),
+    B("lgChron","platinum",I.note,"Chronicler","200 daily notes","Two hundred notes written alongside your listening.","habits"),
+    B("lgDetail","silver",I.feather,"Detail Oriented","25 books with author and genre","Twenty-five books with both author and genre filled in.","habits"),
+    B("shFirst","bronze",I.share,"First Share","Share a medal or stat","Shared your first medal or stat.","share"),
+    B("shTen","gold",I.share,"Storyteller","Share 10 times","Shared ten times.","share"),
+    B("shWrap","gold",I.cal,"That's a Wrap","View your Year in Review","Looked back on your year in listening.","share",{soon:true}),
+    B("xAnswer","gold",T("42"),"The Answer","Logged exactly 42 minutes","A session of exactly 42 minutes. Don't panic.","secret",{secret:true}),
+    B("xTime","gold",T("60"),"Right on Time","Logged exactly 60 minutes","A session of exactly one hour.","secret",{secret:true}),
+    B("xBookends","gold",I.pair,"Bookends","First and last day of a month","Finished books on the first and last day of the same month.","secret",{secret:true}),
+    B("xNightDay","gold",I.moon,"Night and Day","Before 7 a.m. and after 10 p.m.","Logged before 7 a.m. and after 10 p.m. on the same day.","secret",{secret:true})
+  );
+  M.filter(m=>m.soon).forEach(m=>m.sub="Coming soon");
+  const BY=Object.fromEntries(M.map(m=>[m.id,m]));
+  const byId=id=>BY[id];
+  const hiddenSecret=m=>m.secret&&!m.earned;
   function medalHTML(m,cls=""){
+    if(hiddenSecret(m)) return `<div class="medalwrap locked secret ${cls}" data-id="${m.id}"><div class="medal m-locked"><span>?</span></div><b>Secret</b><small>Keep listening to discover this one</small></div>`;
     const locked=!m.earned;
     const tier=locked&&!m.lockedLook?"locked":m.tier;
     return `<div class="medalwrap ${locked?"locked":""} ${cls}" data-id="${m.id}"><div class="medal m-${tier}">${m.ic}</div><b>${m.name}</b><small>${m.sub}</small></div>`;
@@ -788,33 +1093,45 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
   }
   let rnd=null;
   function renderNext(){
-    const lockedWithProg=M.filter(m=>!m.earned&&m.prog&&m.prog[1]>0);
+    const lockedWithProg=M.filter(m=>!m.earned&&!m.secret&&!m.soon&&m.prog&&m.prog[1]>0);
     const closest=lockedWithProg.sort((a,b)=>pct(b)-pct(a))[0];
     if(closest) nextCard($("#closest"),"Closest to unlocking",closest);
     // something new: any badge you can go after directly, not the long hour and streak ladders
-    const pool=M.filter(m=>!m.earned&&m!==closest&&!["year","rank","time","streak"].includes(m.group)&&!["fl","ser"].includes(m.id));
+    const pool=M.filter(m=>!m.earned&&m!==closest&&!m.secret&&!m.soon&&!["year","rank","time","streak","anniv"].includes(m.group)&&!["fl","ser"].includes(m.id));
     if((!rnd||rnd.earned)&&pool.length) rnd=pool[Math.floor(Math.random()*pool.length)];
     if(rnd) nextCard($("#random"),"Try something new",rnd);
   }
 
   /* wall */
-  let wallFilter="all";
-  function applyFilter(){
-    $$("#walls .medalwrap").forEach(w=>{ const m=byId(w.dataset.id); w.classList.toggle("hide", wallFilter==="earned"?!m.earned : wallFilter==="locked"?m.earned : false); });
+  let wallFilter="all", wallQuery="";
+  const matchesQuery=(m,q)=>!q||(hiddenSecret(m)?("secret ?").includes(q):[m.name,m.sub,m.desc,G[m.group]].join(" ").toLowerCase().includes(q));
+  function renderWall(){
+    const q=wallQuery.trim().toLowerCase(), filtering=!!q||wallFilter!=="all";
+    const html=Object.keys(G).map(g=>{
+      let all=M.filter(m=>m.group===g); if(g==="streak") all=all.slice().sort((a,b)=>a.thr-b.thr);
+      const e=all.filter(m=>m.earned).length;
+      const vis=all.filter(m=>(wallFilter==="earned"?m.earned:wallFilter==="locked"?!m.earned:true)&&matchesQuery(m,q));
+      if(!vis.length&&filtering) return "";
+      const open=q?true:(g in ST.wallOpen?ST.wallOpen[g]:e>0);
+      return `<section class="wgroup${open?" open":""}" data-g="${g}"><button class="wallhead" type="button" aria-expanded="${open}"><h2>${G[g]}</h2><small>${e} / ${all.length}</small><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button><div class="wall">${vis.map(m=>medalHTML(m)).join("")}</div></section>`;
+    }).join("");
+    $("#walls").innerHTML=html||`<p class="wallempty">No medals match.</p>`;
   }
+  const applyFilter=renderWall;
+  $("#walls").addEventListener("click",e=>{
+    const h=e.target.closest(".wallhead"); if(!h) return;
+    const sec=h.parentElement, open=!sec.classList.contains("open");
+    sec.classList.toggle("open",open); h.setAttribute("aria-expanded",open); ST.wallOpen[sec.dataset.g]=open; save();
+  });
+  $("#wallSearch").addEventListener("input",e=>{ wallQuery=e.target.value; renderWall(); });
   function renderMedals(){
     const strip=[...M.filter(m=>m.earned).slice(-5)];
-    for(const m of M) if(strip.length<5&&!m.earned&&m.prog) strip.push(m);
+    for(const m of M) if(strip.length<5&&!m.earned&&!m.secret&&!m.soon&&m.prog) strip.push(m);
     $("#homeMedals").innerHTML=strip.map(m=>medalHTML(m)).join("");
     const earnedCount=M.filter(m=>m.earned).length;
     $("#wallCount").textContent=`${earnedCount} of ${M.length} earned`;
     $("#seeAllMedals").textContent=`See all ${M.length}`;
-    $("#walls").innerHTML=Object.keys(G).map((g,i)=>{
-      const list=M.filter(m=>m.group===g);
-      const e=list.filter(m=>m.earned).length;
-      return `${i?'<div class="rail thin" style="margin:22px -8px 0"></div>':''}<div class="wallhead"><h2>${G[g]}</h2><small>${e} of ${list.length}</small></div><div class="wall">${list.map(m=>medalHTML(m)).join("")}</div>`;
-    }).join("");
-    applyFilter();
+    renderWall();
     renderNext();
   }
   $$(".filters button").forEach(b=>b.onclick=()=>{
@@ -826,10 +1143,15 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
   let shownMedal=null;
   function showMedal(m,justEarned){
     shownMedal=m;
+    if(hiddenSecret(m)){
+      $("#eTitle").textContent="Secret medal"; $("#eMedal").className="medal m-locked"; $("#eMedal").innerHTML="<span>?</span>";
+      $("#eName").textContent="Secret"; $("#eDesc").textContent="Keep listening to discover this one."; $("#eProg").innerHTML=""; $("#eBtns").style.display="none";
+      $("#earned").classList.add("open"); return;
+    }
     const t=m.earned?m.tier:"locked";
     $("#eTitle").innerHTML= justEarned?`Congratulations.<br>You earned ${/^[aeiou]/.test(m.tier)?"an":"a"} ${m.tier} medal.` : (m.earned?"Earned":"Not yet earned");
     $("#eMedal").className=`medal m-${t}`; $("#eMedal").innerHTML=m.ic;
-    $("#eName").textContent=m.name; $("#eDesc").textContent=m.desc||m.sub;
+    $("#eName").textContent=m.name; $("#eDesc").textContent=(m.desc||m.sub)+(m.soon&&!m.earned?" Coming soon.":"");
     $("#eProg").innerHTML=m.prog?`${m.prog[2]}<div class="bar" style="margin-top:8px"><i style="width:${Math.round(pct(m)*100)}%"></i></div>`:"";
     $("#eBtns").style.display=m.earned?"block":"none";
     $("#earned").classList.add("open");
@@ -843,7 +1165,7 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
   document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ $("#earned").classList.remove("open"); closePanel(); } });
   $("#eSave").onclick=async()=>{
     if(!shownMedal) return;
-    try{ downloadFile(await cardFile(shownMedal)); toast("Card saved"); }
+    try{ downloadFile(await cardFile(shownMedal)); toast("Card saved"); countShare(); }
     catch(e){ toast("Couldn't make the card"); }
   };
   $("#eShare").onclick=async()=>{
@@ -852,19 +1174,26 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
       const f=await cardFile(shownMedal);
       if(navigator.canShare&&navigator.canShare({files:[f]})) await navigator.share({files:[f],title:`${shownMedal.name} — Earmark`});
       else { downloadFile(f); toast("Sharing isn't available here, so the card was saved"); }
+      countShare();
     }catch(e){ if(e.name!=="AbortError") toast("Couldn't share the card"); }
   };
   $("#shareStats").onclick=()=>toast("Sharing your stats card (prototype)");
+  function countShare(){ ST.shares++; save(); recomputeMedals(); const m=pendingEarned.shift(); pendingEarned.length=0; if(m) setTimeout(()=>toast(`New medal: ${m.name}`),900); }
 
   /* streak medal + today's notes */
-  function renderNotes(){ $("#notes").innerHTML=`<div class="lbl">Today</div>`+(ST.notes.length?ST.notes.map(n=>`<div>${esc(n.t)}<span>${n.m}</span></div>`).join(""):`<div class="none">Nothing logged yet</div>`); }
+  function renderNotes(){ $("#notes").innerHTML=`<div class="lbl">Today</div>`+(ST.notes.length?ST.notes.map(n=>`<div>${esc(n.t)}<span>${n.h!=null?hm(n.h):esc(n.m||"")}</span></div>`).join(""):`<div class="none">Nothing logged yet</div>`); }
 
   /* bookshelf */
   const C={red:"#2A3A52",teal:"#17485A",gold:"#1D4F55",green:"#1F4A4A",plum:"#2F3D5C",rust:"#22466B",navy:"#1B3556",moss:"#24425A",wine:"#2B3550",slate:"#33445C"};   // navy, teal and slate tones
   /* genre options for the manual pick; keys are what each book's `genre` field holds.
      TODO: once titles come from the book database, `genre` is filled automatically from its metadata. */
-  const GENRES=[["fantasy","Fantasy"],["scifi","Sci-fi"],["litfic","Literary fiction"],["mystery","Mystery & thriller"],["romance","Romance"],
-    ["ya","Young adult"],["classic","Classic"],["nonfiction","Nonfiction"],["history","History"],["biography","Biography & memoir"],["translation","In translation"]];
+  const GENRES=[["fantasy","Fantasy"],["scifi","Science fiction"],["litfic","Literary fiction"],["mystery","Mystery & thriller"],["romance","Romance"],
+    ["horror","Horror"],["western","Western"],["ya","Young adult"],["children","Children's"],["classic","Classic"],["humor","Humor"],
+    ["nonfiction","Nonfiction"],["history","History"],["biography","Biography"],["memoir","Memoir"],["selfhelp","Self-help"],["business","Business"],
+    ["science","Science"],["psychology","Psychology"],["philosophy","Philosophy"],["religion","Religion & spirituality"],["truecrime","True crime"],
+    ["translation","In translation"],["fullcast","Full cast / dramatized"]];
+  const FICTION=new Set(["fantasy","scifi","litfic","mystery","romance","horror","western","ya","children","classic"]);
+  const NONFICTION=new Set(["nonfiction","history","biography","memoir","selfhelp","business","science","psychology","philosophy","religion","truecrime"]);
   $$("select.genre").forEach(sel=>sel.innerHTML=`<option value="">Genre (optional)</option>`+GENRES.map(([k,l])=>`<option value="${k}">${l}</option>`).join(""));
   const LIB=ST.books;   // the shelf is the saved library; a new account starts empty
   // shelf period by date finished; undated (backlog) books only appear under All
@@ -936,7 +1265,7 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
   function openBook(id){
     const b=LIB.find(x=>x.id===id); if(!b) return;
     editing=b; delArmed=false; $("#bkDelete").textContent="Delete book";
-    $("#bkTitle").value=b.t; $("#bkAuthor").value=b.author||""; $("#bkSeries").value=b.series||""; $("#bkGenre").value=b.genre||"";
+    $("#bkTitle").value=b.t; $("#bkAuthor").value=b.author||""; $("#bkSeries").value=b.series||""; $("#bkNum").value=b.num||""; $("#bkGenre").value=b.genre||"";
     const H=b.h?Math.floor(b.h):0, Mi=b.h?Math.round((b.h-H)*60):0;
     $("#bkH").value=b.h?(Mi===60?H+1:H):""; $("#bkM").value=b.h?(Mi===60?0:Mi):"";
     $("#bkDate").value=b.finished||""; $("#bkDate").max=dayKey(new Date());
@@ -946,11 +1275,12 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
   function afterBooksChanged(){ save(); renderHero(); renderShelf(shelfMode); renderShelfAll(); recomputeMedals(); renderInsights(); }
   $("#bkSave").onclick=()=>{
     const b=editing; if(!b) return;
-    const t=$("#bkTitle").value.trim(); if(!t){ $("#bkTitle").focus(); toast("A book needs a title"); return; }
+    const t=titleCase($("#bkTitle").value); if(!t){ $("#bkTitle").focus(); toast("A book needs a title"); return; }
     const H=Math.max(0,parseInt($("#bkH").value,10)||0), Mi=Math.min(59,Math.max(0,parseInt($("#bkM").value,10)||0));
     const len=H+Mi/60, h=len>0?len:null;
     const delta=(h||0)-(b.h||0); ST.total=Math.max(0,ST.total+delta);   // hours on a book count toward the lifetime total and rank
-    b.t=t; b.author=$("#bkAuthor").value.trim()||null; b.series=$("#bkSeries").value.trim()||null; b.genre=$("#bkGenre").value||null; b.h=h;
+    b.t=t; b.author=titleCase($("#bkAuthor").value)||null; b.series=titleCase($("#bkSeries").value)||null;
+    const num=parseInt($("#bkNum").value,10); b.num=num>0?num:null; b.genre=$("#bkGenre").value||null; b.h=h;
     b.finished=$("#bkDate").value||null;   // blank = backlog: counts toward totals, never toward streaks
     closePanel(); afterBooksChanged();
     toast(Math.abs(delta)>1e-9?`Saved · ${delta>0?"+":"−"}${hm(Math.abs(delta))} on your total`:"Saved");
@@ -986,11 +1316,11 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
         :`<div class="empty">${I.book}<span>Books you add will appear here.</span></div>`;
     }
     function submit(){
-      const t=tIn.value.trim(); if(!t){ tIn.focus(); return; }
+      const t=titleCase(tIn.value); if(!t){ tIn.focus(); return; }
       const raw=hrIn.value.trim(), n=parseFloat(raw);
       const hours=raw!==""&&isFinite(n)&&n>0?n:null;   // blank or invalid → book only, no hours
       const finished=dIn&&dIn.value?dIn.value:(dated?dayKey(new Date()):null);
-      const b=addBook(t,hours,gIn.value,aIn.value.trim(),finished); added.push(b); renderList();
+      const b=addBook(t,hours,gIn.value,titleCase(aIn.value),finished); added.push(b); renderList();
       tIn.value=""; aIn.value=""; hrIn.value=""; gIn.value=""; if(dIn) dIn.value=""; tIn.focus();
       toast(hours!=null?`${t} added · ${fmtH(hours)} to your total`:`${t} added to your shelf`);
     }
@@ -1002,6 +1332,63 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
   wireEntry({title:"#obTitle",author:"#obAuthor",hours:"#obHours",genre:"#obGenre",btn:"#obAddBtn",list:"#obAddedList"});
   const sheetEntry=wireEntry({title:"#sheetTitle",author:"#sheetAuthor",hours:"#sheetHours",genre:"#sheetGenre",btn:"#sheetAddBtn",list:"#sheetAddedList",dated:true});
   $("#addDone").onclick=()=>{ back(); showPendingEarned(); };
+
+  /* derive(): today / week / month / year, streaks and the live-badge stats, all from the session log
+     (plus the floor carried over from before the log existed). Called after any change. */
+  let D={listen:new Set(),run60:0,run120:0,iron:0,bestWeekH:0,bestMonthH:0,pbWeek:false,pbMonth:false,season:{},fourSeasons:false,sunrise:false,midnight:false,lunchDays:0,goldenDays:0,clock:false,nightDay:false};
+  function derive(){
+    const minQ=Math.max(1,parseInt(ST.settings.streakMinMin,10)||5), L=ST.legacy;
+    const dayMin={}, lunch=new Set(), golden=new Set(), parts={}, dayAmPm={};
+    let owl=!!L.owl, early=!!L.earlyBird, sunrise=false, midnight=false;
+    for(const x of ST.sessions){
+      dayMin[x.d]=(dayMin[x.d]||0)+x.m;
+      const h=new Date(x.at).getHours();
+      if(h<4){ owl=true; midnight=true; }
+      if(h===4) sunrise=true;
+      if(h>=4&&h<7) early=true;
+      if(h>=11&&h<13) lunch.add(x.d);
+      if(h>=18&&h<20) golden.add(x.d);
+      const part=h>=5&&h<12?"m":h>=12&&h<17?"a":(h>=20||h<5)?"n":"";
+      if(part){ const wk=weekKeyOf(parseDay(x.d)); (parts[wk]=parts[wk]||new Set()).add(part); }
+      const ap=dayAmPm[x.d]=dayAmPm[x.d]||{}; if(h<7) ap.am=1; if(h>=22) ap.pm=1;
+    }
+    const listen=new Set([...Object.keys(dayMin),...L.days]);
+    const qual=new Set([...Object.keys(dayMin).filter(d=>dayMin[d]>=minQ),...L.days]);   // days that count toward a streak
+    const today=dayKey(new Date()), yd=new Date(); yd.setDate(yd.getDate()-1);
+    let streak=0, c=qual.has(today)?parseDay(today):qual.has(dayKey(yd))?yd:null;
+    while(c&&qual.has(dayKey(c))){ streak++; c.setDate(c.getDate()-1); }
+    const runOf=set=>{ const a=[...set].sort(); let best=0,cur=0,prev=null; a.forEach(d=>{ cur=prev&&daysBetween(prev,d)===1?cur+1:1; best=Math.max(best,cur); prev=d; }); return best; };
+    ST.streak=streak; ST.bestStreak=Math.max(runOf(qual),L.bestStreak||0,streak);
+    const k=periodKeys(), C=ST.carry||{}, carry=(p,key)=>C[p]&&C[p].k===key?C[p].h:0;
+    const weekMin={}, monthMin={}, seasonH={}, byWd=[0,0,0,0,0,0,0], wdDays=[0,0,0,0,0,0,0];
+    Object.entries(dayMin).forEach(([d,m])=>{
+      const dt=parseDay(d), wk=weekKeyOf(dt), mk=d.slice(0,7), y=+d.slice(0,4), mo=+d.slice(5,7);
+      weekMin[wk]=(weekMin[wk]||0)+m; monthMin[mk]=(monthMin[mk]||0)+m; byWd[dt.getDay()]+=m/60; wdDays[dt.getDay()]++;
+      const sn=mo>=3&&mo<=5?"spring":mo>=6&&mo<=8?"summer":mo>=9&&mo<=11?"fall":"winter", sy=mo===12?y+1:y;   // winter is named for the year of its January
+      const key=sn+sy; seasonH[key]=(seasonH[key]||0)+m/60;
+    });
+    ST.todayH=(dayMin[k.day]||0)/60+carry("day",k.day);
+    ST.weekH=(weekMin[k.week]||0)/60+carry("week",k.week);
+    ST.monthH=(monthMin[k.month]||0)/60+carry("month",k.month);
+    const pm=prevMonthKey(k.month); ST.lastMonthH=(monthMin[pm]||0)/60+carry("month",pm)+carry("lastMonth",pm);
+    ST.yearH=Object.entries(monthMin).filter(([mk])=>mk.startsWith(k.year)).reduce((t,[,m])=>t+m,0)/60+carry("year",k.year);
+    ST.bestDayH=Math.max(Math.max(0,...Object.values(dayMin))/60,L.bestDayH||0,ST.todayH);
+    ST.byWeekday=byWd; ST.weekdayDays=wdDays;
+    const sortedListen=[...listen].sort(); ST.logDays=sortedListen; ST.lastLog=sortedListen[sortedListen.length-1]||null;
+    ST.owl=owl; ST.earlyBird=early; ST.comeback=!!L.comeback||sortedListen.some((d,i)=>i>0&&daysBetween(sortedListen[i-1],d)>=8);
+    const pb=map=>{ let best=0, beat=false; Object.keys(map).sort().forEach((key,i)=>{ const v=map[key]; if(i>0&&best>0&&v>best) beat=true; best=Math.max(best,v); }); return beat; };
+    const ironWk={}; Object.entries(dayMin).forEach(([d,m])=>{ if(m>=480){ const wk=weekKeyOf(parseDay(d)); ironWk[wk]=(ironWk[wk]||0)+1; } });
+    const seasonBest={}; ["spring","summer","fall","winter"].forEach(sn=>seasonBest[sn]=Math.max(0,...Object.entries(seasonH).filter(([key])=>key.startsWith(sn)).map(([,v])=>v)));
+    const years=new Set(Object.keys(seasonH).map(key=>key.replace(/\D/g,"")));
+    D={listen,
+      run60:runOf(new Set(Object.keys(dayMin).filter(d=>dayMin[d]>=60))), run120:runOf(new Set(Object.keys(dayMin).filter(d=>dayMin[d]>=120))),
+      iron:Math.max(0,...Object.values(ironWk)),
+      bestWeekH:Math.max(0,...Object.values(weekMin))/60, bestMonthH:Math.max(0,...Object.values(monthMin))/60,
+      pbWeek:pb(weekMin), pbMonth:pb(monthMin),
+      season:seasonBest, fourSeasons:[...years].some(y=>["spring","summer","fall","winter"].every(sn=>(seasonH[sn+y]||0)>=50)),
+      sunrise, midnight, lunchDays:lunch.size, goldenDays:golden.size,
+      clock:Object.values(parts).some(p=>p.size===3), nightDay:Object.values(dayAmPm).some(a=>a.am&&a.pm)};
+  }
 
   /* genre-stretch medals, computed from each book's genre */
   const OMNI_GOAL=6, pendingEarned=[];
@@ -1052,7 +1439,7 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
     [["tw",168],["tm",720],["ty",8760]].forEach(([id,g])=>reach(id,ST.total,g,`${fmtN(ST.total).toLocaleString()} of ${g.toLocaleString()} hours`));
     // consistency — only live, dated listening days
     const days=new Set(ST.logDays), wkC={}, moC={};
-    days.forEach(k=>{ const d=parseDay(k), mon=new Date(d); mon.setDate(d.getDate()-((d.getDay()+6)%7)); wkC[dayKey(mon)]=(wkC[dayKey(mon)]||0)+1; moC[k.slice(0,7)]=(moC[k.slice(0,7)]||0)+1; });
+    days.forEach(k=>{ const wk=weekKeyOf(parseDay(k)); wkC[wk]=(wkC[wk]||0)+1; moC[k.slice(0,7)]=(moC[k.slice(0,7)]||0)+1; });
     const bestWk=maxOf(wkC); reach("pw",bestWk,7,bestWk?`Best week so far: ${bestWk} of 7 days`:"");
     let mFull=false, mBest=[0,30,""];
     Object.entries(moC).forEach(([mk,c])=>{ const [yy,mm]=mk.split("-").map(Number), dim=new Date(yy,mm,0).getDate(); if(c>=dim) mFull=true; if(c/dim>mBest[0]/mBest[1]) mBest=[c,dim,`${c} of ${dim} days in ${new Date(yy,mm-1,1).toLocaleDateString(undefined,{month:"long"})}`]; });
@@ -1071,6 +1458,71 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
     const ser=tally("series"), aut=tally("author"), topS=maxOf(ser), topA=maxOf(aut), nA=Object.keys(aut).length;
     reach("tri",topS,3,`${topS} of 3 in one series`); reach("saga",topS,10,`${topS} of 10 in one series`);
     reach("aul",topA,5,`${topA} of 5 by one author`); reach("exp",nA,10,`${nA} of 10 authors`); reach("wan",nA,25,`${nA} of 25 authors`);
+    // ---------- the 100 added badges ----------
+    const flag=(id,ok)=>{ const m=byId(id); m.earned=!!ok; m.prog=null; };
+    const bd=ST.bestDayH, bdL=bd?`Best day so far: ${hm(bd)}`:"";
+    [["dWarm",1],["dDouble",2],["dDeep",6],["dShift",10],["dDawn",12]].forEach(([id,g])=>reach(id,bd,g,bdL));
+    reach("dHour",D.run60,7,`${D.run60} of 7 days in a row`); reach("dSteady",D.run120,7,`${D.run120} of 7 days in a row`);
+    reach("dIron",D.iron,5,`${D.iron} of 5 days in one week`);
+    const bwk=D.bestWeekH, bmo=D.bestMonthH;
+    [["vW20",20],["vW40",40],["vW60",60]].forEach(([id,g])=>reach(id,bwk,g,bwk?`Best week so far: ${hm(bwk)}`:""));
+    [["vM50",50],["vM100",100],["vM200",200]].forEach(([id,g])=>reach(id,bmo,g,bmo?`Best month so far: ${hm(bmo)}`:""));
+    flag("vPBW",D.pbWeek); flag("vPBM",D.pbMonth);
+    [["bk5",5],["bk500",500],["bk1000",1000]].forEach(([id,g])=>reach(id,nb,g,`${nb} of ${g} books`));
+    // dated books: months, years, speed
+    const dated=LIB.filter(b=>b.finished), byMonth={}, byYear={}, monthsByYear={};
+    dated.forEach(b=>{ const mk=b.finished.slice(0,7), y=b.finished.slice(0,4); byMonth[mk]=(byMonth[mk]||0)+1; byYear[y]=(byYear[y]||0)+1; (monthsByYear[y]=monthsByYear[y]||new Set()).add(mk); });
+    const mks=Object.keys(byMonth).sort(); let mRun=0, cur=0, prevMk=null;
+    mks.forEach(mk=>{ cur=prevMk&&prevMonthKey(mk)===prevMk?cur+1:1; mRun=Math.max(mRun,cur); prevMk=mk; });
+    reach("bkSeason",mRun,3,`${mRun} of 3 months in a row`);
+    const bestYrMonths=Math.max(0,...Object.values(monthsByYear).map(x=>x.size)); reach("bk12",bestYrMonths,12,`${bestYrMonths} of 12 months in one year`);
+    const bestYr=maxOf(byYear); reach("bkY50",bestYr,50,`${bestYr} of 50 in one year`); reach("bkY100",bestYr,100,`${bestYr} of 100 in one year`);
+    const within=span=>{ let best=0; for(let i=0;i<fin.length;i++){ let j=i; while(j+1<fin.length&&fin[j+1]-fin[i]<=span*864e5) j++; best=Math.max(best,j-i+1); } return best; };
+    const w3=within(2), w7=within(6); reach("spHat",w3,3,`${w3} of 3 books within 3 days`); reach("spStack",w7,5,`${w7} of 5 books within a week`);
+    const bestMo=maxOf(byMonth); reach("spTen",bestMo,10,`${bestMo} of 10 in one month`);
+    // book length
+    const hs=LIB.map(b=>b.h||0), cnt20=hs.filter(h=>h>=20).length, cntShort=hs.filter(h=>h>0&&h<5).length;
+    flag("lnShort",hs.some(h=>h>0&&h<2)); flag("lnNov",hs.some(h=>h>=2&&h<=5)); reach("lnStack",cntShort,5,`${cntShort} of 5 short books`);
+    flag("lnLong",cnt20>0); flag("lnEpic",hs.some(h=>h>=40)); flag("lnColossus",hs.some(h=>h>=60)); reach("lnTome",cnt20,10,`${cnt20} of 10 books of 20+ hours`);
+    // time of day (when the session is logged)
+    flag("tdSun",D.sunrise); flag("tdMid",D.midnight); flag("tdClock",D.clock);
+    reach("tdLunch",D.lunchDays,5,`${D.lunchDays} of 5 days`); reach("tdGold",D.goldenDays,5,`${D.goldenDays} of 5 days`);
+    // calendar
+    const lis=[...D.listen]; flag("caNY",lis.some(d=>d.endsWith("-01-01"))); flag("caXmas",lis.some(d=>d.endsWith("-12-25"))); flag("caLeap",lis.some(d=>d.endsWith("-02-29")));
+    [["caSpring","spring"],["caSummer","summer"],["caFall","fall"],["caWinter","winter"]].forEach(([id,sn])=>{ const v=D.season[sn]; reach(id,v,50,v?`Best ${sn==="fall"?"autumn":sn} so far: ${hm(v)}`:""); });
+    flag("caFour",D.fourSeasons);
+    // anniversaries
+    const joined=new Date(ST.createdAt), now=Date.now();
+    [["an1",1],["an2",2],["an3",3],["an5",5],["an10",10]].forEach(([id,y])=>{ const due=new Date(joined); due.setFullYear(due.getFullYear()+y); const total=(due-joined)/864e5, left=Math.ceil((due-now)/864e5); const m=byId(id); m.earned=left<=0; m.prog=m.earned?null:[Math.max(0,(now-joined)/864e5),total,`${left.toLocaleString()} day${left===1?"":"s"} to go`]; });
+    // genres (25 h) and mastery (100 h)
+    [["gRom","romance"],["gHor","horror"],["gMem","memoir"],["gSelf","selfhelp"],["gBiz","business"],["gSci","science"],["gRel","religion"],["gHum","humor"],["gTc","truecrime"],["gWest","western"],["gCast","fullcast"],["gKids","children"],["gPhil","philosophy"],["gPsy","psychology"]].forEach(([id,g])=>hoursRule(id,g,25,"add one to your shelf"));
+    hoursRule("mFan","fantasy",100,"try an epic fantasy"); hoursRule("mSci","scifi",100,"try a space opera"); hoursRule("mMys","mystery",100,"try a classic whodunit");
+    const nonH=LIB.filter(b=>NONFICTION.has(b.genre)).reduce((t,b)=>t+(b.h||0),0); reach("mNon",nonH,100,`${fmtN(nonH)} of 100 hours`);
+    // variety
+    const gs=new Set(LIB.map(b=>b.genre).filter(Boolean)); reach("vaSampler",gs.size,10,`${gs.size} of 10 genres`);
+    const allG=GENRES.filter(([k])=>gs.has(k)).length; reach("vaSpectrum",allG,GENRES.length,`${allG} of ${GENRES.length} genres`);
+    const kinds={}; dated.forEach(b=>{ const mk=b.finished.slice(0,7), k=kinds[mk]=kinds[mk]||{f:0,n:0}; if(FICTION.has(b.genre)) k.f++; if(NONFICTION.has(b.genre)) k.n++; });
+    flag("vaBalanced",Object.values(kinds).some(k=>k.f&&k.n));
+    const knownBefore=new Set(LIB.filter(b=>!b.finished&&b.author).map(b=>norm(b.author))), firstSeen={};
+    dated.slice().sort((a,b)=>a.finished.localeCompare(b.finished)).forEach(b=>{ const a=norm(b.author); if(a&&!knownBefore.has(a)&&!(a in firstSeen)) firstSeen[a]=b.finished.slice(0,7); });
+    const newPer={}; Object.values(firstSeen).forEach(mk=>newPer[mk]=(newPer[mk]||0)+1); const nv=maxOf(newPer); reach("vaNew",nv,5,`Best month: ${nv} of 5 new authors`);
+    const seq=dated.filter(b=>b.genre).sort((a,b)=>a.finished.localeCompare(b.finished)||(a.added||"").localeCompare(b.added||""));
+    flag("vaPalate",seq.some((b,i)=>i>=2&&new Set([seq[i-2].genre,seq[i-1].genre,b.genre]).size===3));
+    // series and authors
+    const nSer=Object.keys(ser).length, firsts=new Set(LIB.filter(b=>b.series&&b.num===1).map(b=>norm(b.series))).size;
+    reach("srBox",topS,5,`${topS} of 5 in one series`); reach("srSuper",topA,10,`${topA} of 10 by one author`); reach("srDevotee",topA,25,`${topA} of 25 by one author`);
+    reach("srCollector",nSer,10,`${nSer} of 10 series`); reach("srSampler",firsts,5,`${firsts} of 5 first books`);
+    // logging habits
+    flag("lgFirst",ST.sessions.length>0||ST.legacy.days.length>0); flag("lgImport",ST.past.length>0);
+    const undated=LIB.filter(b=>!b.finished).length, detailed=LIB.filter(b=>b.author&&b.genre).length;
+    reach("lgStocker",undated,10,`${undated} of 10 past books`); reach("lgJournal",ST.notesWritten,50,`${ST.notesWritten} of 50 notes`); reach("lgChron",ST.notesWritten,200,`${ST.notesWritten} of 200 notes`);
+    reach("lgDetail",detailed,25,`${detailed} of 25 books`);
+    // sharing (medal cards); Year in Review is not built yet
+    reach("shFirst",ST.shares,1,"Share a medal card"); reach("shTen",ST.shares,10,`${ST.shares} of 10 shares`); flag("shWrap",ST.yearReviewViewed);
+    // secret
+    flag("xAnswer",ST.sessions.some(x=>x.m===42)); flag("xTime",ST.sessions.some(x=>x.m===60)); flag("xNightDay",D.nightDay);
+    const firstLast={}; dated.forEach(b=>{ const [y,mo,d]=b.finished.split("-").map(Number), dim=new Date(y,mo,0).getDate(), mk=b.finished.slice(0,7), f=firstLast[mk]=firstLast[mk]||{}; if(d===1) f.a=1; if(d===dim) f.z=1; });
+    flag("xBookends",Object.values(firstLast).some(f=>f.a&&f.z));
     // special
     byId("fl").earned=!PUBLIC_LAUNCH||ST.createdAt<PUBLIC_LAUNCH;
     reach("nt",ST.notesWritten,10,`${ST.notesWritten} of 10 notes`);
@@ -1091,7 +1543,7 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
      and Back — the button or a swipe from the left edge — returns to the previous one, as on iOS */
   const TABS=new Set(["s-home","s-shelf"]);
   let current="s-home", hist=[];
-  function show(id){
+  function show(id,anim){
     current=id;
     $("#earned").classList.remove("open");
     $$(".screen").forEach(s=>{ s.classList.toggle("active",s.id===id); s.style.transform=""; });
@@ -1099,14 +1551,18 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
     $$(".nav button[data-go]").forEach(b=>b.classList.toggle("on",b.dataset.go===tab));
     document.body.classList.toggle("can-back",hist.length>0);
     if(id==="s-shelf") renderShelfAll();
+    if(id==="s-settings") renderSettings();
+    if(id==="s-help") renderHelp();
+    const el=$("#"+id); el.classList.remove("in-fwd","in-back");
+    if(anim){ void el.offsetWidth; el.classList.add(anim); el.addEventListener("animationend",()=>el.classList.remove(anim),{once:true}); }
     window.scrollTo({top:0});
   }
   function go(id,{tab=false}={}){
     if(tab){ hist=[]; show(id); return; }
     if(id===current) return;
-    hist.push(current); show(id);
+    hist.push(current); show(id,"in-fwd");
   }
-  function back(){ if(hist.length) show(hist.pop()); else show("s-home"); }
+  function back(){ if(hist.length) show(hist.pop(),"in-back"); else show("s-home"); }
   document.addEventListener("click",e=>{
     const g=e.target.closest("[data-go]"); if(g){ go(g.dataset.go,{tab:!!g.closest(".nav")}); return; }
     if(e.target.closest("[data-nav-back]")) back();
@@ -1183,14 +1639,24 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
   $$(".opt").forEach(o=>o.onclick=()=>{ $("#menu").style.display="none"; $("#"+o.dataset.form).classList.add("show"); });
   $$("[data-back]").forEach(b=>b.onclick=showMenu);
   function bump(h){ ST.total+=h; save(); renderHero(); }
+  /* goals on Home */
+  function renderGoals(){
+    const g=$("#goals"), S=ST.settings; g.hidden=!S.showGoals; if(!S.showGoals) return;
+    const dm=Math.round(ST.todayH*60), dg=Math.max(1,+S.dailyGoalMin||30), wg=Math.max(.5,+S.weeklyGoalH||5);
+    const dayMet=dm>=dg, weekMet=ST.weekH>=wg;
+    $("#gDay").textContent=dayMet?`Goal met · ${dm} min`:`${dm} of ${dg} min`; $("#gDay").classList.toggle("met",dayMet);
+    $("#gWeek").textContent=weekMet?`Goal met · ${hm(ST.weekH)}`:`${hm(ST.weekH)} of ${hm(wg)}`; $("#gWeek").classList.toggle("met",weekMet);
+    $("#gDayBar").style.width=`${Math.min(100,dm/dg*100)}%`; $("#gWeekBar").style.width=`${Math.min(100,ST.weekH/wg*100)}%`;
+  }
   /* hero + rank card, all from state */
   function renderHero(){
     $("#heroNum").textContent=fmtN(ST.total).toLocaleString();
     $("#t1").textContent=ST.todayH?hm(ST.todayH):"0h"; $("#t2").textContent=fmtN(ST.weekH); $("#t3").textContent=fmtN(ST.monthH);
     // streak: the badge colour follows the streak tier the current streak has reached
     $("#streakNum").textContent=ST.streak;
-    const streaks=M.filter(m=>m.group==="streak"), sCur=streaks.filter(m=>ST.streak>=m.thr).pop(), nxt=streaks.find(m=>ST.streak<m.thr);
-    const cap=t=>t[0].toUpperCase()+t.slice(1), tier=sCur?sCur.tier:"locked";
+    const streaks=M.filter(m=>m.group==="streak").sort((a,b)=>a.thr-b.thr), nxt=streaks.find(m=>ST.streak<m.thr);
+    const n=ST.streak, tier=n>=365?"diamond":n>=100?"platinum":n>=30?"gold":n>=7?"silver":n>=3?"bronze":"locked";   // bronze 3–6 · silver 7–29 · gold 30–99 · platinum 100–364 · diamond 365+
+    const sCur=tier==="locked"?null:{tier}, cap=t=>t[0].toUpperCase()+t.slice(1);
     $("#streakMedal").className=`medal streakbadge m-${tier}`;
     $("#streakMedal").setAttribute("aria-label",`${ST.streak}-day streak${sCur?`, ${sCur.tier} tier`:""}`);
     $("#streakSub").textContent=sCur&&nxt?`${cap(sCur.tier)} streak · next medal in ${nxt.thr-ST.streak} day${nxt.thr-ST.streak===1?"":"s"}`:nxt?`${cap(nxt.tier)} streak at ${nxt.thr} days`:"Every streak medal earned";
@@ -1210,20 +1676,12 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
   $("#pastH").oninput=()=>{ const h=+$("#pastH").value||0; $("#pastBtn").textContent=h?`Add ${fmtN(h)} hours`:"Add hours"; };
   /* a real listening session: today, week, month, year, total, streak, best day, weekday pattern */
   function logListening(hours,note){
-    const now=new Date(), k=periodKeys(now), y=new Date(now); y.setDate(now.getDate()-1);
-    ST.todayH+=hours; ST.weekH+=hours; ST.monthH+=hours; ST.yearH+=hours; ST.total+=hours;
-    ST.bestDayH=Math.max(ST.bestDayH,ST.todayH);
-    let welcome=false;
-    if(ST.lastLog!==k.day){
-      if(ST.lastLog&&daysBetween(ST.lastLog,k.day)>=8){ ST.comeback=true; welcome=true; }   // a week or more away
-      ST.streak=(ST.lastLog===dayKey(y))?ST.streak+1:1; ST.lastLog=k.day; ST.weekdayDays[now.getDay()]++;
-      if(!ST.logDays.includes(k.day)) ST.logDays.push(k.day);
-    }
-    ST.byWeekday[now.getDay()]+=hours; ST.bestStreak=Math.max(ST.bestStreak,ST.streak);
-    if(now.getHours()<4) ST.owl=true;
-    if(now.getHours()>=4&&now.getHours()<7) ST.earlyBird=true;
-    if(note){ ST.notes.push({t:note,m:hm(hours)}); ST.notesWritten++; }
-    save(); renderHero(); renderNotes(); recomputeMedals(); renderInsights();
+    const now=new Date(), d=dayKey(now), prev=ST.lastLog;
+    const welcome=!!prev&&prev!==d&&daysBetween(prev,d)>=8;   // a week or more away: welcome back
+    ST.sessions.push({id:uid(),at:now.toISOString(),d,m:Math.round(hours*60),note:note||null});
+    ST.total+=hours;
+    if(note){ ST.notes.push({t:note,h:hours}); ST.notesWritten++; }
+    derive(); save(); renderHero(); renderGoals(); renderNotes(); recomputeMedals(); renderInsights();
     return welcome;
   }
   function addPastHours(hours,src){ ST.past.push({src,h:hours,at:new Date().toISOString()}); ST.total+=hours; save(); renderHero(); recomputeMedals(); renderInsights(); }
@@ -1247,7 +1705,8 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
 
   /* insight cards — every generator returns null unless it is true for this listener, and all of
      them are encouraging: no guilt, no "you missed a day". Two are shown per load, rotating. */
-  const hm=h=>{ const H=Math.floor(h), m=Math.round((h-H)*60); return H?`${H}h${m?" "+m+"m":""}`:`${m}m`; };
+  // time shown as "1h 30m" or "1.5 h", from Settings
+  const hm=h=>{ if(ST.settings.timeFormat==="dec") return `${+(Math.round(h*10)/10).toFixed(1)} h`; let H=Math.floor(h), m=Math.round((h-H)*60); if(m===60){ H++; m=0; } return H?`${H}h${m?" "+m+"m":""}`:`${m}m`; };
   const DAYS=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
   const INSIGHTS=[
     /* starter lines for a brand-new account */
@@ -1341,7 +1800,7 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
     setTimeout(()=>URL.revokeObjectURL(u),4000);
   }
 
-  renderHero(); renderNotes(); renderShelfAll();
+  derive(); save(); applyMotion(); renderHero(); renderGoals(); renderNotes(); renderShelfAll();
   recomputeMedals(true);   // initial pass: settle every medal from saved state without announcing
   renderInsights();
 
@@ -1360,7 +1819,73 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
       const fl=byId("fl"); if(fl.earned&&!pendingEarned.includes(fl)) pendingEarned.unshift(fl);
       showPendingEarned(); };
   }
-  $("#resetData").onclick=()=>{ if(confirm("Start over? This clears everything saved on this device.")){ try{ localStorage.removeItem(KEY); }catch(e){} location.reload(); } };
+  /* alerts — an iPhone-style two-button dialog */
+  function ask({title,msg,ok="OK",danger=false}){
+    return new Promise(res=>{
+      const a=$("#alert"), okB=$("#aOk"), noB=$("#aCancel");
+      $("#aTitle").textContent=title; $("#aMsg").textContent=msg; okB.textContent=ok; okB.classList.toggle("danger",danger);
+      a.classList.add("open"); noB.focus();
+      const done=v=>{ a.classList.remove("open"); okB.onclick=noB.onclick=null; res(v); };
+      okB.onclick=()=>done(true); noB.onclick=()=>done(false);
+    });
+  }
+  const wipe=()=>{ try{ localStorage.removeItem(KEY); }catch(e){} location.reload(); };
+  async function resetFlow(){
+    if(!await ask({title:"Reset all data?",msg:"This erases every book, session, note and medal on this device.",ok:"Continue",danger:true})) return;
+    if(!await ask({title:"Are you sure?",msg:"This can't be undone. Export your data first if you might want it back.",ok:"Reset everything",danger:true})) return;
+    wipe();
+  }
+
+  /* settings: every change saves and updates the app straight away */
+  function refreshAll(){ derive(); save(); applyMotion(); renderHero(); renderGoals(); renderNotes(); renderShelf(shelfMode); renderShelfAll(); recomputeMedals(true); renderInsights(); }
+  function applyMotion(){ const r=ST.settings.reduceMotion, h=document.documentElement; h.classList.toggle("rm-on",r==="on"); h.classList.toggle("rm-off",r==="off"); }
+  function renderSettings(){
+    const S=ST.settings;
+    $("#setName").value=ST.user.name; $("#setEmail").textContent=S.email||"Not connected";
+    $("#setDaily").value=S.dailyGoalMin; $("#setWeekly").value=S.weeklyGoalH; $("#setMinMin").value=S.streakMinMin;
+    const sw=$("#setShowGoals"); sw.classList.toggle("on",!!S.showGoals); sw.setAttribute("aria-checked",!!S.showGoals);
+    $$(".sseg").forEach(seg=>{ const k=seg.dataset.set, v=k in S?S[k]:ST[k]; seg.querySelectorAll("button").forEach(b=>{ b.classList.toggle("on",b.dataset.v===v); b.setAttribute("aria-pressed",b.dataset.v===v); }); });
+    $("#setVersion").textContent=APP_VERSION; $("#setFounding").hidden=!byId("fl").earned;
+    $("#setFeedback").href=`mailto:${FEEDBACK_EMAIL}?subject=${encodeURIComponent("Earmark feedback")}&body=${encodeURIComponent(`\n\n—\nEarmark ${APP_VERSION}`)}`;
+  }
+  $("#setName").addEventListener("input",e=>{ ST.user.name=e.target.value; save(); });
+  $("#setName").addEventListener("blur",e=>{ ST.user.name=e.target.value.trim(); e.target.value=ST.user.name; save(); });
+  const numSetting=(sel,key,min,max)=>$(sel).addEventListener("input",e=>{ const v=parseFloat(e.target.value); if(!isFinite(v)) return; ST.settings[key]=Math.min(max,Math.max(min,v)); refreshAll(); });
+  numSetting("#setDaily","dailyGoalMin",1,1440); numSetting("#setWeekly","weeklyGoalH",.5,168); numSetting("#setMinMin","streakMinMin",1,600);
+  $$("#setDaily,#setWeekly,#setMinMin").forEach(i=>i.addEventListener("blur",renderSettings));
+  $("#setShowGoals").onclick=()=>{ ST.settings.showGoals=!ST.settings.showGoals; refreshAll(); renderSettings(); };
+  $$(".sseg button").forEach(b=>b.onclick=()=>{
+    const k=b.closest(".sseg").dataset.set, v=b.dataset.v;
+    if(k in ST.settings) ST.settings[k]=v; else ST[k]=v;
+    refreshAll(); renderSettings();
+  });
+  $("#setSignOut").onclick=()=>toast("Accounts are coming soon. Your data stays saved on this device.");
+  $("#setDelete").onclick=async()=>{
+    if(!await ask({title:"Delete your account?",msg:"This permanently deletes your profile, books, listening history and medals from this device.",ok:"Continue",danger:true})) return;
+    if(!await ask({title:"Delete everything?",msg:"There's no way to recover a deleted account. This can't be undone.",ok:"Delete account",danger:true})) return;
+    wipe();
+  };
+  $("#setReset").onclick=resetFlow;
+  $("#setImport").onclick=()=>{ openSheet(); $("#menu").style.display="none"; $("#f-past").classList.add("show"); };
+  $("#setExport").onclick=()=>{
+    const data={app:"Earmark",version:APP_VERSION,exportedAt:new Date().toISOString(),user:ST.user,settings:ST.settings,totalHours:ST.total,
+      books:ST.books,sessions:ST.sessions,pastHours:ST.past,earned:M.filter(m=>m.earned).map(m=>({id:m.id,name:m.name}))};
+    downloadFile(new File([JSON.stringify(data,null,2)],`earmark-data-${dayKey(new Date())}.json`,{type:"application/json"}));
+    toast("Your data was downloaded");
+  };
+  function renderHelp(){
+    const n=ST.settings.streakMinMin;
+    $("#helpBody").innerHTML=`<h3>Streaks</h3>
+      <p>A day counts toward your streak when you log at least ${n} minute${n==1?"":"s"} of listening that day. You can change the minimum in Settings.</p>
+      <p>Log something every day to keep the streak going. If a day passes with nothing logged, the next session starts a new streak. Your best streak is kept forever.</p>
+      <p>The streak medal changes colour as it grows: bronze from 3 days, silver from 7, gold from 30, platinum from 100 and diamond from 365.</p>
+      <h3>Hours</h3>
+      <p><b>Listening you log</b> with the + button is dated. It counts toward everything: your totals, rank, streaks, goals and every medal.</p>
+      <p><b>Hours from the past</b>, imported from apps like Audible or Libby, count toward your lifetime total, rank and time milestones, but never toward streaks or live medals.</p>
+      <p><b>Book hours</b> are the length you give a book on your shelf. They add to your lifetime total. Books without a date finished are backlog: they count toward totals and book medals, never toward streaks.</p>
+      <h3>Medals</h3>
+      <p>Medals marked live only count listening you've logged on a date. Secret medals stay hidden until you find them.</p>`;
+  }
 
   /* splash: fades in with the page, holds briefly, fades out; removed either way */
   const splash=$("#splash");
