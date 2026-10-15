@@ -4,6 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Earmark — Listen Up</title>
+<meta name="theme-color" content="#1E140D">
+<meta name="apple-mobile-web-app-title" content="Earmark">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png">
+<link rel="shortcut icon" href="icons/favicon.ico">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -73,8 +80,17 @@ button{font-family:inherit;color:inherit}
 /* icons: one family — 1.75 stroke, round joins, 24 grid */
 svg[stroke="currentColor"]{stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
 
+/* splash */
+.splash{position:fixed;inset:0;z-index:60;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  background:var(--bg);opacity:0;animation:splash-in var(--med) var(--ease) forwards;transition:opacity 300ms var(--ease);pointer-events:none}
+.splash img{width:112px;height:112px;margin-bottom:12px}
+.splash .brand{font-size:var(--t-48)}
+.splash.out{opacity:0}
+@keyframes splash-in{to{opacity:1}}
 /* header */
 .brandblock{text-align:center;padding:8px 0 16px}
+.brandrow{display:inline-flex;align-items:center;gap:10px}
+.brandrow img{width:32px;height:32px;display:block}
 .brand{font-family:var(--serif);font-size:var(--t-32);font-weight:500;letter-spacing:.04em;color:var(--accent)}
 .tagline{font-family:var(--serif);font-style:italic;font-size:var(--t-16);color:var(--ink-2);margin-top:0;letter-spacing:.02em}
 .hdr{text-align:center;padding:8px 0 16px}
@@ -306,11 +322,12 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
 </style>
 </head>
 <body>
+<div class="splash wood" id="splash" aria-hidden="true"><img src="icons/earmark-mark.png" alt="" width="112" height="112"><div class="brand">Earmark</div><div class="tagline">Listen up</div></div>
 <div class="phone wood">
 
 <!-- HOME -->
 <section class="screen active" id="s-home">
-  <div class="brandblock"><div class="brand">Earmark</div><div class="tagline">Listen up</div></div>
+  <div class="brandblock"><div class="brandrow"><img src="icons/earmark-mark.png" alt="" width="32" height="32"><div class="brand">Earmark</div></div><div class="tagline">Listen up</div></div>
 
   <div class="hero">
     <div class="glow"></div>
@@ -815,6 +832,13 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
 
   recomputeMedals(true);   // initial pass: settle the genre medals without announcing them
   renderInsights();
+
+  /* splash: fades in with the page, holds briefly, fades out; removed either way */
+  const splash=$("#splash");
+  if(splash){
+    const bye=()=>splash.remove();
+    setTimeout(()=>{ splash.classList.add("out"); splash.addEventListener("transitionend",bye,{once:true}); setTimeout(bye,500); },1400);
+  }
 })();
 </script>
 </body>
