@@ -655,10 +655,22 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
 .rprev{margin:0 16px 16px;padding:12px 14px;border-radius:var(--r-sm);background:var(--well);text-align:left;font-size:var(--t-14);line-height:1.5}
 .rprev b{display:block;font-size:var(--t-16)}
 .rprev span{color:var(--ink-2)}
+
+/* beta: tag, welcome and privacy pages */
+.betatag{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:var(--r-pill);border:1px solid var(--accent);color:var(--accent);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;line-height:1.5;vertical-align:middle}
+.splash .betatag{margin:18px 0 0}
+.proto a{display:inline-block;padding:12px 4px;color:var(--accent);font-weight:600;text-decoration:none}
+.prose ol,.prose ul{margin:6px 0 0;padding-left:20px;color:var(--ink-2);font-size:15px;line-height:1.55}
+.prose li+li{margin-top:4px}
+.prose a{color:var(--accent);font-weight:600}
+.prose b{color:var(--ink)}
+.welcome .cta{margin-top:20px}
+.obprivacy{margin-top:16px;font-size:var(--t-14);color:var(--ink-3)}
+.obprivacy button{background:none;border:0;color:var(--accent);font:inherit;font-weight:600;padding:12px 4px;cursor:pointer}
 </style>
 </head>
 <body>
-<div class="splash" id="splash" aria-hidden="true"><img src="icons/earmark-wordmark.png" alt="" width="240" height="246"></div>
+<div class="splash" id="splash" aria-hidden="true"><img src="icons/earmark-wordmark.png" alt="" width="240" height="246"><span class="betatag">Beta</span></div>
 <!-- ONBOARDING: shown once, on the first visit with no saved data -->
 <div class="ob navy" id="onboard" role="dialog" aria-label="Welcome to Earmark">
   <div class="inner">
@@ -668,6 +680,12 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
       <p class="lead">Track every hour you listen, earn medals along the way, and fill a shelf with what you've finished.</p>
       <div class="field" style="margin-top:24px"><input id="obName" placeholder="Your name" autocomplete="given-name" aria-label="Your name"></div>
       <button class="cta" id="obNext0">Continue</button>
+      <p class="obprivacy">Your listening history stays on this device. <button type="button" id="obPrivacyBtn">Privacy</button></p>
+    </section>
+    <section class="ob-step" data-step="9">
+      <h2>Privacy</h2>
+      <div class="prose" id="obPrivacy" style="margin-top:12px"></div>
+      <button class="cta" id="obPrivacyBack">Back</button>
     </section>
     <section class="ob-step" data-step="1">
       <div class="eyebrow">Step 1 of 3</div>
@@ -771,7 +789,7 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     <div class="bookcase" id="bookcase"></div>
   </div>
 
-  <p class="proto">Prototype · saved on this device</p>
+  <p class="proto">Beta · saved on this device · <a id="homeFeedback" href="#" target="_blank" rel="noopener">Send feedback</a></p>
 </section>
 
 <!-- BOOKSHELF: every book, as a grid of three or a list one by one -->
@@ -860,7 +878,9 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
 
   <div class="sgh">Help &amp; feedback</div>
   <div class="sgroup">
-    <a class="srow" id="setFeedback" href="#"><span class="sl">Send feedback</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></a>
+    <a class="srow" id="setFeedback" href="#" target="_blank" rel="noopener"><span class="sl">Send feedback</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></a>
+    <a class="srow" id="setSurvey" href="#" target="_blank" rel="noopener"><span class="sl">Final thoughts survey</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></a>
+    <button class="srow" data-go="s-welcome" type="button"><span class="sl">Welcome to the beta</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button>
     <button class="srow" data-go="s-help" type="button"><span class="sl">How streaks and hours work</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
 
@@ -868,8 +888,22 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
   <div class="sgroup">
     <div class="srow static"><span class="sl">Version</span><span class="sv" id="setVersion"></span></div>
     <div class="srow static" id="setFounding" hidden><span class="sl">Founding Listener</span><span class="sv">Thank you for being early</span></div>
+    <button class="srow" data-go="s-privacy" type="button"><span class="sl">Privacy</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <p class="sgnote">Earmark is made for people who love listening. Designed and built by the Earmark team. Set in Plus Jakarta Sans.</p>
+</section>
+
+<!-- WELCOME: shown once after onboarding, and from Settings > Help -->
+<section class="screen welcome" id="s-welcome">
+  <div class="hdr"><button class="backbtn" data-nav-back aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m15 5-7 7 7 7"/></svg>Back</button><div class="title">Welcome to the beta</div></div>
+  <div class="card prose" id="welcomeBody"></div>
+  <button class="cta" id="welcomeDone" type="button">Start listening</button>
+</section>
+
+<!-- PRIVACY -->
+<section class="screen" id="s-privacy">
+  <div class="hdr"><button class="backbtn" data-nav-back aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m15 5-7 7 7 7"/></svg>Back</button><div class="title">Privacy</div></div>
+  <div class="card prose" id="privacyBody"></div>
 </section>
 
 <!-- HELP: how streaks and hours work -->
@@ -1075,8 +1109,12 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
   };
   /* ---- state: everything the app shows comes from here. A new account starts at zero. ---- */
   const KEY="earmark.state.v1";
-  const APP_VERSION="0.9.0 (beta)";
-  const FEEDBACK_EMAIL="orionsmaxfield@gmail.com";   // "Send feedback" opens a new email to this address
+  const APP_VERSION="0.9.0";   // shown in Settings > About with a Beta tag
+  /* ---- beta settings: fill these in ---- */
+  const FEEDBACK_URL="https://docs.google.com/forms/d/e/1FAIpQLSd0juSwRwq8oNXawAh7rJ79hCi84N0al5oX6bwg_KqX-gkqEw/viewform";   // "Send feedback"
+  const FINAL_SURVEY_URL="https://docs.google.com/forms/d/e/1FAIpQLSfLebyfyRnXDIu-X4ERDeldCd_olUcJBbSbxtkAN0O6HENCbA/viewform";   // Settings > Help > Final thoughts survey
+  const TEST_END_DATE=null;          // TODO: the last day of the beta, e.g. "2026-12-15" (shown on the welcome page)
+  const FOUNDING_CUTOFF_DATE=null;   // TODO: e.g. "2027-01-01". Only people whose first use is before this date earn Founding Listener; while null, everyone does
   const BACKUP_VERSION=1;   // the format of exported backups; restore reads this version and every one before it
   const SETTINGS_DEFAULT={email:"",dailyGoalMin:30,weeklyGoalH:5,showGoals:true,streakMinMin:5,weekStart:"mon",timeFormat:"hm",reduceMotion:"system",chartStyle:"bars"};
   const fresh=()=>({v:1,onboarded:false,user:{name:""},total:0,todayH:0,weekH:0,monthH:0,lastMonthH:0,yearH:0,
@@ -1091,14 +1129,12 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     medals:{},medalsV:0,
     lastBackup:null,backupNudgeDismissed:null,installDismissed:null,
     settings:{...SETTINGS_DEFAULT}});
-  /* TODO: set this to the public launch date (e.g. "2027-03-01"). Accounts created before it are
-     Founding Listeners; while it is null, every account is (we are still in early testing). */
-  const PUBLIC_LAUNCH=null;
   function load(){ try{ const raw=localStorage.getItem(KEY); if(raw){ const o=JSON.parse(raw); return Object.assign(fresh(),o,{user:Object.assign({name:""},o.user||{}),keys:Object.assign({},fresh().keys,o.keys||{}),settings:Object.assign({},SETTINGS_DEFAULT,o.settings||{}),legacy:Object.assign({},fresh().legacy,o.legacy||{})}); } }catch(e){} return fresh(); }
   function save(){ try{ localStorage.setItem(KEY,JSON.stringify(ST)); }catch(e){} }
   const ST=load();
   const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
-  ST.books.forEach(b=>{ if(!b.id) b.id=uid(); });   // books saved before editing existed get an id
+  ST.books.forEach(b=>{ if(!b.id) b.id=uid(); });
+  if(!ST.firstUseAt) ST.firstUseAt=ST.createdAt;   // first use on this device: decides Founding Listener   // books saved before editing existed get an id
   const pad=n=>String(n).padStart(2,"0");
   const dayKey=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
   const parseDay=k=>{ const [y,m,d]=k.split("-").map(Number); return new Date(y,m-1,d); };
@@ -1627,7 +1663,7 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
       years:(Date.now()-new Date(ST.createdAt))/(365.2425*864e5),notes:ST.notesWritten,shares:ST.shares,
       firstLog:ST.sessions.length>0||ST.legacy.days.length>0,importer:ST.past.length>0,undated,stocker:undated>=10,
       newYear:days.some(d=>d.endsWith("-01-01")),holiday:days.some(d=>d.endsWith("-12-25")),leap:days.some(d=>d.endsWith("-02-29")),
-      comeback:!!ST.comeback,founding:!PUBLIC_LAUNCH||ST.createdAt<PUBLIC_LAUNCH,wrap:!!ST.yearReviewViewed,
+      comeback:!!ST.comeback,founding:!FOUNDING_CUTOFF_DATE||ST.firstUseAt<FOUNDING_CUTOFF_DATE,wrap:!!ST.yearReviewViewed,
       answer:ST.sessions.some(x=>x.m===42),onTime:ST.sessions.some(x=>x.m===60),bookends:Object.values(firstLast).some(f=>f.a&&f.z),nightDay:D.nightDay};
     MEDALS.forEach(m=>{ if(m.genres) S[m.v]=LIB.filter(b=>m.genres.includes(b.genre)).reduce((t,b)=>t+(b.h||0),0); });
     return S;
@@ -1674,6 +1710,7 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     if(id==="s-shelf") renderShelfAll();
     if(id==="s-settings") renderSettings();
     if(id==="s-help") renderHelp();
+    if(id==="s-welcome") renderWelcome();
     if(id==="s-stats") renderStats(true);
     const el=$("#"+id); el.classList.remove("in-fwd","in-back");
     if(anim){ void el.offsetWidth; el.classList.add(anim); el.addEventListener("animationend",()=>el.classList.remove(anim),{once:true}); }
@@ -2177,10 +2214,10 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     $("#obNext1").onclick=()=>{ const h=+$("#obPast").value||0; if(h>0) addPastHours(h,$("#obSrc").value); obGo(2); };
     $("#obSkip1").onclick=()=>obGo(2);
     $("#obNext2").onclick=$("#obSkip2").onclick=()=>obGo(3);
-    $("#obFinish").onclick=()=>{ ST.onboarded=true; save(); ob.classList.remove("open"); go("s-home",{tab:true}); renderInstall();
-      // welcome with the Founding Listener medal while early testing lasts
+    $("#obFinish").onclick=()=>{ ST.onboarded=true; ST.welcomeSeen=true; save(); ob.classList.remove("open"); go("s-home",{tab:true}); renderInstall();
+      // the welcome page once; the Founding Listener medal follows when they leave it
       const fl=BY.fl; if(fl.lv&&!pendingEarned.some(e=>e.m===fl)) pendingEarned.unshift({m:fl,from:0,to:1});
-      showPendingEarned(); };
+      go("s-welcome"); };
   }
   /* alerts — an iPhone-style two-button dialog */
   function ask({title,msg,ok="OK",cancel="Cancel",danger=false,single=false}){
@@ -2210,8 +2247,7 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     const sw=$("#setShowGoals"); sw.classList.toggle("on",!!S.showGoals); sw.setAttribute("aria-checked",!!S.showGoals);
     $$(".sseg").forEach(seg=>{ const k=seg.dataset.set, v=k in S?S[k]:ST[k]; seg.querySelectorAll("button").forEach(b=>{ b.classList.toggle("on",b.dataset.v===v); b.setAttribute("aria-pressed",b.dataset.v===v); }); });
     $("#setLastBackup").textContent=ST.lastBackup?fmtDay(ST.lastBackup):"Never";
-    $("#setVersion").textContent=APP_VERSION; $("#setFounding").hidden=!BY.fl.lv;
-    $("#setFeedback").href=`mailto:${FEEDBACK_EMAIL}?subject=${encodeURIComponent("Earmark feedback")}&body=${encodeURIComponent(`\n\n—\nEarmark ${APP_VERSION}`)}`;
+    $("#setVersion").innerHTML=`${APP_VERSION}<span class="betatag">Beta</span>`; $("#setFounding").hidden=!BY.fl.lv;
   }
   $("#setName").addEventListener("input",e=>{ ST.user.name=e.target.value; save(); });
   $("#setName").addEventListener("blur",e=>{ ST.user.name=e.target.value.trim(); e.target.value=ST.user.name; save(); });
@@ -2277,7 +2313,7 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     (st.past||[]).forEach(x=>{ if(!x||!(x.h>0)||pk.has(x.at+"|"+x.h)) return; ST.past.push(x); hours+=x.h; });
     if(st.legacy&&Array.isArray(st.legacy.days)) ST.legacy.days=[...new Set([...ST.legacy.days,...st.legacy.days])];
     ST.total+=hours; ST.notesWritten=Math.max(ST.notesWritten||0,st.notesWritten||0);
-    ST.medals=mergeMedalStores(ST.medals,st.medals); ST.createdAt=earliest(ST.createdAt,st.createdAt);
+    ST.medals=mergeMedalStores(ST.medals,st.medals); ST.createdAt=earliest(ST.createdAt,st.createdAt); ST.firstUseAt=earliest(ST.firstUseAt,st.firstUseAt,st.createdAt);
     return added;
   }
   $("#setRestore").onclick=()=>$("#restoreFile").click();
@@ -2291,7 +2327,7 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     const st=backupState(o), how=await chooseRestore(st,o);
     if(how==="replace"){
       if(!await ask({title:"Replace everything?",msg:"Everything on this device is swapped for the backup. Anything you haven't backed up will be lost. Medal levels you've already earned are kept.",ok:"Replace",danger:true})) return;
-      const next=Object.assign(fresh(),st,{onboarded:true,medals:mergeMedalStores(ST.medals,st.medals),createdAt:earliest(ST.createdAt,st.createdAt),lastBackup:o.exportedAt||ST.lastBackup});
+      const next=Object.assign(fresh(),st,{onboarded:true,medals:mergeMedalStores(ST.medals,st.medals),createdAt:earliest(ST.createdAt,st.createdAt),firstUseAt:earliest(ST.firstUseAt,st.firstUseAt,st.createdAt),welcomeSeen:true,lastBackup:o.exportedAt||ST.lastBackup});
       try{ localStorage.setItem(KEY,JSON.stringify(next)); sessionStorage.setItem("earmark.flash","Restored from your backup"); }catch(err){ toast("Couldn't restore. There may not be enough space."); return; }
       location.reload();
     } else if(how==="merge"){
@@ -2334,6 +2370,37 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     if(e.target.closest("#installX")){ ST.installDismissed=new Date().toISOString(); save(); renderInstall(); return; }
     if(e.target.closest("#installBtn")&&installPrompt){ const p=installPrompt; installPrompt=null; p.prompt(); try{ await p.userChoice; }catch(err){} renderInstall(); }
   });
+  /* beta pages: welcome and privacy */
+  $("#setFeedback").href=$("#homeFeedback").href=FEEDBACK_URL; $("#setSurvey").href=FINAL_SURVEY_URL;
+  const testEnd=()=>TEST_END_DATE?parseDay(TEST_END_DATE).toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",year:"numeric"}):null;
+  function renderWelcome(){
+    const end=testEnd();
+    $("#welcomeBody").innerHTML=`<h3>Thank you for testing</h3>
+      <p>You're one of the first people to use Earmark. Everything you notice, good or bad, helps make it better before anyone else sees it.</p>
+      <h3>Add Earmark to your home screen</h3>
+      <p>It keeps your listening history safe and opens like a real app.</p>
+      <ul><li><b>iPhone:</b> open Earmark in Safari, tap the Share button, then <b>Add to Home Screen</b>.</li>
+        <li><b>Android:</b> in Chrome, tap <b>Install app</b> on Home, or open the ⋮ menu and choose <b>Install app</b>.</li></ul>
+      <p>From then on, open Earmark from its icon.</p>
+      <h3>What to try</h3>
+      <ul><li>Log your listening every day with the + button. Your streak starts on day one.</li>
+        <li>Add the books you've finished, and the ones you're listening to now.</li>
+        <li>Check your medals in Achievements, and tap Today, This week or This month to see your charts.</li></ul>
+      <h3>Back up your data</h3>
+      <p>Your history is saved on this device only. Every week or so, go to Settings › Data › Export a backup and keep the file somewhere safe.</p>
+      <h3>How long the test runs</h3>
+      <p>${end?`The beta runs until <b>${end}</b>.`:"The beta runs for a few weeks. We'll email you the end date."} Near the end, please fill in the short final survey in Settings › Help.</p>
+      <h3>Send feedback</h3>
+      <p>Found a bug, or have an idea? <a href="${FEEDBACK_URL}" target="_blank" rel="noopener">Send feedback</a> any time. It's also at the bottom of Home and in Settings › Help.</p>`;
+  }
+  const PRIVACY=`<p><b>Your listening data is stored only on this device,</b> in this browser. It isn't uploaded, shared or sold.</p>
+    <p>The only thing collected is the email address you use to log in to the beta.</p>
+    <p>The site counts visits with privacy-friendly analytics that use no cookies and don't follow you around the web.</p>
+    <p>Feedback forms are optional. What you write in them goes to the developer.</p>
+    <p>A backup you export is your own file. It stays wherever you save it.</p>`;
+  $("#privacyBody").innerHTML=$("#obPrivacy").innerHTML=PRIVACY;
+  $("#welcomeDone").onclick=()=>{ back(); showPendingEarned(); };
+  $("#obPrivacyBtn").onclick=()=>obGo(9); $("#obPrivacyBack").onclick=()=>obGo(0);
   function renderHelp(){
     const n=ST.settings.streakMinMin;
     $("#helpBody").innerHTML=`<h3>Streaks</h3>
