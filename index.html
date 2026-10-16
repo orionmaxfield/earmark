@@ -624,10 +624,147 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
 @keyframes stGrow{from{transform:scaleY(0)}}
 @keyframes stDraw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
 @keyframes stFade{from{opacity:0}}
+
+/* backups, the add-to-home-screen guide, and offline updates */
+.nudge{display:flex;align-items:center;gap:12px;margin-top:12px;padding:12px 6px 12px 14px;text-align:left}
+.nudge[hidden],.install[hidden],.updbar[hidden]{display:none}
+.nudge .nic{width:36px;height:36px;flex:0 0 auto;border-radius:50%;display:grid;place-items:center;color:var(--accent);background:var(--accent-dim)}
+.nudge .nic svg{width:18px;height:18px}
+.nudge .nt{flex:1;min-width:0}
+.nudge .nt b{display:block;font-size:var(--t-14);font-weight:600;line-height:1.35}
+.nudge .nt small{display:block;color:var(--ink-2);font-size:var(--t-12);margin-top:2px;line-height:1.4}
+.nbtn{flex:0 0 auto;min-height:36px;padding:0 14px;border:0;border-radius:var(--r-pill);background:var(--grad);color:var(--accent-ink);font:inherit;font-size:var(--t-14);font-weight:700;cursor:pointer}
+.nx{flex:0 0 auto;width:44px;height:44px;border:0;background:transparent;color:var(--ink-3);font-size:22px;line-height:1;border-radius:50%;cursor:pointer}
+.install{position:relative;margin:0 0 8px;padding:16px 16px 14px;text-align:left}
+.install .nx{position:absolute;top:4px;right:4px}
+.install>b{display:block;font-size:var(--t-16);font-weight:700;padding-right:36px;line-height:1.35}
+.install>p{color:var(--ink-2);font-size:var(--t-14);margin-top:4px;line-height:1.45}
+.isteps{list-style:none;margin:14px 0 0;padding:0;display:grid;gap:10px}
+.isteps li{display:flex;align-items:center;gap:12px;font-size:var(--t-14);color:var(--ink-2);line-height:1.4}
+.isteps li b{color:var(--ink);font-weight:600}
+.isteps .ib{width:38px;height:38px;flex:0 0 auto;border-radius:10px;display:grid;place-items:center;background:var(--surface-2);border:1px solid var(--line-2);color:#5AA9FF}
+.isteps .ib svg{width:20px;height:20px}
+.isteps .ib img{width:26px;height:26px;border-radius:6px}
+.install .cta{margin-top:12px}
+.updbar{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:30;display:flex;align-items:center;gap:8px;min-height:44px;padding:0 18px;border-radius:var(--r-pill);border:1px solid var(--accent);background:var(--bg-raised);color:var(--ink);font:inherit;font-size:var(--t-14);font-weight:600;box-shadow:var(--sh-2);cursor:pointer;white-space:nowrap}
+.updbar svg{width:18px;height:18px;color:var(--accent)}
+.abtns.col{grid-template-columns:1fr}
+.abtns.col button+button{border-left:0;border-top:1px solid var(--line-2)}
+.abtns button[hidden]{display:none}
+.alert .abtns:has(button[hidden]){grid-template-columns:1fr}
+.rprev{margin:0 16px 16px;padding:12px 14px;border-radius:var(--r-sm);background:var(--well);text-align:left;font-size:var(--t-14);line-height:1.5}
+.rprev b{display:block;font-size:var(--t-16)}
+.rprev span{color:var(--ink-2)}
+
+/* beta: tag, welcome and privacy pages */
+.betatag{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:var(--r-pill);border:1px solid var(--accent);color:var(--accent);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;line-height:1.5;vertical-align:middle}
+.splash .betatag{margin:18px 0 0}
+.proto a{display:inline-block;padding:12px 4px;color:var(--accent);font-weight:600;text-decoration:none}
+.prose ol,.prose ul{margin:6px 0 0;padding-left:20px;color:var(--ink-2);font-size:15px;line-height:1.55}
+.prose li+li{margin-top:4px}
+.prose a{color:var(--accent);font-weight:600}
+.prose b{color:var(--ink)}
+.welcome .cta{margin-top:20px}
+.obprivacy{margin-top:16px;font-size:var(--t-14);color:var(--ink-3)}
+.obprivacy button{background:none;border:0;color:var(--accent);font:inherit;font-weight:600;padding:12px 4px;cursor:pointer}
+
+/* book search: results with covers, a picked book, estimated hours */
+.bsearch{margin-top:12px}
+.bsearch .field{margin-top:0}
+.bsearch input[type=search]{-webkit-appearance:none;appearance:none}
+.bsres{display:grid;gap:2px;margin-top:6px}
+.bsrow{display:flex;align-items:center;gap:12px;width:100%;min-height:68px;padding:8px;border:0;border-radius:var(--r-sm);background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.bsrow:active{background:var(--surface-2)}
+.bscov{position:relative;width:38px;height:56px;flex:0 0 auto;border-radius:3px 5px 5px 3px;overflow:hidden;background:var(--cloth,#1B3556);box-shadow:inset 3px 0 0 rgba(0,0,0,.2)}
+.bscov img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.bsmeta{flex:1;min-width:0}
+.bsmeta b{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:15px;font-weight:600;line-height:1.3}
+.bsmeta small{display:block;margin-top:2px;color:var(--ink-3);font-size:var(--t-12)}
+.bsstatus{padding:10px 4px 0;color:var(--ink-2);font-size:var(--t-14);line-height:1.45}
+.bsstatus:empty{display:none}
+.bsmanual{display:block;margin:2px 0 0 -4px}
+.manual[hidden],.bspick[hidden],.bsest[hidden],.bsmanual[hidden]{display:none}
+.bspick{display:flex;align-items:center;gap:12px;margin-top:12px;padding:10px 12px;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--line-2)}
+.bspick .bscov{width:46px;height:68px}
+.bspick .bsmeta b{font-size:var(--t-16)}
+.bspick .linkmini{margin:0;align-self:flex-start}
+.bsest{margin-top:8px;color:var(--ink-3);font-size:13px;line-height:1.45}
+.cover .cimg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:inherit;z-index:0}
+.cover .hrs{z-index:1}
+.bkcover{display:flex;align-items:center;gap:14px;margin-top:12px}
+.bkcover .cover{width:56px;height:82px;flex:0 0 auto;padding:6px}
+.bkcover .cover b{font-size:9px}
+.bkcover .cover small,.bkcover .cover .hrs{display:none}
+.bkcover .pillbtn{min-height:40px}
+.bscovers{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}
+.bscovers:empty{display:none}
+.bscovers button{position:relative;aspect-ratio:2/3;padding:0;border:2px solid transparent;border-radius:6px;overflow:hidden;background:var(--surface-2);cursor:pointer}
+.bscovers button.on{border-color:var(--accent)}
+.bscovers img{width:100%;height:100%;object-fit:cover;display:block}
+
+/* currently listening, want to listen, the listening timer */
+.nowcard{margin-top:12px;text-align:left;padding:12px 16px 4px}
+.nowcard[hidden],.timerbar[hidden],#logBookRow[hidden],.addas[hidden],#shelfFilterBar[hidden],#viewSeg[hidden]{display:none}
+.nowcard .sechead h2{font-size:var(--t-16);margin:0}
+.nowcard .sechead .seeall{margin-right:-8px}
+.nowrow{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+.nowcard .nowrow:first-of-type,.lcard .nowrow:first-child{border-top:0}
+.nowrow .cover{width:44px;height:64px;padding:0;flex:0 0 auto;cursor:default}
+.nowrow .cover b,.nowrow .cover small,.nowrow .cover .hrs{display:none}
+.nowrow .cover.ph:before{top:8px;left:9px;right:6px} .nowrow .cover.ph:after{bottom:8px;left:9px;right:6px}
+.nowmeta{flex:1;min-width:0;padding:4px 0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.nowmeta b{display:block;font-size:var(--t-16);font-weight:600;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nowmeta .au{display:block;color:var(--ink-2);font-size:var(--t-14);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nowmeta small{display:block;margin-top:6px;color:var(--ink-3);font-size:var(--t-12);font-weight:500}
+.nowmeta .bar{margin-top:8px}
+.lact{flex:0 0 auto;min-height:40px;padding:0 14px;border-radius:var(--r-pill);border:1px solid var(--line-2);background:transparent;color:var(--ink);font:inherit;font-size:var(--t-14);font-weight:600;cursor:pointer}
+.lact.go{border:0;background:var(--grad);color:var(--accent-ink);font-weight:700}
+.lact:active{opacity:.8}
+.shelftabs{margin:0 0 12px}
+.shelftabs button{flex:1;min-height:36px;font-size:var(--t-14)}
+.lcard{padding:0 16px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);box-shadow:var(--sh-1)}
+.addas{margin:0 0 4px}
+.addas .seg button{flex:1;min-height:36px;font-size:var(--t-14)}
+.addas .seg{display:flex}
+.bkstat{display:flex;margin-top:14px}
+.bkstat button{flex:1;min-height:36px;font-size:var(--t-14)}
+.bkprog{margin-top:8px;color:var(--ink-2);font-size:var(--t-14)}
+.bkprog:empty{display:none}
+.timerbox{display:flex;align-items:center;gap:12px;margin-top:12px;padding:10px 12px 10px 14px;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--line)}
+.timerbox p{flex:1;min-width:0;font-size:13px;color:var(--ink-2);line-height:1.4}
+.timerbox p b{display:block;color:var(--ink);font-size:var(--t-14)}
+.timerbox .lact svg{width:16px;height:16px;vertical-align:-3px;margin-right:4px}
+.timerbar{position:fixed;top:0;left:0;right:0;z-index:18;display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:46px;padding:calc(env(safe-area-inset-top,0px) + 8px) 16px 8px;border:0;border-bottom:1px solid rgba(0,231,179,.3);background:#0A2F3A;color:var(--ink);font:inherit;font-size:var(--t-14);font-weight:600;cursor:pointer;box-shadow:var(--sh-2)}
+.timerbar .tdot{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:tpulse 1.6s ease-in-out infinite}
+.timerbar .ttime{font-variant-numeric:tabular-nums}
+.timerbar .tbook{color:var(--ink-2);font-weight:500;max-width:40vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.timerbar .tstop{margin-left:4px;padding:4px 12px;border-radius:var(--r-pill);background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:var(--t-12)}
+@keyframes tpulse{50%{opacity:.35}}
+body.timing .phone{padding-top:50px}
+body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
+.fincover .cover{width:120px;height:176px;margin:28px auto 22px;padding:12px 10px;cursor:default}
+.fincover .cover b{font-size:14px}
+.fincover .cover .hrs{display:none}
+.earned.open .fincover .cover{animation:mint var(--med) cubic-bezier(.34,1.4,.64,1) both}
+
+/* yearly book goal ring, streak rest days */
+.bookgoal{display:flex;align-items:center;gap:16px;margin-top:12px;text-align:left;padding:14px 16px}
+.bookgoal[hidden],.restdays[hidden]{display:none}
+.bookgoal svg{width:64px;height:64px;flex:0 0 auto}
+.bookgoal .rtrack{fill:none;stroke:var(--well);stroke-width:7}
+.bookgoal .rfill{fill:none;stroke:url(#ringG);stroke-width:7;stroke-linecap:round;transform:rotate(-90deg);transform-origin:50% 50%;transition:stroke-dashoffset var(--med) var(--ease)}
+.bookgoal .rnum{font-family:var(--font);font-size:20px;font-weight:800;fill:var(--ink)}
+.bookgoal b{display:block;font-size:var(--t-16);font-weight:600;line-height:1.35}
+.bookgoal small{display:block;color:var(--ink-2);font-size:var(--t-14);margin-top:2px;line-height:1.4}
+.bookgoal small.ahead{color:var(--accent)}
+.restdays{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:8px;font-size:var(--t-12);font-weight:600;color:var(--ink-3);letter-spacing:.02em}
+.restdays i{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:var(--accent-dim);color:var(--accent)}
+.restdays i svg{width:12px;height:12px}
+.streakwrap .sub.rest{color:var(--accent)}
 </style>
 </head>
 <body>
-<div class="splash" id="splash" aria-hidden="true"><img src="icons/earmark-wordmark.png" alt="" width="240" height="246"></div>
+<div class="splash" id="splash" aria-hidden="true"><img src="icons/earmark-wordmark.png" alt="" width="240" height="246"><span class="betatag">Beta</span></div>
 <!-- ONBOARDING: shown once, on the first visit with no saved data -->
 <div class="ob navy" id="onboard" role="dialog" aria-label="Welcome to Earmark">
   <div class="inner">
@@ -637,6 +774,12 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
       <p class="lead">Track every hour you listen, earn medals along the way, and fill a shelf with what you've finished.</p>
       <div class="field" style="margin-top:24px"><input id="obName" placeholder="Your name" autocomplete="given-name" aria-label="Your name"></div>
       <button class="cta" id="obNext0">Continue</button>
+      <p class="obprivacy">Your listening history stays on this device. <button type="button" id="obPrivacyBtn">Privacy</button></p>
+    </section>
+    <section class="ob-step" data-step="9">
+      <h2>Privacy</h2>
+      <div class="prose" id="obPrivacy" style="margin-top:12px"></div>
+      <button class="cta" id="obPrivacyBack">Back</button>
     </section>
     <section class="ob-step" data-step="1">
       <div class="eyebrow">Step 1 of 3</div>
@@ -649,12 +792,14 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     <section class="ob-step" data-step="2">
       <div class="eyebrow">Step 2 of 3</div>
       <h2>Books you've finished</h2>
-      <p class="lead">Add a few favourites to start your shelf. Hours are optional; when you add them they count toward your total.</p>
-      <!-- TODO: free-type title is a stopgap until titles come from the book database with covers and runtimes. -->
-      <div class="field"><input id="obTitle" autocapitalize="words" placeholder="Book title" autocomplete="off" aria-label="Book title"></div>
-      <div class="field"><input id="obAuthor" autocapitalize="words" placeholder="Author (optional)" autocomplete="off" aria-label="Author"></div>
-      <div class="field"><select class="genre" id="obGenre" aria-label="Genre (optional)"></select></div>
-      <div class="field"><label><input id="obHours" type="number" inputmode="decimal" min="0" step="0.5" placeholder="Optional" aria-label="Hours it ran"><span>hours</span></label><button class="addbtn" id="obAddBtn">Add</button></div>
+      <p class="lead">Search for a few favourites to start your shelf. Their hours count toward your total.</p>
+      <div class="bsearch" id="obSearch"></div>
+      <div class="manual" id="obManual" hidden>
+        <div class="field"><input id="obTitle" autocapitalize="words" placeholder="Book title" autocomplete="off" aria-label="Book title"></div>
+        <div class="field"><input id="obAuthor" autocapitalize="words" placeholder="Author (optional)" autocomplete="off" aria-label="Author"></div>
+        <div class="field"><select class="genre" id="obGenre" aria-label="Genre (optional)"></select></div>
+        <div class="field"><label><input id="obHours" type="number" inputmode="decimal" min="0" step="0.5" placeholder="Optional" aria-label="Hours it ran"><span>hours</span></label><button class="addbtn" id="obAddBtn">Add</button></div>
+      </div>
       <div class="added" id="obAddedList" aria-live="polite"></div>
       <button class="cta" id="obNext2">Continue</button>
       <button class="ghost" id="obSkip2">Skip for now</button>
@@ -676,6 +821,12 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
 <section class="screen active" id="s-home">
   <button class="gear" data-go="s-settings" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
   <div class="brandblock"><div class="brandrow"><img src="icons/earmark-mark.png" alt="" width="32" height="32"><div class="brand">Ear<span class="mk">mark</span></div></div><div class="tagline">Listen up<span class="dot">.</span></div></div>
+  <div class="card install" id="installCard" hidden>
+    <button class="nx" id="installX" type="button" aria-label="Not now">×</button>
+    <b>Add Earmark to your home screen</b>
+    <p>Keeps your history safe and opens like a real app.</p>
+    <div id="installBody"></div>
+  </div>
 
   <div class="hero">
     <div class="glow"></div>
@@ -683,15 +834,26 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
       <div class="medal streakbadge m-locked" id="streakMedal" role="img" aria-label="0-day streak"><div class="sb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-9z"/></svg><b id="streakNum">0</b></div></div>
       <div class="unit">Day streak</div>
       <div class="sub" id="streakSub"></div>
+      <div class="restdays" id="restDays" hidden></div>
     </div>
     <div class="boxes">
       <button class="box" type="button" data-stats="day"><b id="t1">0h</b><small>today</small></button>
       <button class="box" type="button" data-stats="week"><b id="t2">0</b><small>hrs this week</small></button>
       <button class="box" type="button" data-stats="month"><b id="t3">0</b><small>hrs this month</small></button>
     </div>
+    <div class="card nowcard" id="nowCard" hidden>
+      <div class="sechead"><h2>Currently listening</h2><button class="seeall" type="button" data-shelf-tab="listening">See all</button></div>
+      <div id="nowList"></div>
+    </div>
     <div class="goals card" id="goals">
       <div class="goal"><div class="gl"><span>Daily goal</span><b id="gDay"></b></div><div class="bar"><i id="gDayBar" style="width:0%"></i></div></div>
       <div class="goal"><div class="gl"><span>Weekly goal</span><b id="gWeek"></b></div><div class="bar"><i id="gWeekBar" style="width:0%"></i></div></div>
+    </div>
+    <div class="card bookgoal" id="bookGoal" hidden></div>
+    <div class="card nudge" id="backupNudge" hidden>
+      <div class="nic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19.5h14"/></svg></div>
+      <div class="nt"><b>Save a backup of your listening history</b><small>A file you keep, in case this browser clears its data.</small></div>
+      <button class="nbtn" id="nudgeSave" type="button">Save</button><button class="nx" id="nudgeX" type="button" aria-label="Dismiss">×</button>
     </div>
     <div class="notes" id="notes"></div>
     <div class="totalline"><b id="heroNum">0</b><small>hours listened, lifetime</small></div>
@@ -729,12 +891,13 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     <div class="bookcase" id="bookcase"></div>
   </div>
 
-  <p class="proto">Prototype · saved on this device</p>
+  <p class="proto">Beta · saved on this device · <a id="homeFeedback" href="#" target="_blank" rel="noopener">Send feedback</a></p>
 </section>
 
 <!-- BOOKSHELF: every book, as a grid of three or a list one by one -->
 <section class="screen" id="s-shelf">
   <div class="hdr"><button class="backbtn" data-nav-back aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m15 5-7 7 7 7"/></svg>Back</button><div class="title">Bookshelf</div><div class="tag" id="shelfSum">No books yet</div></div>
+  <div class="seg shelftabs" id="shelfTabs" role="tablist" aria-label="Shelves"><button type="button" role="tab" data-tab="done">Finished</button><button type="button" role="tab" data-tab="listening">Listening</button><button type="button" role="tab" data-tab="want">Want to listen</button></div>
   <div class="shelfbar">
     <div class="seg viewseg" id="viewSeg" role="group" aria-label="Shelf view">
       <button data-view="grid" aria-label="Grid view" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4" y="4" width="6" height="7" rx="1"/><rect x="14" y="4" width="6" height="7" rx="1"/><rect x="4" y="14" width="6" height="7" rx="1"/><rect x="14" y="14" width="6" height="7" rx="1"/></svg></button>
@@ -742,7 +905,7 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     </div>
     <button class="pillbtn" data-go="s-add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 5v14M5 12h14"/></svg>Add books</button>
   </div>
-  <div class="shelfbar">
+  <div class="shelfbar" id="shelfFilterBar">
     <div class="seg" id="shelfFilter" role="group" aria-label="Show books finished"><button data-f="month">Month</button><button data-f="year">Year</button><button data-f="all">All</button></div>
     <select id="shelfSort" class="sortsel" aria-label="Sort books"><option value="newest">Newest</option><option value="oldest">Oldest</option><option value="longest">Longest</option><option value="title">Title</option></select>
   </div>
@@ -750,20 +913,20 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
 </section>
 
 <!-- ADD BOOKS (onboarding-style bulk add) -->
-<!-- TODO: this free-type title field is a stopgap. It will later become a real book search
-     backed by the book database, returning covers and runtimes instead of typed titles and hours. -->
 <section class="screen" id="s-add">
-  <div class="hdr"><button class="backbtn" data-nav-back aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m15 5-7 7 7 7"/></svg>Back</button><div class="title">Add books</div><div class="tag">Type in everything you've finished</div></div>
-  <div class="field"><input id="addTitle" autocapitalize="words" placeholder="Book title" autocomplete="off" aria-label="Book title"></div>
-  <div class="field"><input id="addAuthor" autocapitalize="words" placeholder="Author (optional)" autocomplete="off" aria-label="Author"></div>
-  <!-- TODO: genre is a manual pick for now. It will be fetched automatically from the book database
-       (along with cover art and runtime) once titles come from a real search. -->
-  <div class="field"><select class="genre" id="addGenre" aria-label="Genre (optional)"></select></div>
-  <label class="flabel" for="addDate">Finished · optional</label>
-  <div class="field"><input id="addDate" type="date"></div>
-  <div class="field"><label><input id="addHours" type="number" inputmode="decimal" min="0" step="0.5" placeholder="Optional" aria-label="Hours it ran"><span>hours</span></label><button class="addbtn" id="addBtn">Add</button></div>
+  <div class="hdr"><button class="backbtn" data-nav-back aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m15 5-7 7 7 7"/></svg>Back</button><div class="title">Add books</div><div class="tag" id="addTag">Search for the books you've finished</div></div>
+  <div class="addas"><div class="seg" id="addAs" role="group" aria-label="Add to"><button type="button" data-v="done" class="on">Finished</button><button type="button" data-v="listening">Listening</button><button type="button" data-v="want">Want to listen</button></div></div>
+  <div class="bsearch" id="addSearch"></div>
+  <div class="manual" id="addManual" hidden>
+    <div class="field"><input id="addTitle" autocapitalize="words" placeholder="Book title" autocomplete="off" aria-label="Book title"></div>
+    <div class="field"><input id="addAuthor" autocapitalize="words" placeholder="Author (optional)" autocomplete="off" aria-label="Author"></div>
+    <div class="field"><select class="genre" id="addGenre" aria-label="Genre (optional)"></select></div>
+    <div id="addDateRow"><label class="flabel" for="addDate">Finished · optional</label>
+    <div class="field"><input id="addDate" type="date"></div></div>
+    <div class="field"><label><input id="addHours" type="number" inputmode="decimal" min="0" step="0.5" placeholder="Optional" aria-label="Hours it ran"><span>hours</span></label><button class="addbtn" id="addBtn">Add</button></div>
+  </div>
   <div class="added" id="addedList" aria-live="polite"></div>
-  <p class="note" style="margin-top:14px">Each book goes on your shelf and counts toward achievements. Add the hours it ran if you know them and they count toward your total; leave hours blank to add the book only. Leave the date blank for books from a while back.</p>
+  <p class="note" style="margin-top:14px">Each book goes on your shelf and counts toward achievements. Its hours count toward your total; leave hours blank to add the book only. Leave the date blank for books from a while back.</p>
   <button class="cta" id="addDone" style="margin-top:18px">Done</button>
 </section>
 
@@ -783,14 +946,17 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
   <div class="sgroup">
     <label class="srow static"><span class="sl">Daily goal</span><span class="sv"><input id="setDaily" class="snum" type="number" inputmode="numeric" min="1" max="1440"> min</span></label>
     <label class="srow static"><span class="sl">Weekly goal</span><span class="sv"><input id="setWeekly" class="snum" type="number" inputmode="decimal" min="0.5" max="168" step="0.5"> hours</span></label>
+    <label class="srow static"><span class="sl">Books this year</span><span class="sv"><input id="setBooks" class="snum" type="number" inputmode="numeric" min="0" max="1000" placeholder="24"> books</span></label>
     <div class="srow static"><span class="sl">Show goal progress on Home</span><button class="sw" id="setShowGoals" role="switch" aria-label="Show goal progress on Home"></button></div>
   </div>
 
   <div class="sgh">Streaks</div>
   <div class="sgroup">
+    <div class="srow static"><span class="sl">Rest days</span><button class="sw" id="setRest" role="switch" aria-label="Rest days"></button></div>
     <label class="srow static"><span class="sl">Minimum to count a day</span><span class="sv"><input id="setMinMin" class="snum" type="number" inputmode="numeric" min="1" max="600"> min</span></label>
     <div class="srow static stack"><span class="sl">Week starts on</span><div class="seg sseg" data-set="weekStart" role="group" aria-label="Week starts on"><button data-v="sun">Sunday</button><button data-v="mon">Monday</button></div></div>
   </div>
+  <p class="sgnote">Rest days: earn one for every 7 days in a row, up to 2 saved. If you miss a day, one is used for you and your streak carries on. Rest days don't count toward Perfect Week or Perfect Month.</p>
 
   <div class="sgh">Display</div>
   <div class="sgroup">
@@ -804,9 +970,13 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
   <div class="sgh">Data</div>
   <div class="sgroup">
     <button class="srow" id="setImport" type="button"><span class="sl">Add hours from the past</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button>
-    <button class="srow" id="setExport" type="button"><span class="sl">Export my data</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button>
+    <button class="srow" id="setExport" type="button"><span class="sl">Export a backup</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button>
+    <button class="srow" id="setRestore" type="button"><span class="sl">Restore from backup</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button>
+    <div class="srow static"><span class="sl">Last backup</span><span class="sv" id="setLastBackup">Never</span></div>
     <button class="srow danger" id="setReset" type="button"><span class="sl">Reset all data</span></button>
   </div>
+  <p class="sgnote">A backup is a file you keep. Restore it on any device to bring your books, listening and medals back.</p>
+  <input type="file" id="restoreFile" accept=".json,application/json" hidden>
 
   <div class="sgh">Notifications</div>
   <div class="sgroup"><div class="srow static"><span class="sl">Listening reminders</span><span class="sv">Coming soon</span></div></div>
@@ -814,7 +984,9 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
 
   <div class="sgh">Help &amp; feedback</div>
   <div class="sgroup">
-    <a class="srow" id="setFeedback" href="#"><span class="sl">Send feedback</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></a>
+    <a class="srow" id="setFeedback" href="#" target="_blank" rel="noopener"><span class="sl">Send feedback</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></a>
+    <a class="srow" id="setSurvey" href="#" target="_blank" rel="noopener"><span class="sl">Final thoughts survey</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></a>
+    <button class="srow" data-go="s-welcome" type="button"><span class="sl">Welcome to the beta</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button>
     <button class="srow" data-go="s-help" type="button"><span class="sl">How streaks and hours work</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
 
@@ -822,8 +994,22 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
   <div class="sgroup">
     <div class="srow static"><span class="sl">Version</span><span class="sv" id="setVersion"></span></div>
     <div class="srow static" id="setFounding" hidden><span class="sl">Founding Listener</span><span class="sv">Thank you for being early</span></div>
+    <button class="srow" data-go="s-privacy" type="button"><span class="sl">Privacy</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <p class="sgnote">Earmark is made for people who love listening. Designed and built by the Earmark team. Set in Plus Jakarta Sans.</p>
+</section>
+
+<!-- WELCOME: shown once after onboarding, and from Settings > Help -->
+<section class="screen welcome" id="s-welcome">
+  <div class="hdr"><button class="backbtn" data-nav-back aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m15 5-7 7 7 7"/></svg>Back</button><div class="title">Welcome to the beta</div></div>
+  <div class="card prose" id="welcomeBody"></div>
+  <button class="cta" id="welcomeDone" type="button">Start listening</button>
+</section>
+
+<!-- PRIVACY -->
+<section class="screen" id="s-privacy">
+  <div class="hdr"><button class="backbtn" data-nav-back aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m15 5-7 7 7 7"/></svg>Back</button><div class="title">Privacy</div></div>
+  <div class="card prose" id="privacyBody"></div>
 </section>
 
 <!-- HELP: how streaks and hours work -->
@@ -885,15 +1071,15 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
       <button class="opt" data-form="f-book"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h12a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3z"/><path d="M4 17a3 3 0 0 1 3-3h12"/></svg></span><span><b>Finished a book</b><small>Puts it on your shelf. Add its hours, or skip them if they're already logged.</small></span></button>
       <button class="opt" data-form="f-past"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 8v4l2 2"/></svg></span><span><b>Add hours from the past</b><small>Audible, Libby, Libro.fm… Counts toward your total and rank only.</small></span></button>
     </div>
-    <div class="form" id="f-live"><h2 style="margin:0">Today's listening</h2><div class="field"><label><input type="number" inputmode="numeric" min="0" placeholder="0"><span>hours</span></label><label><input type="number" inputmode="numeric" min="0" max="59" placeholder="0"><span>min</span></label></div><div class="field"><input id="noteIn" placeholder="Note, e.g. Scythe, chapters 18–20"></div><button class="cta" data-done="live" id="logBtn">Log time</button><button class="ghost" data-back>Back</button></div>
-    <!-- TODO: this free-type title field is a stopgap. It will later become a real book search
-         backed by the book database, returning covers and runtimes instead of typed titles and hours. -->
+    <div class="form" id="f-live"><h2 style="margin:0">Today's listening</h2><div class="timerbox" id="timerBox"></div><div class="field"><label><input type="number" inputmode="numeric" min="0" placeholder="0"><span>hours</span></label><label><input type="number" inputmode="numeric" min="0" max="59" placeholder="0"><span>min</span></label></div><div class="field" id="logBookRow" hidden><select id="logBook" aria-label="Book this time goes toward"></select></div><div class="field"><input id="noteIn" placeholder="Note, e.g. Scythe, chapters 18–20"></div><button class="cta" data-done="live" id="logBtn">Log time</button><button class="ghost" data-back>Back</button></div>
     <div class="form" id="f-book"><h2 style="margin:0">Finished a book</h2>
-      <div class="field"><input id="sheetTitle" autocapitalize="words" placeholder="Book title" autocomplete="off" aria-label="Book title"></div>
-      <div class="field"><input id="sheetAuthor" autocapitalize="words" placeholder="Author (optional)" autocomplete="off" aria-label="Author"></div>
-      <!-- TODO: genre is a manual pick for now; later it comes automatically from the book database. -->
-      <div class="field"><select class="genre" id="sheetGenre" aria-label="Genre (optional)"></select></div>
-      <div class="field"><label><input id="sheetHours" type="number" inputmode="decimal" min="0" step="0.5" placeholder="Optional" aria-label="Hours it ran"><span>hours</span></label><button class="addbtn" id="sheetAddBtn">Add</button></div>
+      <div class="bsearch" id="sheetSearch"></div>
+      <div class="manual" id="sheetManual" hidden>
+        <div class="field"><input id="sheetTitle" autocapitalize="words" placeholder="Book title" autocomplete="off" aria-label="Book title"></div>
+        <div class="field"><input id="sheetAuthor" autocapitalize="words" placeholder="Author (optional)" autocomplete="off" aria-label="Author"></div>
+        <div class="field"><select class="genre" id="sheetGenre" aria-label="Genre (optional)"></select></div>
+        <div class="field"><label><input id="sheetHours" type="number" inputmode="decimal" min="0" step="0.5" placeholder="Optional" aria-label="Hours it ran"><span>hours</span></label><button class="addbtn" id="sheetAddBtn">Add</button></div>
+      </div>
       <div class="added" id="sheetAddedList" aria-live="polite"></div>
       <p class="note">Hours you enter count toward your total. Leave them blank if they're already logged.</p>
       <button class="cta" data-done="book">Done</button><button class="ghost" data-back>Back</button></div>
@@ -906,6 +1092,11 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
   <div class="inner">
     <div class="handle"></div>
     <h2 style="margin:0 0 4px">Edit book</h2>
+    <div class="bkcover"><div id="bkCoverPrev"></div><div><button class="pillbtn" id="bkFindCover" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="6"/><path d="m20 20-4.6-4.6"/></svg>Find cover</button><button class="linkmini" id="bkNoCover" type="button" style="display:block;margin:6px 0 0 8px">Remove cover</button></div></div>
+    <p class="bsstatus" id="bkCoverMsg" aria-live="polite"></p>
+    <div class="bscovers" id="bkCovers"></div>
+    <div class="seg bkstat" id="bkStatus" role="group" aria-label="Shelf"><button type="button" data-v="done">Finished</button><button type="button" data-v="listening">Listening</button><button type="button" data-v="want">Want to listen</button></div>
+    <p class="bkprog" id="bkProg"></p>
     <label class="flabel" for="bkTitle">Title</label>
     <div class="field"><input id="bkTitle" autocapitalize="words" placeholder="Book title" autocomplete="off"></div>
     <label class="flabel" for="bkAuthor">Author</label>
@@ -918,8 +1109,9 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     <div class="field"><select class="genre" id="bkGenre"></select></div>
     <label class="flabel" for="bkH">Length</label>
     <div class="field"><label><input id="bkH" type="number" inputmode="numeric" min="0" placeholder="0"><span>hours</span></label><label><input id="bkM" type="number" inputmode="numeric" min="0" max="59" placeholder="0" aria-label="Minutes"><span>min</span></label></div>
-    <div class="flrow"><label class="flabel" for="bkDate">Finished</label><button class="linkmini" id="bkNoDate" type="button">No date</button></div>
-    <div class="field"><input id="bkDate" type="date"></div>
+    <p class="bsest" id="bkEst" hidden></p>
+    <div id="bkDateRow"><div class="flrow"><label class="flabel" for="bkDate">Finished</label><button class="linkmini" id="bkNoDate" type="button">No date</button></div>
+    <div class="field"><input id="bkDate" type="date"></div></div>
     <p class="note">Changing the length updates your lifetime total, rank and medals. Books without a date count toward your total but never toward streaks.</p>
     <button class="cta" id="bkSave">Save changes</button>
     <button class="ghost danger" id="bkDelete">Delete book</button>
@@ -930,6 +1122,14 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
 <div class="alert" id="alert" role="alertdialog" aria-modal="true" aria-labelledby="aTitle">
   <div class="abox"><h3 id="aTitle"></h3><p id="aMsg"></p><div class="abtns"><button id="aCancel" type="button">Cancel</button><button id="aOk" type="button">OK</button></div></div>
 </div>
+
+<!-- RESTORE: preview a backup, then merge or replace -->
+<div class="alert" id="restoreDlg" role="alertdialog" aria-modal="true" aria-labelledby="rTitle">
+  <div class="abox"><h3 id="rTitle">Restore from backup</h3><div class="rprev" id="rPrev"></div><p>Merge adds books and listening from the backup that aren't on this device yet. Replace swaps everything here for the backup.</p>
+    <div class="abtns col"><button id="rMerge" type="button">Merge into this device</button><button id="rReplace" class="danger" type="button">Replace everything</button><button id="rCancel" type="button">Cancel</button></div></div>
+</div>
+<button class="timerbar" id="timerBar" type="button" hidden aria-label="Listening timer running. Tap to stop."><span class="tdot"></span><span>Listening… <span class="ttime" id="timerTime">0:00</span></span><span class="tbook" id="timerBook"></span><span class="tstop">Stop</span></button>
+<button class="updbar" id="updBar" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 5v6h-6"/></svg>Update available — tap to refresh</button>
 
 <!-- MEDAL DETAIL / EARNED -->
 <div class="earned" id="earned" role="dialog" aria-modal="true">
@@ -1022,28 +1222,32 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
   };
   /* ---- state: everything the app shows comes from here. A new account starts at zero. ---- */
   const KEY="earmark.state.v1";
-  const APP_VERSION="0.9.0 (beta)";
-  const FEEDBACK_EMAIL="orionsmaxfield@gmail.com";   // "Send feedback" opens a new email to this address
-  const SETTINGS_DEFAULT={email:"",dailyGoalMin:30,weeklyGoalH:5,showGoals:true,streakMinMin:5,weekStart:"mon",timeFormat:"hm",reduceMotion:"system",chartStyle:"bars"};
+  const APP_VERSION="0.10.0";   // shown in Settings > About with a Beta tag
+  /* ---- beta settings: fill these in ---- */
+  const FEEDBACK_URL="https://docs.google.com/forms/d/e/1FAIpQLSd0juSwRwq8oNXawAh7rJ79hCi84N0al5oX6bwg_KqX-gkqEw/viewform";   // "Send feedback"
+  const FINAL_SURVEY_URL="https://docs.google.com/forms/d/e/1FAIpQLSfLebyfyRnXDIu-X4ERDeldCd_olUcJBbSbxtkAN0O6HENCbA/viewform";   // Settings > Help > Final thoughts survey
+  const TEST_END_DATE=null;          // TODO: the last day of the beta, e.g. "2026-12-15" (shown on the welcome page)
+  const FOUNDING_CUTOFF_DATE=null;   // TODO: e.g. "2027-01-01". Only people whose first use is before this date earn Founding Listener; while null, everyone does
+  const BACKUP_VERSION=1;   // the format of exported backups; restore reads this version and every one before it
+  const SETTINGS_DEFAULT={email:"",dailyGoalMin:30,weeklyGoalH:5,showGoals:true,streakMinMin:5,weekStart:"mon",timeFormat:"hm",reduceMotion:"system",chartStyle:"bars",bookGoal:24,restDays:true};
   const fresh=()=>({v:1,onboarded:false,user:{name:""},total:0,todayH:0,weekH:0,monthH:0,lastMonthH:0,yearH:0,
     bestDayH:0,streak:0,bestStreak:0,lastLog:null,owl:false,byWeekday:[0,0,0,0,0,0,0],weekdayDays:[0,0,0,0,0,0,0],
     notes:[],books:[],past:[],keys:{day:"",week:"",month:"",year:""},
     createdAt:new Date().toISOString(),logDays:[],notesWritten:0,comeback:false,earlyBird:false,
-    shelfView:"grid",shelfFilter:"all",shelfSort:"newest",
+    shelfView:"grid",shelfFilter:"all",shelfSort:"newest",shelfTab:"done",timer:null,
     // every logged listening session: {id, at (ISO time), d (local day), m (minutes), note}
     sessions:[],legacy:{days:[],bestStreak:0,bestDayH:0,owl:false,earlyBird:false,comeback:false},carry:{},migratedSessions:false,
     shares:0,yearReviewViewed:false,wallOpen:{},
     // medal families: {id: {lv: best level reached, at: [ISO date each level was earned]}}
     medals:{},medalsV:0,
+    lastBackup:null,backupNudgeDismissed:null,installDismissed:null,
     settings:{...SETTINGS_DEFAULT}});
-  /* TODO: set this to the public launch date (e.g. "2027-03-01"). Accounts created before it are
-     Founding Listeners; while it is null, every account is (we are still in early testing). */
-  const PUBLIC_LAUNCH=null;
   function load(){ try{ const raw=localStorage.getItem(KEY); if(raw){ const o=JSON.parse(raw); return Object.assign(fresh(),o,{user:Object.assign({name:""},o.user||{}),keys:Object.assign({},fresh().keys,o.keys||{}),settings:Object.assign({},SETTINGS_DEFAULT,o.settings||{}),legacy:Object.assign({},fresh().legacy,o.legacy||{})}); } }catch(e){} return fresh(); }
   function save(){ try{ localStorage.setItem(KEY,JSON.stringify(ST)); }catch(e){} }
   const ST=load();
   const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
-  ST.books.forEach(b=>{ if(!b.id) b.id=uid(); });   // books saved before editing existed get an id
+  ST.books.forEach(b=>{ if(!b.id) b.id=uid(); });
+  if(!ST.firstUseAt) ST.firstUseAt=ST.createdAt;   // first use on this device: decides Founding Listener   // books saved before editing existed get an id
   const pad=n=>String(n).padStart(2,"0");
   const dayKey=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
   const parseDay=k=>{ const [y,m,d]=k.split("-").map(Number); return new Date(y,m-1,d); };
@@ -1307,7 +1511,18 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     $("#eBtns").style.display=lv&&!hiddenSecret(m)?"block":"none";
     $("#earned").classList.add("open"); $("#earned .ebox").scrollTop=0;
   }
-  function closeEarned(){ evoT.forEach(clearTimeout); evoT=[]; $("#earned").classList.remove("open"); }
+  let afterEarned=null;   // what to show once this overlay closes (medals earned by finishing a book)
+  function closeEarned(){ evoT.forEach(clearTimeout); evoT=[]; const was=$("#earned").classList.contains("open"); $("#earned").classList.remove("open"); const f=afterEarned; afterEarned=null; if(f&&was) setTimeout(f,260); }
+  function showFinished(b){
+    evoT.forEach(clearTimeout); evoT=[]; shownMedal=null; shownLv=0;
+    const n=LIB.filter(isDone).length;
+    $("#eTitle").textContent="You finished a book";
+    $("#eMedal").innerHTML=`<div class="fincover">${coverHTML(b,true)}</div>`;
+    $("#eName").textContent=b.t; $("#eDesc").textContent=[b.author,`Book ${n.toLocaleString()} on your shelf`].filter(Boolean).join(" · ");
+    $("#eProg").innerHTML=""; $("#eLevels").innerHTML=""; $("#eBtns").style.display="none";
+    afterEarned=showPendingEarned;
+    $("#earned").classList.add("open");
+  }
   document.addEventListener("click",e=>{
     const w=e.target.closest(".medalwrap, .nextup .card"); if(!w) return;
     const m=BY[w.dataset.id]; if(m) showMedal(m);
@@ -1342,8 +1557,13 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
   const C={red:"#2A3A52",teal:"#17485A",gold:"#1D4F55",green:"#1F4A4A",plum:"#2F3D5C",rust:"#22466B",navy:"#1B3556",moss:"#24425A",wine:"#2B3550",slate:"#33445C"};   // navy, teal and slate tones
   $$("select.genre").forEach(sel=>sel.innerHTML=`<option value="">Genre (optional)</option>`+GENRES.map(([k,l])=>`<option value="${k}">${l}</option>`).join(""));
   const LIB=ST.books;   // the shelf is the saved library; a new account starts empty
+  /* a book is finished (no status, or "done"), "listening", or "want" (want to listen). Its length counts
+     toward the lifetime total only once it's finished, and not when its time was already logged to it. */
+  const isDone=b=>!b.status||b.status==="done";
+  const counted=b=>isDone(b)&&!b.logged&&b.h>0;
+  const progOf=b=>((D.bookMin&&D.bookMin[b.id])||0)/60;   // hours logged to this book
   // shelf period by date finished; undated (backlog) books only appear under All
-  const bucket=b=>{ if(!b.finished) return "all"; const k=periodKeys(); return b.finished.slice(0,7)===k.month?"month":b.finished.slice(0,4)===k.year?"year":"all"; };
+  const bucket=b=>{ if(!isDone(b)) return "open"; if(!b.finished) return "all"; const k=periodKeys(); return b.finished.slice(0,7)===k.month?"month":b.finished.slice(0,4)===k.year?"year":"all"; };
   const tsOf=b=>b.finished?parseDay(b.finished).getTime():null;
   function sortBooks(list,mode){
     const by={
@@ -1363,7 +1583,7 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     // Free-typed books have no cover art yet: render a cloth-bound hardback placeholder with the title only.
     // Covers on a shelf open the book editor; inside a list row the row itself is the button.
     const tap=inRow?"":` data-book="${b.id}" role="button" tabindex="0" aria-label="Edit ${esc(b.t)}"`;
-    if(b.ph) return `<div class="cover ph" style="--cloth:${coverTone(b.t)}"${tap}>${b.h!=null?`<span class="hrs">${fmtH(b.h)}</span>`:""}<b>${esc(b.t)}</b>${b.author?`<small>${esc(b.author)}</small>`:""}</div>`;
+    if(b.ph) return `<div class="cover ph" style="--cloth:${coverTone(b.t)}"${tap}>${b.cover?`<img class="cimg" src="${esc(b.cover)}" alt="" loading="lazy" onerror="this.remove()">`:""}${b.h!=null?`<span class="hrs">${fmtH(b.h)}</span>`:""}<b>${esc(b.t)}</b>${b.author?`<small>${esc(b.author)}</small>`:""}</div>`;
     return `<div class="cover" style="background:linear-gradient(165deg,${b.c},#06162C)"><span class="hrs">${b.h}h</span><b>${b.t}</b><small>${b.a}</small></div>`;
   }
   let shelfMode="month";
@@ -1374,7 +1594,7 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     const perRow=mode==="month"?list.length:6, rows=[];
     for(let i=0;i<list.length;i+=perRow) rows.push(list.slice(i,i+perRow));
     if(!list.length){
-      $("#bookcase").innerHTML=LIB.length
+      $("#bookcase").innerHTML=LIB.some(isDone)
         ? `<div class="shelf-empty">${I.book}<p>Nothing finished ${mode==="month"?"this month":"this year"} yet.</p><button type="button" data-go="s-shelf">See all books</button></div><div class="shelfline"></div>`
         : `<div class="shelf-empty">${I.book}<p>Nothing on this shelf yet.</p><button type="button" data-go="s-add">Add a book</button></div><div class="shelfline"></div>`;
       return;
@@ -1387,15 +1607,37 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
   /* bookshelf screen — the whole library, newest first, as a grid of three or a list */
   const GENRE_LABEL=Object.fromEntries(GENRES);
   const finishedLabel=b=>b.finished?parseDay(b.finished).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"}):"No date";
+  const progLine=b=>{ const p=progOf(b); return b.h>0?`${hm(p)} of ${hm(b.h)}${b.hEst?" (estimated)":""}`:p>0?`${hm(p)} listened`:"Not started yet"; };
+  // a row on the Listening or Want to listen shelf, and on Home's Currently listening card
+  function openRow(b,act){
+    const p=progOf(b), lbl={finish:"Finished",start:"Start",log:"Log"}[act];
+    return `<div class="nowrow">${coverHTML(b,true)}<button class="nowmeta" type="button" data-book="${b.id}"><b>${esc(b.t)}</b>${b.author?`<span class="au">${esc(b.author)}</span>`:""}${b.status==="listening"?`<div class="bar"><i style="width:${b.h>0?Math.min(100,p/b.h*100):0}%"></i></div><small>${progLine(b)}</small>`:`<small>${b.h>0?hm(b.h)+(b.hEst?" (estimated)":""):"Length not set"}</small>`}</button><button class="lact${act!=="finish"?" go":""}" type="button" data-act="${act}" data-id="${b.id}">${lbl}</button></div>`;
+  }
+  function renderNow(){
+    const list=LIB.filter(b=>b.status==="listening");
+    $("#nowCard").hidden=!list.length;
+    $("#nowList").innerHTML=list.slice(0,3).map(b=>openRow(b,"log")).join("");
+  }
   function renderShelfAll(){
+    const tab=["done","listening","want"].includes(ST.shelfTab)?ST.shelfTab:"done";
+    $$("#shelfTabs button").forEach(b=>{ const on=b.dataset.tab===tab; b.classList.toggle("on",on); b.setAttribute("aria-selected",on); });
+    $("#shelfFilterBar").hidden=$("#viewSeg").hidden=tab!=="done";
+    if(tab!=="done"){
+      const list=LIB.filter(b=>b.status===tab), name=tab==="want"?"Want to listen":"Listening";
+      $("#shelfSum").textContent=list.length?plural(list.length,"book","books")+(tab==="want"?" to listen to":" in progress"):name;
+      $("#shelfAll").innerHTML=list.length?`<div class="lcard">${list.map(b=>openRow(b,tab==="want"?"start":"finish")).join("")}</div>`
+        :`<div class="card shelf-empty">${I.book}<p>${tab==="want"?"Books you want to listen to will wait here.":"Nothing in progress. Start a book from Want to listen, or add one."}</p><button type="button" data-go="s-add">Add a book</button></div>`;
+      return;
+    }
+    const DONE=LIB.filter(isDone);
     const v=ST.shelfView==="list"?"list":"grid";
     $$("#viewSeg button").forEach(b=>{ const on=b.dataset.view===v; b.classList.toggle("on",on); b.setAttribute("aria-pressed",on); });
-    const hrs=LIB.reduce((t,b)=>t+(b.h||0),0);
-    $("#shelfSum").textContent=LIB.length?`${LIB.length} book${LIB.length===1?"":"s"}${hrs?` · ${fmtN(hrs).toLocaleString()} hours`:""}`:"No books yet";
+    const hrs=DONE.reduce((t,b)=>t+(b.h||0),0);
+    $("#shelfSum").textContent=DONE.length?`${DONE.length} book${DONE.length===1?"":"s"}${hrs?` · ${fmtN(hrs).toLocaleString()} hours`:""}`:"No books yet";
     const f=["month","year","all"].includes(ST.shelfFilter)?ST.shelfFilter:"all", order={month:0,year:1,all:2};
     $$("#shelfFilter button").forEach(b=>b.classList.toggle("on",b.dataset.f===f));
     $("#shelfSort").value=ST.shelfSort||"newest";
-    if(!LIB.length){ $("#shelfAll").innerHTML=`<div class="card shelf-empty">${I.book}<p>Your shelf is empty.</p><button type="button" data-go="s-add">Add a book</button></div>`; return; }
+    if(!DONE.length){ $("#shelfAll").innerHTML=`<div class="card shelf-empty">${I.book}<p>No finished books yet.</p><button type="button" data-go="s-add">Add a book</button></div>`; return; }
     const list=sortBooks(LIB.filter(b=>order[bucket(b)]<=order[f]),ST.shelfSort);
     if(!list.length){ $("#shelfAll").innerHTML=`<div class="card shelf-empty">${I.book}<p>Nothing finished ${f==="month"?"this month":"this year"} yet.</p><button type="button" id="showAllBooks">Show all books</button></div>`; $("#showAllBooks").onclick=()=>{ ST.shelfFilter="all"; save(); renderShelfAll(); }; return; }
     $("#shelfAll").innerHTML=v==="grid"
@@ -1403,6 +1645,23 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
       : `<div class="shelflist">${list.map(b=>`<button class="bookrow" data-book="${b.id}">${coverHTML(b,true)}<span class="meta"><b>${esc(b.t)}</b>${b.author?`<span class="au">${esc(b.author)}</span>`:""}<small>${[b.h!=null?hm(b.h):"",finishedLabel(b)].filter(Boolean).join(" · ")}</small></span>${I.chevR}</button>`).join("")}</div>`;
   }
   $$("#viewSeg button").forEach(b=>b.onclick=()=>{ ST.shelfView=b.dataset.view; save(); renderShelfAll(); });
+  $$("#shelfTabs button").forEach(b=>b.onclick=()=>{ ST.shelfTab=b.dataset.tab; save(); renderShelfAll(); });
+  document.addEventListener("click",e=>{ const t=e.target.closest("[data-shelf-tab]"); if(t){ ST.shelfTab=t.dataset.shelfTab; save(); go("s-shelf"); } });
+  /* moving a book between shelves keeps the lifetime total right */
+  function setStatus(b,to){
+    const before=counted(b)?b.h:0, open=!isDone(b);
+    if(to==="done"){ delete b.status; if(open){ b.finished=b.finished||dayKey(new Date()); b.logged=progOf(b)>0; } }
+    else { b.status=to; b.finished=null; }
+    ST.total=Math.max(0,ST.total+(counted(b)?b.h:0)-before);
+  }
+  function finishBook(b){ setStatus(b,"done"); afterBooksChanged(); showFinished(b); }
+  document.addEventListener("click",e=>{
+    const a=e.target.closest("[data-act]"); if(!a) return;
+    const b=LIB.find(x=>x.id===a.dataset.id); if(!b) return;
+    if(a.dataset.act==="start"){ setStatus(b,"listening"); afterBooksChanged(); toast(`${b.t} moved to Currently listening`); }
+    if(a.dataset.act==="finish") finishBook(b);
+    if(a.dataset.act==="log") openLive(b.id);
+  });
   $$("#shelfFilter button").forEach(b=>b.onclick=()=>{ ST.shelfFilter=b.dataset.f; save(); renderShelfAll(); });
   $("#shelfSort").onchange=()=>{ ST.shelfSort=$("#shelfSort").value; save(); renderShelfAll(); };
 
@@ -1415,68 +1674,208 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     const H=b.h?Math.floor(b.h):0, Mi=b.h?Math.round((b.h-H)*60):0;
     $("#bkH").value=b.h?(Mi===60?H+1:H):""; $("#bkM").value=b.h?(Mi===60?0:Mi):"";
     $("#bkDate").value=b.finished||""; $("#bkDate").max=dayKey(new Date());
+    bkStat=isDone(b)?"done":b.status; showBkStat();
+    newCover=undefined; showBkCover(b.cover); $("#bkCovers").innerHTML=""; $("#bkCoverMsg").textContent="";
+    $("#bkEst").hidden=!b.hEst; $("#bkEst").textContent=b.hEst&&b.pages?`Length is an estimate from ${b.pages.toLocaleString()} pages. Change it if you know the runtime.`:"Length is an estimate. Change it if you know the runtime.";
     openPanel($("#bookSheet"));
   }
   $("#bkNoDate").onclick=()=>{ $("#bkDate").value=""; };
-  function afterBooksChanged(){ save(); renderHero(); renderShelf(shelfMode); renderShelfAll(); recomputeMedals(); renderInsights(); }
+  let bkStat="done";
+  function showBkStat(){
+    $$("#bkStatus button").forEach(x=>{ const on=x.dataset.v===bkStat; x.classList.toggle("on",on); x.setAttribute("aria-pressed",on); });
+    $("#bkDateRow").hidden=bkStat!=="done";
+    const p=editing?progOf(editing):0; $("#bkProg").textContent=editing&&(bkStat==="listening"||p>0)?`Listened so far: ${editing.h>0?`${hm(p)} of ${hm(editing.h)}`:hm(p)}`:"";
+  }
+  $$("#bkStatus button").forEach(x=>x.onclick=()=>{ bkStat=x.dataset.v; showBkStat(); });
+  // "Find cover": books typed in by hand can pick up a real cover
+  let newCover, coverHits=[];   // newCover: undefined = unchanged, null = removed
+  function showBkCover(url){ $("#bkCoverPrev").innerHTML=coverHTML({...editing,t:$("#bkTitle").value||editing.t,cover:url,h:null,author:null},true); $("#bkNoCover").hidden=!url; }
+  $("#bkFindCover").onclick=async()=>{
+    const q=[$("#bkTitle").value,$("#bkAuthor").value].join(" ").trim(); if(!q) return;
+    $("#bkCovers").innerHTML="";
+    if(!navigator.onLine){ $("#bkCoverMsg").textContent="You're offline, so covers can't be found right now."; return; }
+    $("#bkCoverMsg").textContent="Looking for covers…";
+    try{
+      coverHits=(await searchBooks(q)).filter(r=>r.cover).slice(0,8);
+      $("#bkCoverMsg").textContent=coverHits.length?"Tap a cover to use it.":"No covers found for this book.";
+      $("#bkCovers").innerHTML=coverHits.map((r,i)=>`<button type="button" data-i="${i}" aria-label="${esc(r.t)}${r.author?" by "+esc(r.author):""}"><img src="${esc(r.cover)}" alt="" loading="lazy" onerror="this.parentNode.remove()"></button>`).join("");
+    }catch(e){ $("#bkCoverMsg").textContent=FAIL_MSG.replace(", or add the book by hand","")+""; }
+  };
+  $("#bkCovers").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return; $$("#bkCovers button").forEach(x=>x.classList.toggle("on",x===b)); newCover=coverHits[+b.dataset.i].cover; showBkCover(newCover); });
+  $("#bkNoCover").onclick=()=>{ newCover=null; $$("#bkCovers button").forEach(x=>x.classList.remove("on")); showBkCover(null); };
+  $("#bkH").addEventListener("input",()=>{ $("#bkEst").hidden=true; }); $("#bkM").addEventListener("input",()=>{ $("#bkEst").hidden=true; });
+  function afterBooksChanged(){ derive(); save(); renderHero(); renderGoals(); renderNow(); renderShelf(shelfMode); renderShelfAll(); recomputeMedals(); renderInsights(); }
   $("#bkSave").onclick=()=>{
     const b=editing; if(!b) return;
     const t=titleCase($("#bkTitle").value); if(!t){ $("#bkTitle").focus(); toast("A book needs a title"); return; }
     const H=Math.max(0,parseInt($("#bkH").value,10)||0), Mi=Math.min(59,Math.max(0,parseInt($("#bkM").value,10)||0));
     const len=H+Mi/60, h=len>0?len:null;
-    const delta=(h||0)-(b.h||0); ST.total=Math.max(0,ST.total+delta);   // hours on a book count toward the lifetime total and rank
+    const before=counted(b)?b.h:0, lenChanged=Math.abs((h||0)-(b.h||0))>1e-9, wasOpen=!isDone(b);
     b.t=t; b.author=titleCase($("#bkAuthor").value)||null; b.series=titleCase($("#bkSeries").value)||null;
     const num=parseInt($("#bkNum").value,10); b.num=num>0?num:null; b.genre=$("#bkGenre").value||null; b.h=h;
-    b.finished=$("#bkDate").value||null;   // blank = backlog: counts toward totals, never toward streaks
+    if(bkStat==="done"){ delete b.status; b.finished=$("#bkDate").value||(wasOpen?dayKey(new Date()):null); if(wasOpen) b.logged=progOf(b)>0; }   // blank date = backlog: counts toward totals, never toward streaks
+    else { b.status=bkStat; b.finished=null; }
+    const delta=(counted(b)?b.h:0)-before; ST.total=Math.max(0,ST.total+delta);   // a finished book's hours count toward the lifetime total and rank
+    if(newCover!==undefined){ b.cover=newCover||null; saveCover(b.cover); }
+    if(lenChanged) b.hEst=false;
     closePanel(); afterBooksChanged();
     toast(Math.abs(delta)>1e-9?`Saved · ${delta>0?"+":"−"}${hm(Math.abs(delta))} on your total`:"Saved");
-    showPendingEarned();
+    if(wasOpen&&bkStat==="done") showFinished(b); else showPendingEarned();
   };
   $("#bkDelete").onclick=()=>{
     if(!delArmed){ delArmed=true; $("#bkDelete").textContent="Tap again to delete"; return; }
     const b=editing, i=LIB.indexOf(b); if(i<0) return;
-    LIB.splice(i,1); ST.total=Math.max(0,ST.total-(b.h||0));
+    LIB.splice(i,1); ST.total=Math.max(0,ST.total-(counted(b)?b.h:0));
     closePanel(); afterBooksChanged(); toast(`${b.t} removed from your shelf`);
   };
   document.addEventListener("click",e=>{ const c=e.target.closest("[data-book]"); if(c) openBook(c.dataset.book); });
   document.addEventListener("keydown",e=>{ if((e.key==="Enter"||e.key===" ")&&e.target.matches&&e.target.matches("div[data-book]")){ e.preventDefault(); openBook(e.target.dataset.book); } });
 
-  /* free-type book entry — shared by the Add books screen and the plus-button sheet.
-     TODO: this is a stopgap. Replace the typed title/hours with a real book search backed by the
-     book database, which will supply the cover art and runtime for each result. */
-  function addBook(title,hours,genre,author,finished){
-    const entry={id:uid(),t:title,author:author||null,series:null,h:hours,c:CLOTH[clothN++%CLOTH.length],added:new Date().toISOString(),finished:finished||null,ph:true,genre:genre||null};
+  /* ---- book search: Open Library first (free, no key), Google Books when it finds nothing ----
+     Searches wait for a 300 ms pause in typing, and recent searches are remembered so the same
+     search isn't sent twice. Audiobook runtimes aren't in these sources, so hours are estimated
+     from the page count and labelled as an estimate. */
+  const PAGES_PER_HOUR=30;
+  const SEARCH_KEY="earmark.search.v1";
+  const searchMemo=new Map();
+  try{ (JSON.parse(localStorage.getItem(SEARCH_KEY))||[]).forEach(([k,v])=>searchMemo.set(k,v)); }catch(e){}
+  function remember(k,v){ searchMemo.delete(k); searchMemo.set(k,v); while(searchMemo.size>40) searchMemo.delete(searchMemo.keys().next().value); try{ localStorage.setItem(SEARCH_KEY,JSON.stringify([...searchMemo])); }catch(e){} }
+  // subject tags → the app's genres; the first rule that matches wins
+  const GENRE_RULES=[["truecrime",/true crime/],["ya",/young adult|teen/],["children",/juvenile|children/],["scifi",/science fiction|sci-fi|space opera|dystopia/],["fantasy",/fantasy/],
+    ["mystery",/mystery|thriller|detective|crime|suspense/],["romance",/romance|love stories/],["horror",/horror|ghost stories/],["western",/western/],["humor",/humor|humour/],
+    ["classic",/classic/],["biography",/biography|autobiograph/],["memoir",/memoir/],["history",/\bhistory\b/],["selfhelp",/self-help|self help|personal development|self-actualization|success/],
+    ["business",/business|economics|management|finance|entrepreneur/],["psychology",/psychology/],["philosophy",/philosophy/],["religion",/religion|spiritual|christian|bible|buddhis|theology/],
+    ["science",/science|physics|biology|astronomy|chemistry|evolution/],["litfic",/fiction/],["nonfiction",/nonfiction|non-fiction|essays/]];
+  const genreOf=subjects=>{ const all=(subjects||[]).join(" | ").toLowerCase(); const hit=GENRE_RULES.find(([,re])=>re.test(all)); return hit?hit[0]:""; };
+  // "The Way of Kings (The Stormlight Archive, #1)" → series and number, when a source gives them
+  function seriesOf(title,subjects){
+    const m=/\(([^()#]+?),?\s*#\s*(\d+)\)\s*$/.exec(title||"");
+    if(m) return {t:title.slice(0,m.index).trim(),series:m[1].trim(),num:+m[2]};
+    const tag=(subjects||[]).find(x=>/^series:/i.test(x));
+    return {t:title,series:tag?tag.slice(7).replace(/_/g," ").trim():null,num:null};
+  }
+  const estHours=pages=>pages>0?Math.max(.5,Math.round(pages/PAGES_PER_HOUR*2)/2):null;
+  async function openLibrary(q,signal){
+    const r=await fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(q)}&limit=8&fields=key,title,author_name,first_publish_year,cover_i,number_of_pages_median,subject`,{signal});
+    if(!r.ok) throw new Error("Open Library "+r.status);
+    return ((await r.json()).docs||[]).map(d=>({...seriesOf(d.title,d.subject),src:"openlibrary",key:d.key,author:(d.author_name||[])[0]||null,year:d.first_publish_year||null,
+      cover:d.cover_i?`https://covers.openlibrary.org/b/id/${d.cover_i}-M.jpg`:null,pages:d.number_of_pages_median||null,genre:genreOf(d.subject)}));
+  }
+  async function googleBooks(q,signal){
+    const r=await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&maxResults=8&printType=books`,{signal});
+    if(!r.ok) throw new Error("Google Books "+r.status);
+    return ((await r.json()).items||[]).map(it=>{ const v=it.volumeInfo||{}, img=v.imageLinks&&(v.imageLinks.thumbnail||v.imageLinks.smallThumbnail);
+      return {...seriesOf(v.title||""),src:"googlebooks",key:it.id,author:(v.authors||[])[0]||null,year:v.publishedDate?+String(v.publishedDate).slice(0,4)||null:null,
+        cover:img?img.replace(/^http:/,"https:").replace("&edge=curl",""):null,pages:v.pageCount||null,genre:genreOf(v.categories)}; }).filter(x=>x.t);
+  }
+  async function searchBooks(q,signal){
+    const k=q.trim().toLowerCase().replace(/\s+/g," ");
+    if(searchMemo.has(k)) return searchMemo.get(k);
+    let found=null, failed=false;
+    try{ found=await openLibrary(k,signal); }catch(e){ if(e.name==="AbortError") throw e; failed=true; }
+    if(!found||!found.length){ try{ const g=await googleBooks(k,signal); if(g.length||!found) found=g; failed=false; }catch(e){ if(e.name==="AbortError") throw e; if(!found) throw e; } }
+    if(!failed) remember(k,found);
+    return found;
+  }
+  // keep a book's cover on the device so the shelf works offline (the service worker serves it)
+  function saveCover(url){
+    if(!url||!("caches" in window)) return;
+    caches.open("earmark-covers").then(c=>c.match(url).then(hit=>hit||fetch(url,{mode:"no-cors"}).then(r=>c.put(url,r)))).catch(()=>{});
+  }
+  const OFFLINE_MSG="You're offline, so search isn't available right now. You can add the book by hand instead.";
+  const FAIL_MSG="Search isn't working right now. Check your connection, or add the book by hand.";
+  const thumb=r=>`<span class="bscov" style="--cloth:${coverTone(r.t)}">${r.cover?`<img src="${esc(r.cover)}" alt="" loading="lazy" onerror="this.remove()">`:""}</span>`;
+  // the search box, its results, and "Can't find it? Add it manually"
+  function mountSearch(box,{onPick,onManual}){
+    box.innerHTML=`<div class="field"><input type="search" class="bsq" placeholder="Search by title or author" autocomplete="off" autocapitalize="words" enterkeyhint="search" aria-label="Search for a book"></div>
+      <div class="bsres" role="list"></div><p class="bsstatus" aria-live="polite"></p><button class="linkbtn bsmanual" type="button">Can't find it? Add it manually</button>`;
+    const q=box.querySelector(".bsq"), list=box.querySelector(".bsres"), status=box.querySelector(".bsstatus");
+    let timer=null, ctl=null, results=[];
+    const say=t=>{ status.textContent=t; };
+    async function run(){
+      const text=q.value.trim(); list.innerHTML=""; results=[];
+      if(text.length<2){ say(""); return; }
+      if(!navigator.onLine&&!searchMemo.has(text.toLowerCase().replace(/\s+/g," "))){ say(OFFLINE_MSG); return; }
+      if(ctl) ctl.abort(); ctl=new AbortController(); say("Searching…");
+      try{
+        results=await searchBooks(text,ctl.signal);
+        if(q.value.trim()!==text) return;
+        say(results.length?"":"No matches. Try the author's name, or add it by hand.");
+        list.innerHTML=results.map((r,i)=>`<button class="bsrow" type="button" role="listitem" data-i="${i}">${thumb(r)}<span class="bsmeta"><b>${esc(r.t)}</b><small>${esc([r.author,r.year].filter(Boolean).join(" · ")||"Unknown author")}</small></span></button>`).join("");
+      }catch(e){ if(e.name!=="AbortError") say(navigator.onLine?FAIL_MSG:OFFLINE_MSG); }
+    }
+    q.addEventListener("input",()=>{ clearTimeout(timer); timer=setTimeout(run,300); });
+    q.addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); clearTimeout(timer); run(); } });
+    list.addEventListener("click",e=>{ const b=e.target.closest(".bsrow"); if(b) onPick(results[+b.dataset.i]); });
+    box.querySelector(".bsmanual").onclick=onManual;
+    return {clear(){ clearTimeout(timer); if(ctl) ctl.abort(); q.value=""; list.innerHTML=""; results=[]; say(""); }, focus(){ q.focus(); }, input:q, manualBtn:box.querySelector(".bsmanual")};
+  }
+
+  /* book entry — onboarding, the plus-button sheet and the Add books screen: search, or type it in */
+  function addBook(title,hours,genre,author,finished,extra={}){
+    const entry=Object.assign({id:uid(),t:title,author:author||null,series:null,h:hours,c:CLOTH[clothN++%CLOTH.length],added:new Date().toISOString(),finished:finished||null,ph:true,genre:genre||null},extra);
+    saveCover(entry.cover);
     LIB.unshift(entry);               // newest book sits first on the shelf
-    if(hours!=null) bump(hours);      // hours count toward the lifetime total only when given
-    save(); renderShelf(shelfMode); renderShelfAll();
+    if(hours!=null&&isDone(entry)) bump(hours);   // a finished book's hours count toward the lifetime total
+    derive(); save(); renderShelf(shelfMode); renderShelfAll(); renderNow(); renderGoals();
     recomputeMedals();                // genre-stretch medals may have moved
     renderInsights();
     return entry;
   }
   // dated: books from "Finished a book" are finished today; elsewhere the date is optional (blank = backlog)
-  function wireEntry({title,author,hours,genre,date,btn,list,dated=false}){
-    const tIn=$(title), aIn=$(author), hrIn=$(hours), gIn=$(genre), dIn=date?$(date):null, listEl=$(list), added=[];
+  function wireEntry({title,author,hours,genre,date,btn,list,search,manual,dated=false,status=()=>"done"}){
+    const tIn=$(title), aIn=$(author), hrIn=$(hours), gIn=$(genre), dIn=date?$(date):null, listEl=$(list), added=[], man=$(manual);
     if(dIn) dIn.max=dayKey(new Date());
+    // a picked search result: its cover and details, shown above the fields it filled in
+    const pickEl=document.createElement("div"); pickEl.className="bspick"; pickEl.hidden=true; man.prepend(pickEl);
+    const estEl=document.createElement("p"); estEl.className="bsest"; estEl.hidden=true; hrIn.closest(".field").after(estEl);
+    let pick=null;
+    const sr=mountSearch($(search),{
+      onPick(r){
+        pick=r; man.hidden=false; sr.manualBtn.hidden=true; sr.input.closest(".bsearch").querySelector(".bsres").innerHTML="";
+        tIn.value=r.t; aIn.value=r.author||""; gIn.value=r.genre||""; const est=estHours(r.pages); hrIn.value=est!=null?est:"";
+        pickEl.hidden=false; pickEl.innerHTML=`${thumb(r)}<span class="bsmeta"><b>${esc(r.t)}</b><small>${esc([r.author,r.year,r.series?`${r.series}${r.num?" #"+r.num:""}`:""].filter(Boolean).join(" · "))}</small></span><button class="linkmini" type="button">Change</button>`;
+        estEl.hidden=est==null; estEl.textContent=est!=null?`Hours are an estimate from ${r.pages.toLocaleString()} pages (about ${PAGES_PER_HOUR} pages an hour). Change them if you know the runtime.`:"";
+        if(est==null) hrIn.placeholder="Hours, if you know them";
+      },
+      onManual(){ pick=null; pickEl.hidden=true; estEl.hidden=true; man.hidden=false; sr.manualBtn.hidden=true; tIn.focus(); }
+    });
+    pickEl.addEventListener("click",e=>{ if(e.target.closest(".linkmini")){ pick=null; pickEl.hidden=true; estEl.hidden=true; man.hidden=true; sr.manualBtn.hidden=false; tIn.value=aIn.value=hrIn.value=""; gIn.value=""; sr.focus(); } });
+    hrIn.addEventListener("input",()=>{ estEl.hidden=true; if(pick) pick.edited=true; });
     function renderList(){
-      listEl.innerHTML=added.length?`<div class="lbl">Added</div>`+added.map(b=>`<div class="item"><b>${esc(b.t)}</b><small>${b.h!=null?fmtH(b.h)+" · counted":"no hours"}</small></div>`).join("")
+      listEl.innerHTML=added.length?`<div class="lbl">Added</div>`+added.map(b=>`<div class="item"><b>${esc(b.t)}</b><small>${b.status==="want"?"want to listen":b.status==="listening"?"listening":b.h!=null?fmtH(b.h)+" · counted":"no hours"}</small></div>`).join("")
         :`<div class="empty">${I.book}<span>Books you add will appear here.</span></div>`;
     }
     function submit(){
       const t=titleCase(tIn.value); if(!t){ tIn.focus(); return; }
       const raw=hrIn.value.trim(), n=parseFloat(raw);
       const hours=raw!==""&&isFinite(n)&&n>0?n:null;   // blank or invalid → book only, no hours
-      const finished=dIn&&dIn.value?dIn.value:(dated?dayKey(new Date()):null);
-      const b=addBook(t,hours,gIn.value,titleCase(aIn.value),finished); added.push(b); renderList();
-      tIn.value=""; aIn.value=""; hrIn.value=""; gIn.value=""; if(dIn) dIn.value=""; tIn.focus();
-      toast(hours!=null?`${t} added · ${fmtH(hours)} to your total`:`${t} added to your shelf`);
+      const shelfTo=status(), open=shelfTo!=="done";
+      const finished=open?null:dIn&&dIn.value?dIn.value:(dated?dayKey(new Date()):null);
+      const extra=pick?{cover:pick.cover||null,pages:pick.pages||null,year:pick.year||null,series:pick.series||null,num:pick.num||null,
+        hEst:hours!=null&&!pick.edited&&estHours(pick.pages)===hours,src:pick.src,srcKey:pick.key}:{};
+      if(open) extra.status=shelfTo;
+      const fromSearch=!!pick;
+      const b=addBook(t,hours,gIn.value,titleCase(aIn.value),finished,extra); added.push(b); renderList();
+      tIn.value=""; aIn.value=""; hrIn.value=""; gIn.value=""; if(dIn) dIn.value=""; hrIn.placeholder="Optional";
+      pick=null; pickEl.hidden=true; estEl.hidden=true;
+      if(fromSearch){ man.hidden=true; sr.manualBtn.hidden=false; sr.clear(); sr.focus(); } else tIn.focus();   // searched: back to search; typed: ready for the next one
+      toast(open?`${t} added to ${shelfTo==="want"?"Want to listen":"Currently listening"}`:hours!=null?`${t} added · ${fmtH(hours)} to your total`:`${t} added to your shelf`);
     }
     $(btn).onclick=submit;
     [tIn,aIn,hrIn].forEach(i=>i.addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); submit(); } }));
-    return {reset(){ added.length=0; renderList(); tIn.value=""; aIn.value=""; hrIn.value=""; gIn.value=""; if(dIn) dIn.value=""; }};
+    return {reset(){ added.length=0; renderList(); tIn.value=""; aIn.value=""; hrIn.value=""; gIn.value=""; if(dIn) dIn.value=""; pick=null; pickEl.hidden=true; estEl.hidden=true; man.hidden=true; sr.manualBtn.hidden=false; sr.clear(); }};
   }
-  wireEntry({title:"#addTitle",author:"#addAuthor",hours:"#addHours",genre:"#addGenre",date:"#addDate",btn:"#addBtn",list:"#addedList"});
-  wireEntry({title:"#obTitle",author:"#obAuthor",hours:"#obHours",genre:"#obGenre",btn:"#obAddBtn",list:"#obAddedList"});
-  const sheetEntry=wireEntry({title:"#sheetTitle",author:"#sheetAuthor",hours:"#sheetHours",genre:"#sheetGenre",btn:"#sheetAddBtn",list:"#sheetAddedList",dated:true});
+  let addAs="done";
+  const addEntry=wireEntry({title:"#addTitle",author:"#addAuthor",hours:"#addHours",genre:"#addGenre",date:"#addDate",btn:"#addBtn",list:"#addedList",search:"#addSearch",manual:"#addManual",status:()=>addAs});
+  function setAddAs(v){
+    addAs=v; $$("#addAs button").forEach(x=>{ const on=x.dataset.v===v; x.classList.toggle("on",on); x.setAttribute("aria-pressed",on); });
+    $("#addDateRow").hidden=v!=="done";
+    $("#addTag").textContent={done:"Search for the books you've finished",listening:"Search for what you're listening to now",want:"Search for books you want to listen to"}[v];
+  }
+  $$("#addAs button").forEach(x=>x.onclick=()=>setAddAs(x.dataset.v));
+  wireEntry({title:"#obTitle",author:"#obAuthor",hours:"#obHours",genre:"#obGenre",btn:"#obAddBtn",list:"#obAddedList",search:"#obSearch",manual:"#obManual"});
+  const sheetEntry=wireEntry({title:"#sheetTitle",author:"#sheetAuthor",hours:"#sheetHours",genre:"#sheetGenre",btn:"#sheetAddBtn",list:"#sheetAddedList",search:"#sheetSearch",manual:"#sheetManual",dated:true});
   $("#addDone").onclick=()=>{ back(); showPendingEarned(); };
 
   /* derive(): today / week / month / year, streaks, the medal counts and the chart data, all from the
@@ -1497,10 +1896,24 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     const listen=new Set([...Object.keys(dayMin),...L.days]);
     const qual=new Set([...Object.keys(dayMin).filter(d=>dayMin[d]>=minQ),...L.days]);   // days that count toward a streak
     const today=dayKey(new Date()), yd=new Date(); yd.setDate(yd.getDate()-1);
-    let streak=0, c=qual.has(today)?parseDay(today):qual.has(dayKey(yd))?yd:null;
-    while(c&&qual.has(dayKey(c))){ streak++; c.setDate(c.getDate()-1); }
     const runOf=set=>{ const a=[...set].sort(); let best=0,cur=0,prev=null; a.forEach(d=>{ cur=prev&&daysBetween(prev,d)===1?cur+1:1; best=Math.max(best,cur); prev=d; }); return best; };
-    ST.streak=streak; ST.bestStreak=Math.max(runOf(qual),L.bestStreak||0,streak);
+    let streak=0, restBest=0, restBank=0; const restUsed=[];
+    if(ST.settings.restDays&&qual.size){
+      // walk the calendar: every 7 streak days earns a rest day (2 saved at most); a missed day uses one
+      let earn=0; const end=parseDay(today);
+      for(const d=parseDay([...qual].sort()[0]);d<=end;d.setDate(d.getDate()+1)){
+        const k=dayKey(d);
+        if(qual.has(k)){ streak++; if(++earn>=7){ earn=0; restBank=Math.min(2,restBank+1); } }
+        else if(k===today){}                                              // today isn't over yet
+        else if(streak>0&&restBank>0){ restBank--; restUsed.push(k); }     // rest day: the streak carries on
+        else { streak=0; earn=0; }
+        restBest=Math.max(restBest,streak);
+      }
+    } else {
+      let c=qual.has(today)?parseDay(today):qual.has(dayKey(yd))?yd:null;
+      while(c&&qual.has(dayKey(c))){ streak++; c.setDate(c.getDate()-1); }
+    }
+    ST.streak=streak; ST.bestStreak=Math.max(runOf(qual),restBest,L.bestStreak||0,streak);
     const k=periodKeys(), C=ST.carry||{}, carry=(p,key)=>C[p]&&C[p].k===key?C[p].h:0;
     const weekMin={}, monthMin={}, seasonH={}, byWd=[0,0,0,0,0,0,0], wdDays=[0,0,0,0,0,0,0];
     Object.entries(dayMin).forEach(([d,m])=>{
@@ -1528,10 +1941,11 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     // chart data: logged listening, plus finished books with hours on the day they were finished
     const cDay={}, cWeek={}, cMonth={}, cYear={};
     Object.entries(dayMin).forEach(([d,m])=>{ cDay[d]=m/60; });
-    LIB.forEach(b=>{ if(b.finished&&b.h>0) cDay[b.finished]=(cDay[b.finished]||0)+b.h; });
+    LIB.forEach(b=>{ if(b.finished&&b.h>0&&!b.logged&&isDone(b)) cDay[b.finished]=(cDay[b.finished]||0)+b.h; });
+    const bookMin={}; ST.sessions.forEach(x=>{ if(x.book) bookMin[x.book]=(bookMin[x.book]||0)+x.m; });
     Object.entries(cDay).forEach(([d,h])=>{ const wk=weekKeyOf(parseDay(d)), mk=d.slice(0,7), y=d.slice(0,4); cWeek[wk]=(cWeek[wk]||0)+h; cMonth[mk]=(cMonth[mk]||0)+h; cYear[y]=(cYear[y]||0)+h; });
     const cKeys=Object.keys(cDay).filter(d=>cDay[d]>0).sort();
-    D={listen,dayMin,notesByDay,cDay,cWeek,cMonth,cYear,cFirst:cKeys[0]||null,cDays:cKeys.length,
+    D={listen,dayMin,notesByDay,bookMin,restBank,restUsed,cDay,cWeek,cMonth,cYear,cFirst:cKeys[0]||null,cDays:cKeys.length,
       run60:runOf(new Set(Object.keys(dayMin).filter(d=>dayMin[d]>=60))),
       bestWeekH:Math.max(0,...Object.values(weekMin))/60, bestMonthH:Math.max(0,...Object.values(monthMin))/60, pbs:beats(weekMin)+beats(monthMin),
       pweeks:Object.values(wkC).filter(n=>n>=7).length,
@@ -1545,6 +1959,7 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
   const pendingEarned=[];
   const fmtN=h=>Number.isInteger(h)?h:+h.toFixed(1);
   function medalStats(){
+    const LIB=ST.books.filter(isDone);   // medals count the finished shelf
     const maxOf=o=>Math.max(0,...Object.values(o));
     const norm=v=>(v||"").trim().toLowerCase(), tally=key=>{ const t={}; LIB.forEach(b=>{ const v=norm(b[key]); if(v) t[v]=(t[v]||0)+1; }); return t; };
     const dated=LIB.filter(b=>b.finished), byYear={}, byMonth={}, kinds={}, firstLast={};
@@ -1572,7 +1987,7 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
       years:(Date.now()-new Date(ST.createdAt))/(365.2425*864e5),notes:ST.notesWritten,shares:ST.shares,
       firstLog:ST.sessions.length>0||ST.legacy.days.length>0,importer:ST.past.length>0,undated,stocker:undated>=10,
       newYear:days.some(d=>d.endsWith("-01-01")),holiday:days.some(d=>d.endsWith("-12-25")),leap:days.some(d=>d.endsWith("-02-29")),
-      comeback:!!ST.comeback,founding:!PUBLIC_LAUNCH||ST.createdAt<PUBLIC_LAUNCH,wrap:!!ST.yearReviewViewed,
+      comeback:!!ST.comeback,founding:!FOUNDING_CUTOFF_DATE||ST.firstUseAt<FOUNDING_CUTOFF_DATE,wrap:!!ST.yearReviewViewed,
       answer:ST.sessions.some(x=>x.m===42),onTime:ST.sessions.some(x=>x.m===60),bookends:Object.values(firstLast).some(f=>f.a&&f.z),nightDay:D.nightDay};
     MEDALS.forEach(m=>{ if(m.genres) S[m.v]=LIB.filter(b=>m.genres.includes(b.genre)).reduce((t,b)=>t+(b.h||0),0); });
     return S;
@@ -1617,8 +2032,10 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     $$(".nav button[data-go]").forEach(b=>b.classList.toggle("on",b.dataset.go===tab));
     document.body.classList.toggle("can-back",hist.length>0);
     if(id==="s-shelf") renderShelfAll();
+    if(id==="s-add"&&anim==="in-fwd") setAddAs(hist[hist.length-1]==="s-shelf"?(ST.shelfTab||"done"):"done");   // adding from a shelf adds to that shelf
     if(id==="s-settings") renderSettings();
     if(id==="s-help") renderHelp();
+    if(id==="s-welcome") renderWelcome();
     if(id==="s-stats") renderStats(true);
     const el=$("#"+id); el.classList.remove("in-fwd","in-back");
     if(anim){ void el.offsetWidth; el.classList.add(anim); el.addEventListener("animationend",()=>el.classList.remove(anim),{once:true}); }
@@ -1703,17 +2120,69 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
   dragDismiss($("#earned"),{mover:ebox,scroller:ebox,threshold:120,onClose:closeEarned,fade:p=>{ ebox.style.opacity=p==null?"":String(1-p*.9); }});
   function showMenu(){ $("#menu").style.display="block"; $$(".form").forEach(f=>f.classList.remove("show")); }
   $("#n-plus").onclick=openSheet; scrim.onclick=closePanel;
-  $$(".opt").forEach(o=>o.onclick=()=>{ $("#menu").style.display="none"; $("#"+o.dataset.form).classList.add("show"); });
+  $$(".opt").forEach(o=>o.onclick=()=>{ $("#menu").style.display="none"; $("#"+o.dataset.form).classList.add("show"); if(o.dataset.form==="f-live") renderLiveForm(); });
+  // the logging sheet, ready for a book (from a Log button, or the timer)
+  function openLive(bookId,mins){
+    openSheet(); $("#menu").style.display="none"; $("#f-live").classList.add("show"); renderLiveForm(bookId);
+    if(mins){ hIn.value=Math.floor(mins/60)||""; mIn.value=mins%60||""; logLabel(); }
+  }
+  function renderLiveForm(bookId){
+    const list=LIB.filter(b=>b.status==="listening");
+    $("#logBookRow").hidden=!list.length;
+    $("#logBook").innerHTML=`<option value="">No particular book</option>`+list.map(b=>`<option value="${b.id}">${esc(b.t)}</option>`).join("");
+    $("#logBook").value=list.some(b=>b.id===bookId)?bookId:"";
+    renderTimer();
+  }
+  /* start/stop timer: only the start time is saved, so it keeps counting while the app is closed or the phone is locked */
+  const PLAY=`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l10.5-6.5z"/></svg>`;
+  const clock=ms=>{ const t=Math.max(0,Math.floor(ms/1000)), h=Math.floor(t/3600), m=Math.floor(t%3600/60), sec=t%60; return h?`${h}:${pad(m)}:${pad(sec)}`:`${m}:${pad(sec)}`; };
+  let timerTick=null;
+  function renderTimer(){
+    const t=ST.timer, on=!!t;
+    document.body.classList.toggle("timing",on); $("#timerBar").hidden=!on;
+    const book=on&&t.book&&LIB.find(b=>b.id===t.book);
+    $("#timerBook").textContent=book?book.t:"";
+    $("#timerBox").innerHTML=on?`<p><b>Timer running since ${new Date(t.start).toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"})}</b>Stop it to fill in the time.</p><button class="lact go" type="button" id="timerStop">Stop</button>`
+      :`<p><b>Use a timer</b>Start when you begin listening. It keeps time even if you lock your phone.</p><button class="lact go" type="button" id="timerStart">${PLAY}Start</button>`;
+    clearInterval(timerTick);
+    if(on){ const upd=()=>{ $("#timerTime").textContent=clock(Date.now()-Date.parse(t.start)); }; upd(); timerTick=setInterval(upd,1000); }
+  }
+  $("#timerBox").addEventListener("click",e=>{
+    if(e.target.closest("#timerStart")){ ST.timer={start:new Date().toISOString(),book:$("#logBook").value||null}; save(); closeSheet(); renderTimer(); toast("Timer started. Tap the bar at the top to stop."); }
+    if(e.target.closest("#timerStop")) stopTimer();
+  });
+  $("#timerBar").onclick=stopTimer;
+  async function stopTimer(){
+    const t=ST.timer; if(!t) return;
+    const ms=Date.now()-Date.parse(t.start); let mins=Math.max(1,Math.round(ms/60000));
+    if(ms>12*3600e3&&!await ask({title:`Your timer ran for ${hm(ms/3600e3)}`,msg:"That's more than 12 hours. Use the full time, or enter how long you really listened?",ok:"Use the full time",cancel:"Enter it myself"})) mins=0;
+    ST.timer=null; save(); renderTimer();
+    openLive(t.book,mins);
+  }
+  document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible"&&ST.timer) renderTimer(); });
   $$("[data-back]").forEach(b=>b.onclick=showMenu);
   function bump(h){ ST.total+=h; save(); renderHero(); }
+  const REST_IC=`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 15A8 8 0 0 1 9 4a8 8 0 1 0 11 11z"/></svg>`;
   /* goals on Home */
   function renderGoals(){
-    const g=$("#goals"), S=ST.settings; g.hidden=!S.showGoals; if(!S.showGoals) return;
+    const g=$("#goals"), S=ST.settings; g.hidden=!S.showGoals; renderBookGoal(); if(!S.showGoals) return;
     const dm=Math.round(ST.todayH*60), dg=Math.max(1,+S.dailyGoalMin||30), wg=Math.max(.5,+S.weeklyGoalH||5);
     const dayMet=dm>=dg, weekMet=ST.weekH>=wg;
     $("#gDay").textContent=dayMet?`Goal met · ${dm} min`:`${dm} of ${dg} min`; $("#gDay").classList.toggle("met",dayMet);
     $("#gWeek").textContent=weekMet?`Goal met · ${hm(ST.weekH)}`:`${hm(ST.weekH)} of ${hm(wg)}`; $("#gWeek").classList.toggle("met",weekMet);
     $("#gDayBar").style.width=`${Math.min(100,dm/dg*100)}%`; $("#gWeekBar").style.width=`${Math.min(100,ST.weekH/wg*100)}%`;
+  }
+  // "9 of 24 books this year": a ring, and a gentle note when ahead of pace (never a "behind")
+  function renderBookGoal(){
+    const goal=Math.max(0,parseInt(ST.settings.bookGoal,10)||0), el=$("#bookGoal");
+    el.hidden=!ST.settings.showGoals||!goal; if(el.hidden) return;
+    const now=new Date(), y=String(now.getFullYear()), done=LIB.filter(b=>isDone(b)&&b.finished&&b.finished.startsWith(y)).length;
+    const start=new Date(now.getFullYear(),0,1), days=(new Date(now.getFullYear()+1,0,1)-start)/864e5, pace=goal*((now-start)/864e5+1)/days;
+    const note=done>=goal?["ahead","Goal reached. Every book from here is a bonus."]:done>0&&done>=Math.ceil(pace)?["ahead","Ahead of pace. Nice going."]:["",`${plural(goal-done,"book","books")} to go this year.`];
+    const r=27, len=2*Math.PI*r, f=Math.min(1,done/goal);
+    el.innerHTML=`<svg viewBox="0 0 64 64" role="img" aria-label="${done} of ${goal} books this year"><defs><linearGradient id="ringG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#34F9B2"/><stop offset="1" stop-color="#00C0CA"/></linearGradient></defs>
+      <circle class="rtrack" cx="32" cy="32" r="${r}"/><circle class="rfill" cx="32" cy="32" r="${r}" stroke-dasharray="${len.toFixed(2)}" stroke-dashoffset="${(len*(1-f)).toFixed(2)}"${f?"":' stroke-opacity="0"'}/><text class="rnum" x="32" y="39" text-anchor="middle">${done}</text></svg>
+      <div><b>${done} of ${goal} books this year</b><small class="${note[0]}">${note[1]}</small></div>`;
   }
   /* hero + rank card, all from state */
   function renderHero(){
@@ -1726,6 +2195,15 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     $("#streakMedal").className=`medal streakbadge m-${tier} ${ringCls(sf,lvNow)}`;
     $("#streakMedal").setAttribute("aria-label",`${ST.streak}-day streak${lvNow?`, ${tier} level`:""}`);
     $("#streakSub").textContent=lvNow&&nxt?`${cap(tier)} streak · ${cap(TIERS[lvNow])} in ${left} day${left===1?"":"s"}`:nxt?`${cap(TIERS[0])} streak at ${nxt.t} days`:"The highest streak level there is";
+    const ydk=(()=>{ const y=new Date(); y.setDate(y.getDate()-1); return dayKey(y); })(), restToday=ST.settings.restDays&&ST.streak>0&&(D.restUsed||[]).includes(ydk);
+    if(restToday){
+      $("#streakSub").textContent=`Rest day used. Your ${ST.streak}-day streak is safe.`;
+      if(ST.restNotice!==ydk){ ST.restNotice=ydk; save(); setTimeout(()=>toast(`Rest day used. Your ${ST.streak}-day streak is safe.`),1800); }
+    }
+    $("#streakSub").classList.toggle("rest",!!restToday);
+    const bank=ST.settings.restDays?D.restBank||0:0;
+    $("#restDays").hidden=!bank;
+    $("#restDays").innerHTML=bank?`${`<i aria-hidden="true">${REST_IC}</i>`.repeat(bank)}<span>${bank} rest day${bank>1?"s":""} saved</span>`:"";
     const GLOW={bronze:"212,164,122",silver:"226,229,234",gold:"233,211,155",platinum:"222,233,236",diamond:"205,227,238",obsidian:"207,195,230",meteorite:"220,198,174",iridium:"242,214,222",osmium:"203,216,247",celestial:"233,211,155"}, gl=$(".hero .glow");
     const rgb=GLOW[tier]||"169,182,201", a=GLOW[tier]?.16:.05;   // unlit: only a faint cool glow
     gl.style.setProperty("--hg",`rgba(${rgb},${a})`); gl.style.setProperty("--hg2",`rgba(${rgb},${a/3})`);
@@ -1741,13 +2219,14 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
   hIn.oninput=mIn.oninput=logLabel;
   $("#pastH").oninput=()=>{ const h=+$("#pastH").value||0; $("#pastBtn").textContent=h?`Add ${fmtN(h)} hours`:"Add hours"; };
   /* a real listening session: today, week, month, year, total, streak, best day, weekday pattern */
-  function logListening(hours,note){
+  function logListening(hours,note,book){
     const now=new Date(), d=dayKey(now), prev=ST.lastLog;
     const welcome=!!prev&&prev!==d&&daysBetween(prev,d)>=8;   // a week or more away: welcome back
-    ST.sessions.push({id:uid(),at:now.toISOString(),d,m:Math.round(hours*60),note:note||null});
+    // one session: it counts once toward today, the streak and the total, and toward the book's progress
+    ST.sessions.push({id:uid(),at:now.toISOString(),d,m:Math.round(hours*60),note:note||null,book:book||null});
     ST.total+=hours;
     if(note){ ST.notes.push({t:note,h:hours}); ST.notesWritten++; }
-    derive(); save(); renderHero(); renderGoals(); renderNotes(); recomputeMedals(); renderInsights();
+    derive(); save(); renderHero(); renderGoals(); renderNow(); renderNotes(); recomputeMedals(); renderInsights(); renderBackupNudge();
     return welcome;
   }
   function addPastHours(hours,src){ ST.past.push({src,h:hours,at:new Date().toISOString()}); ST.total+=hours; save(); renderHero(); recomputeMedals(); renderInsights(); }
@@ -1756,9 +2235,17 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     if(k==="live"){
       const h=+hIn.value||0, m=+mIn.value||0, hours=h+m/60;
       if(hours<=0){ toast("Enter how long you listened"); return; }
-      const welcome=logListening(hours,$("#noteIn").value.trim());
+      const bookId=$("#logBook").value||null, book=bookId&&LIB.find(x=>x.id===bookId);
+      const welcome=logListening(hours,$("#noteIn").value.trim(),bookId);
       hIn.value=""; mIn.value=""; $("#noteIn").value=""; logLabel();
-      closeSheet(); go("s-home",{tab:true}); toast(welcome?`Welcome back. Logged ${hm(hours)}.`:`Logged ${hm(hours)}. Streak: ${ST.streak} day${ST.streak===1?"":"s"}`); showPendingEarned(); return;
+      closeSheet(); go("s-home",{tab:true}); toast(welcome?`Welcome back. Logged ${hm(hours)}.`:book?`Logged ${hm(hours)} of ${book.t}`:`Logged ${hm(hours)}. Streak: ${ST.streak} day${ST.streak===1?"":"s"}`);
+      // the whole length listened: gently ask, once
+      if(book&&book.status==="listening"&&book.h>0&&progOf(book)>=book.h-1e-9&&!book.askedDone){
+        book.askedDone=true; save();
+        setTimeout(async()=>{ if(await ask({title:"Did you finish it?",msg:`You've listened to ${hm(progOf(book))} of ${book.t}, its whole length.`,ok:"Yes, I finished it",cancel:"Not yet"})) finishBook(book); else showPendingEarned(); },500);
+        return;
+      }
+      showPendingEarned(); return;
     }
     if(k==="past"){
       const h=+$("#pastH").value||0; if(h<=0){ toast("Enter the hours to add"); return; }
@@ -1778,7 +2265,7 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     /* starter lines for a brand-new account */
     ()=>ST.total===0&&{ic:I.star,b:"Your first 25 hours earn Bronze",s:"Log a session with the + button, or add hours from the past."},
     ()=>ST.streak===0&&ST.total>0&&{ic:I.flame,b:"Start a streak today",s:"Any listening logged today counts as day one."},
-    ()=>!LIB.length&&{ic:I.book,b:"Your shelf is waiting",s:"Add a book you've finished and it goes straight on the shelf."},
+    ()=>!LIB.some(isDone)&&{ic:I.book,b:"Your shelf is waiting",s:"Add a book you've finished and it goes straight on the shelf."},
     /* lines that need some history */
     ()=>ST.monthH>ST.lastMonthH&&ST.lastMonthH>0&&{ic:I.up,b:"You're listening more than last month",s:`Already up ${hm(ST.monthH-ST.lastMonthH)} this month.`},
     ()=>{ if(ST.streak<2) return null; const next=BY.streak.levels.map(L=>L.t).find(n=>n>ST.streak);
@@ -1791,7 +2278,7 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     ()=>{ const b=LIB.filter(x=>bucket(x)==="month"); if(!b.length) return null;
           return {ic:I.book,b:`${b.length} book${b.length>1?"s":""} finished this month`,s:esc(b.slice(0,3).map(x=>x.t).join(", "))+(b.length>3?"…":"")}; },
     ()=>ST.yearH>0&&{ic:I.cal,b:`${fmtN(ST.yearH).toLocaleString()} hours this year`,s:"Tap Today, This week or This month above to see your trends."},
-    ()=>{ const g=BY.gexp, n=new Set(LIB.map(b=>b.genre).filter(Boolean)).size, nx=g.levels[g.lv]; return n>=3&&{ic:I.globe,b:`${n} genres on your shelf`,s:nx?`Genre Explorer reaches ${lvName(g,g.lv+1)} at ${nx.req.toLowerCase()}.`:"Every genre sampled. Omnivore."}; },
+    ()=>{ const g=BY.gexp, n=new Set(LIB.filter(isDone).map(b=>b.genre).filter(Boolean)).size, nx=g.levels[g.lv]; return n>=3&&{ic:I.globe,b:`${n} genres on your shelf`,s:nx?`Genre Explorer reaches ${lvName(g,g.lv+1)} at ${nx.req.toLowerCase()}.`:"Every genre sampled. Omnivore."}; },
     ()=>ST.todayH>0&&{ic:I.bolt,b:`${hm(ST.todayH)} in today already`,s:"Every minute counts toward your streak."}
   ];
   function renderInsights(){
@@ -2122,16 +2609,17 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     $("#obNext1").onclick=()=>{ const h=+$("#obPast").value||0; if(h>0) addPastHours(h,$("#obSrc").value); obGo(2); };
     $("#obSkip1").onclick=()=>obGo(2);
     $("#obNext2").onclick=$("#obSkip2").onclick=()=>obGo(3);
-    $("#obFinish").onclick=()=>{ ST.onboarded=true; save(); ob.classList.remove("open"); go("s-home",{tab:true});
-      // welcome with the Founding Listener medal while early testing lasts
+    $("#obFinish").onclick=()=>{ ST.onboarded=true; ST.welcomeSeen=true; save(); ob.classList.remove("open"); go("s-home",{tab:true}); renderInstall();
+      // the welcome page once; the Founding Listener medal follows when they leave it
       const fl=BY.fl; if(fl.lv&&!pendingEarned.some(e=>e.m===fl)) pendingEarned.unshift({m:fl,from:0,to:1});
-      showPendingEarned(); };
+      go("s-welcome"); };
   }
   /* alerts — an iPhone-style two-button dialog */
-  function ask({title,msg,ok="OK",danger=false}){
+  function ask({title,msg,ok="OK",cancel="Cancel",danger=false,single=false}){
     return new Promise(res=>{
       const a=$("#alert"), okB=$("#aOk"), noB=$("#aCancel");
       $("#aTitle").textContent=title; $("#aMsg").textContent=msg; okB.textContent=ok; okB.classList.toggle("danger",danger);
+      noB.textContent=cancel; noB.hidden=single;
       a.classList.add("open"); noB.focus();
       const done=v=>{ a.classList.remove("open"); okB.onclick=noB.onclick=null; res(v); };
       okB.onclick=()=>done(true); noB.onclick=()=>done(false);
@@ -2145,22 +2633,25 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
   }
 
   /* settings: every change saves and updates the app straight away */
-  function refreshAll(){ derive(); save(); applyMotion(); renderHero(); renderGoals(); renderNotes(); renderShelf(shelfMode); renderShelfAll(); recomputeMedals(true); renderInsights(); if(current==="s-stats") renderStats(false); }
+  function refreshAll(){ derive(); save(); applyMotion(); renderHero(); renderGoals(); renderNotes(); renderShelf(shelfMode); renderShelfAll(); recomputeMedals(true); renderInsights(); renderNow(); if(current==="s-stats") renderStats(false); }
   function applyMotion(){ const r=ST.settings.reduceMotion, h=document.documentElement; h.classList.toggle("rm-on",r==="on"); h.classList.toggle("rm-off",r==="off"); }
   function renderSettings(){
     const S=ST.settings;
     $("#setName").value=ST.user.name; $("#setEmail").textContent=S.email||"Not connected";
-    $("#setDaily").value=S.dailyGoalMin; $("#setWeekly").value=S.weeklyGoalH; $("#setMinMin").value=S.streakMinMin;
+    $("#setDaily").value=S.dailyGoalMin; $("#setWeekly").value=S.weeklyGoalH; $("#setMinMin").value=S.streakMinMin; $("#setBooks").value=S.bookGoal||"";
+    const rs=$("#setRest"); rs.classList.toggle("on",!!S.restDays); rs.setAttribute("aria-checked",!!S.restDays);
     const sw=$("#setShowGoals"); sw.classList.toggle("on",!!S.showGoals); sw.setAttribute("aria-checked",!!S.showGoals);
     $$(".sseg").forEach(seg=>{ const k=seg.dataset.set, v=k in S?S[k]:ST[k]; seg.querySelectorAll("button").forEach(b=>{ b.classList.toggle("on",b.dataset.v===v); b.setAttribute("aria-pressed",b.dataset.v===v); }); });
-    $("#setVersion").textContent=APP_VERSION; $("#setFounding").hidden=!BY.fl.lv;
-    $("#setFeedback").href=`mailto:${FEEDBACK_EMAIL}?subject=${encodeURIComponent("Earmark feedback")}&body=${encodeURIComponent(`\n\n—\nEarmark ${APP_VERSION}`)}`;
+    $("#setLastBackup").textContent=ST.lastBackup?fmtDay(ST.lastBackup):"Never";
+    $("#setVersion").innerHTML=`${APP_VERSION}<span class="betatag">Beta</span>`; $("#setFounding").hidden=!BY.fl.lv;
   }
   $("#setName").addEventListener("input",e=>{ ST.user.name=e.target.value; save(); });
   $("#setName").addEventListener("blur",e=>{ ST.user.name=e.target.value.trim(); e.target.value=ST.user.name; save(); });
   const numSetting=(sel,key,min,max)=>$(sel).addEventListener("input",e=>{ const v=parseFloat(e.target.value); if(!isFinite(v)) return; ST.settings[key]=Math.min(max,Math.max(min,v)); refreshAll(); });
   numSetting("#setDaily","dailyGoalMin",1,1440); numSetting("#setWeekly","weeklyGoalH",.5,168); numSetting("#setMinMin","streakMinMin",1,600);
-  $$("#setDaily,#setWeekly,#setMinMin").forEach(i=>i.addEventListener("blur",renderSettings));
+  $("#setBooks").addEventListener("input",e=>{ const v=parseInt(e.target.value,10); ST.settings.bookGoal=isFinite(v)?Math.min(1000,Math.max(0,v)):0; save(); renderBookGoal(); });   // 0 or blank hides the ring
+  $$("#setDaily,#setWeekly,#setMinMin,#setBooks").forEach(i=>i.addEventListener("blur",renderSettings));
+  $("#setRest").onclick=()=>{ ST.settings.restDays=!ST.settings.restDays; refreshAll(); renderSettings(); };
   $("#setShowGoals").onclick=()=>{ ST.settings.showGoals=!ST.settings.showGoals; refreshAll(); renderSettings(); };
   $$(".sseg button").forEach(b=>b.onclick=()=>{
     const k=b.closest(".sseg").dataset.set, v=b.dataset.v;
@@ -2175,21 +2666,150 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
   };
   $("#setReset").onclick=resetFlow;
   $("#setImport").onclick=()=>{ openSheet(); $("#menu").style.display="none"; $("#f-past").classList.add("show"); };
-  $("#setExport").onclick=()=>{
-    const data={app:"Earmark",version:APP_VERSION,exportedAt:new Date().toISOString(),user:ST.user,settings:ST.settings,totalHours:ST.total,
-      books:ST.books,sessions:ST.sessions,pastHours:ST.past,medals:MEDALS.filter(m=>m.lv).map(m=>({id:m.id,name:m.name,level:m.lv,of:nLv(m),levelName:lvName(m,m.lv)}))};
-    downloadFile(new File([JSON.stringify(data,null,2)],`earmark-data-${dayKey(new Date())}.json`,{type:"application/json"}));
-    toast("Your data was downloaded");
+  /* backups: a readable summary plus the whole saved state, stamped with BACKUP_VERSION */
+  function exportBackup(){
+    ST.lastBackup=new Date().toISOString(); ST.backupNudgeDismissed=null; save();
+    const data={app:"Earmark",backupVersion:BACKUP_VERSION,appVersion:APP_VERSION,exportedAt:ST.lastBackup,user:ST.user,settings:ST.settings,totalHours:ST.total,
+      books:ST.books,sessions:ST.sessions,pastHours:ST.past,medals:MEDALS.filter(m=>m.lv).map(m=>({id:m.id,name:m.name,level:m.lv,of:nLv(m),levelName:lvName(m,m.lv)})),
+      state:ST};
+    downloadFile(new File([JSON.stringify(data,null,2)],`earmark-backup-${dayKey(new Date())}.json`,{type:"application/json"}));
+    renderBackupNudge(); if(current==="s-settings") renderSettings();
+    toast("Backup saved to your downloads");
+  }
+  $("#setExport").onclick=exportBackup;
+  // a backup's saved state; backups from 0.9 only carry the readable fields, so rebuild from those
+  function backupState(o){
+    if(o.state&&typeof o.state==="object"&&Array.isArray(o.state.books)) return o.state;
+    const books=o.books||[], sessions=Array.isArray(o.sessions)?o.sessions:[], first=[...sessions.map(x=>x.at),...books.map(b=>b.added)].filter(Boolean).sort()[0];
+    return {onboarded:true,user:o.user||{name:""},settings:o.settings||{},books,sessions,past:o.pastHours||[],total:+o.totalHours||0,
+      migratedSessions:true,createdAt:first||o.exportedAt||new Date().toISOString()};
+  }
+  // levels never go down: keep the higher level of each medal and the earliest date for each level
+  function mergeMedalStores(a,b){
+    const out=JSON.parse(JSON.stringify(a||{}));
+    Object.entries(b||{}).forEach(([id,r])=>{ if(!r) return; const m=out[id]||(out[id]={lv:0,at:[]}); m.lv=Math.max(m.lv||0,r.lv||0); (r.at||[]).forEach((d,i)=>{ if(d&&(!m.at[i]||d<m.at[i])) m.at[i]=d; }); });
+    return out;
+  }
+  const earliest=(...d)=>d.filter(Boolean).sort()[0]||null;
+  function chooseRestore(st,o){
+    const n=(st.books||[]).length, when=o.exportedAt?new Date(o.exportedAt):null;
+    $("#rPrev").innerHTML=`<b>${when?esc(when.toLocaleDateString(undefined,{month:"long",day:"numeric",year:"numeric"})):"Backup"}</b><span>${plural(n,"book","books")} · ${esc(hm(+st.total||0))} listened${st.user&&st.user.name?` · ${esc(st.user.name)}`:""}</span>`;
+    return new Promise(res=>{
+      const d=$("#restoreDlg"), done=v=>{ d.classList.remove("open"); res(v); };
+      $("#rMerge").onclick=()=>done("merge"); $("#rReplace").onclick=()=>done("replace"); $("#rCancel").onclick=()=>done(null);
+      d.classList.add("open"); $("#rCancel").focus();
+    });
+  }
+  function mergeBackup(st){
+    const norm=v=>(v||"").trim().toLowerCase(), key=b=>norm(b.t)+"|"+norm(b.author);
+    const ids=new Set(LIB.map(b=>b.id)), seen=new Set(LIB.map(key)), added={books:0,sessions:0};
+    let hours=0;
+    (st.books||[]).forEach(b=>{ if(!b||!b.t||ids.has(b.id)||seen.has(key(b))) return; LIB.push(b); seen.add(key(b)); added.books++; if(counted(b)) hours+=b.h; });
+    const sid=new Set(ST.sessions.map(x=>x.id)), sk=new Set(ST.sessions.map(x=>x.at+"|"+x.m));
+    (st.sessions||[]).forEach(x=>{ if(!x||!x.d||!(x.m>0)||sid.has(x.id)||sk.has(x.at+"|"+x.m)) return; ST.sessions.push(x); added.sessions++; hours+=x.m/60; });
+    const pk=new Set(ST.past.map(x=>x.at+"|"+x.h));
+    (st.past||[]).forEach(x=>{ if(!x||!(x.h>0)||pk.has(x.at+"|"+x.h)) return; ST.past.push(x); hours+=x.h; });
+    if(st.legacy&&Array.isArray(st.legacy.days)) ST.legacy.days=[...new Set([...ST.legacy.days,...st.legacy.days])];
+    ST.total+=hours; ST.notesWritten=Math.max(ST.notesWritten||0,st.notesWritten||0);
+    ST.medals=mergeMedalStores(ST.medals,st.medals); ST.createdAt=earliest(ST.createdAt,st.createdAt); ST.firstUseAt=earliest(ST.firstUseAt,st.firstUseAt,st.createdAt);
+    return added;
+  }
+  $("#setRestore").onclick=()=>$("#restoreFile").click();
+  $("#restoreFile").onchange=async e=>{
+    const f=e.target.files&&e.target.files[0]; e.target.value=""; if(!f) return;
+    let o=null; try{ o=JSON.parse(await f.text()); }catch(err){}
+    if(!o||o.app!=="Earmark"||!Array.isArray(o.books)){
+      await ask({title:"That isn't an Earmark backup",msg:"Choose a backup file saved from Settings › Data › Export a backup. Its name starts with earmark-.",single:true}); return; }
+    if((o.backupVersion||0)>BACKUP_VERSION){
+      await ask({title:"This backup is from a newer Earmark",msg:"Refresh the app to get the latest version, then restore again.",single:true}); return; }
+    const st=backupState(o), how=await chooseRestore(st,o);
+    if(how==="replace"){
+      if(!await ask({title:"Replace everything?",msg:"Everything on this device is swapped for the backup. Anything you haven't backed up will be lost. Medal levels you've already earned are kept.",ok:"Replace",danger:true})) return;
+      const next=Object.assign(fresh(),st,{onboarded:true,medals:mergeMedalStores(ST.medals,st.medals),createdAt:earliest(ST.createdAt,st.createdAt),firstUseAt:earliest(ST.firstUseAt,st.firstUseAt,st.createdAt),welcomeSeen:true,lastBackup:o.exportedAt||ST.lastBackup});
+      try{ localStorage.setItem(KEY,JSON.stringify(next)); sessionStorage.setItem("earmark.flash","Restored from your backup"); }catch(err){ toast("Couldn't restore. There may not be enough space."); return; }
+      location.reload();
+    } else if(how==="merge"){
+      const a=mergeBackup(st);
+      if(!a.books&&!a.sessions){ save(); toast("Everything in that backup is already here"); return; }
+      save(); try{ sessionStorage.setItem("earmark.flash",`Merged: ${plural(a.books,"book","books")} and ${plural(a.sessions,"session","sessions")} added`); }catch(err){}
+      location.reload();   // recalculates totals, streaks and medal levels from the merged data
+    }
   };
+  /* gentle reminder: two weeks since the last backup, once there's a week of listening history */
+  function renderBackupNudge(){
+    const now=Date.now(), since=d=>d?now-Date.parse(d):Infinity, day=864e5;
+    const show=ST.onboarded&&(ST.sessions.length>0||LIB.length>0)&&since(ST.createdAt)>=7*day&&since(ST.lastBackup)>=14*day&&since(ST.backupNudgeDismissed)>=3*day;
+    $("#backupNudge").hidden=!show;
+  }
+  $("#nudgeSave").onclick=exportBackup;
+  $("#nudgeX").onclick=()=>{ ST.backupNudgeDismissed=new Date().toISOString(); save(); renderBackupNudge(); };
+
+  /* add to home screen: on iPhone Safari, data from sites not opened for about a week can be cleared;
+     home-screen apps are kept. Never shown once installed; after "Not now", back in three days. */
+  const isStandalone=()=>matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
+  const UA=navigator.userAgent, isIOS=/iPhone|iPad|iPod/.test(UA)||(/Macintosh/.test(UA)&&navigator.maxTouchPoints>1);
+  const iosSafari=isIOS&&/Safari/.test(UA)&&!/CriOS|FxiOS|EdgiOS|OPiOS|GSA\//.test(UA);
+  let installPrompt=null;
+  addEventListener("beforeinstallprompt",e=>{ e.preventDefault(); installPrompt=e; renderInstall(); });
+  addEventListener("appinstalled",()=>{ installPrompt=null; renderInstall(); });
+  const IOS_SHARE=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 15V4M8 7.5 12 4l4 3.5"/><path d="M7 10H5.5v10h13V10H17"/></svg>`;
+  const IOS_ADD=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8.5v7M8.5 12h7"/></svg>`;
+  function renderInstall(){
+    const mode=isStandalone()?null:iosSafari?"ios":installPrompt?"android":null;
+    const waiting=ST.installDismissed&&Date.now()-Date.parse(ST.installDismissed)<3*864e5;
+    $("#installCard").hidden=!mode||waiting||!ST.onboarded;
+    if(mode==="ios") $("#installBody").innerHTML=`<ol class="isteps" aria-label="How to add Earmark to your home screen">
+      <li><span class="ib">${IOS_SHARE}</span><span>Tap <b>Share</b> in Safari's toolbar</span></li>
+      <li><span class="ib">${IOS_ADD}</span><span>Scroll down and tap <b>Add to Home Screen</b></span></li>
+      <li><span class="ib"><img src="icons/apple-touch-icon.png" alt=""></span><span>Open <b>Earmark</b> from your home screen from now on</span></li></ol>`;
+    else if(mode==="android") $("#installBody").innerHTML=`<button class="cta" id="installBtn" type="button">Install app</button>`;
+  }
+  $("#installCard").addEventListener("click",async e=>{
+    if(e.target.closest("#installX")){ ST.installDismissed=new Date().toISOString(); save(); renderInstall(); return; }
+    if(e.target.closest("#installBtn")&&installPrompt){ const p=installPrompt; installPrompt=null; p.prompt(); try{ await p.userChoice; }catch(err){} renderInstall(); }
+  });
+  /* beta pages: welcome and privacy */
+  $("#setFeedback").href=$("#homeFeedback").href=FEEDBACK_URL; $("#setSurvey").href=FINAL_SURVEY_URL;
+  const testEnd=()=>TEST_END_DATE?parseDay(TEST_END_DATE).toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",year:"numeric"}):null;
+  function renderWelcome(){
+    const end=testEnd();
+    $("#welcomeBody").innerHTML=`<h3>Thank you for testing</h3>
+      <p>You're one of the first people to use Earmark. Everything you notice, good or bad, helps make it better before anyone else sees it.</p>
+      <h3>Add Earmark to your home screen</h3>
+      <p>It keeps your listening history safe and opens like a real app.</p>
+      <ul><li><b>iPhone:</b> open Earmark in Safari, tap the Share button, then <b>Add to Home Screen</b>.</li>
+        <li><b>Android:</b> in Chrome, tap <b>Install app</b> on Home, or open the ⋮ menu and choose <b>Install app</b>.</li></ul>
+      <p>From then on, open Earmark from its icon.</p>
+      <h3>What to try</h3>
+      <ul><li>Log your listening every day with the + button. Your streak starts on day one.</li>
+        <li>Add the books you've finished, and the ones you're listening to now.</li>
+        <li>Check your medals in Achievements, and tap Today, This week or This month to see your charts.</li></ul>
+      <h3>Back up your data</h3>
+      <p>Your history is saved on this device only. Every week or so, go to Settings › Data › Export a backup and keep the file somewhere safe.</p>
+      <h3>How long the test runs</h3>
+      <p>${end?`The beta runs until <b>${end}</b>.`:"The beta runs for a few weeks. We'll email you the end date."} Near the end, please fill in the short final survey in Settings › Help.</p>
+      <h3>Send feedback</h3>
+      <p>Found a bug, or have an idea? <a href="${FEEDBACK_URL}" target="_blank" rel="noopener">Send feedback</a> any time. It's also at the bottom of Home and in Settings › Help.</p>`;
+  }
+  const PRIVACY=`<p><b>Your listening data is stored only on this device,</b> in this browser. It isn't uploaded, shared or sold.</p>
+    <p>The only thing collected is the email address you use to log in to the beta.</p>
+    <p>The site counts visits with privacy-friendly analytics that use no cookies and don't follow you around the web.</p>
+    <p>Feedback forms are optional. What you write in them goes to the developer.</p>
+    <p>A backup you export is your own file. It stays wherever you save it.</p>`;
+  $("#privacyBody").innerHTML=$("#obPrivacy").innerHTML=PRIVACY;
+  $("#welcomeDone").onclick=()=>{ back(); showPendingEarned(); };
+  $("#obPrivacyBtn").onclick=()=>obGo(9); $("#obPrivacyBack").onclick=()=>obGo(0);
   function renderHelp(){
     const n=ST.settings.streakMinMin;
     $("#helpBody").innerHTML=`<h3>Streaks</h3>
       <p>A day counts toward your streak when you log at least ${n} minute${n==1?"":"s"} of listening that day. You can change the minimum in Settings.</p>
       <p>Log something every day to keep the streak going. If a day passes with nothing logged, the next session starts a new streak. Your best streak is kept forever.</p>
+      <p><b>Rest days</b> soften a missed day. You earn one for every 7 days in a row, and can save up to 2. If you miss a day and have one saved, it's used for you and your streak carries on. They don't count toward Perfect Week or Perfect Month, and you can turn them off in Settings › Streaks.</p>
       <p>The streak medal changes colour as it grows: bronze from 3 days, silver from 7, gold from 30, platinum from 100, diamond from 365, then obsidian, meteorite and iridium.</p>
       <h3>Hours</h3>
       <p><b>Listening you log</b> with the + button is dated. It counts toward everything: your totals, rank, streaks, goals and every medal.</p>
       <p><b>Hours from the past</b>, imported from apps like Audible or Libby, count toward your lifetime total, rank and time milestones, but never toward streaks or live medals.</p>
+      <p><b>Your data</b> is saved in this browser on this device. Export a backup now and then from Settings › Data, and restore it on any device.</p>
       <p><b>Book hours</b> are the length you give a book on your shelf. They add to your lifetime total. Books without a date finished are backlog: they count toward totals and book medals, never toward streaks.</p>
       <h3>Medals</h3>
       <p>Each medal levels up through the same colours: bronze, silver, gold, platinum, diamond, obsidian, meteorite, iridium, osmium and celestial. Gold means the same thing on every medal. The final level of each medal earns a laurel wreath.</p>
@@ -2197,6 +2817,27 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
       <p>Listening medals only count listening you've logged on a date. Secret medals stay hidden until you find them.</p>
       <h3>Stats</h3>
       <p>Tap Today, This week or This month on Home to see your listening history. Charts show logged listening, plus finished books with hours on the day you finished them. Imported past hours have no date, so they count toward your total but aren't charted.</p>`;
+  }
+
+  renderBackupNudge(); renderInstall(); renderNow(); renderTimer();
+  // ask the browser to keep this site's data; a quiet no is fine
+  try{ if(navigator.storage&&navigator.storage.persist) navigator.storage.persisted().then(p=>p||navigator.storage.persist()).catch(()=>{}); }catch(e){}
+  try{ const flash=sessionStorage.getItem("earmark.flash"); if(flash){ sessionStorage.removeItem("earmark.flash"); setTimeout(()=>toast(flash),1700); } }catch(e){}
+
+  /* offline: sw.js caches the app; a new version waits for a tap on "Update available" */
+  if("serviceWorker" in navigator&&/^https?:$/.test(location.protocol)){
+    let wantReload=false;
+    const offerUpdate=apply=>{ const b=$("#updBar"); b.hidden=false; b.onclick=()=>{ wantReload=true; b.hidden=true; apply(); setTimeout(()=>location.reload(),1500); }; };
+    navigator.serviceWorker.addEventListener("controllerchange",()=>{ if(wantReload) location.reload(); });
+    navigator.serviceWorker.addEventListener("message",e=>{ if(e.data&&e.data.type==="update-available") offerUpdate(()=>location.reload()); });
+    navigator.serviceWorker.register("sw.js").then(reg=>{
+      const waiting=w=>{ if(w&&navigator.serviceWorker.controller) offerUpdate(()=>w.postMessage("skip-waiting")); };
+      waiting(reg.waiting);
+      reg.addEventListener("updatefound",()=>{ const w=reg.installing; if(w) w.addEventListener("statechange",()=>{ if(w.state==="installed") waiting(w); }); });
+      const check=()=>{ reg.update().catch(()=>{}); if(navigator.serviceWorker.controller) navigator.serviceWorker.controller.postMessage("check-update"); };
+      document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") check(); });
+      setInterval(check,30*60*1000);
+    }).catch(()=>{});
   }
 
   /* splash: fades in with the page, holds briefly, fades out; removed either way */
