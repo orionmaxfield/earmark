@@ -2754,7 +2754,7 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
   $("#setExport").onclick=exportBackup;
   // a backup's saved state; backups from 0.9 only carry the readable fields, so rebuild from those
   function backupState(o){
-    if(o.state&&typeof o.state==="object"&&Array.isArray(o.state.books)) return o.state;
+    if(o.state!=null) return o.state&&typeof o.state==="object"&&Array.isArray(o.state.books)?o.state:null;   // a saved state that can't be read is damaged
     const books=o.books||[], sessions=Array.isArray(o.sessions)?o.sessions:[], first=[...sessions.map(x=>x.at),...books.map(b=>b.added)].filter(Boolean).sort()[0];
     return {onboarded:true,user:o.user||{name:""},settings:o.settings||{},books,sessions,past:o.pastHours||[],total:+o.totalHours||0,
       migratedSessions:true,createdAt:first||o.exportedAt||new Date().toISOString()};
@@ -2775,14 +2775,39 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
       d.classList.add("open"); $("#rCancel").focus();
     });
   }
+  /* a backup's contents, checked before anything is restored: real dates and numbers only, and no timer left running */
+  const isDay=d=>typeof d==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(d)&&!isNaN(parseDay(d));
+  const isTime=t=>typeof t==="string"&&!isNaN(Date.parse(t));
+  const num=(v,min=0)=>typeof v==="number"&&isFinite(v)&&v>=min;
+  function cleanBackup(st){
+    if(!st||!Array.isArray(st.books)) return null;
+    let dropped=0;
+    const books=st.books.filter(b=>{ const ok=b&&typeof b.t==="string"&&b.t.trim()&&(b.h==null||num(b.h))&&(b.finished==null||isDay(b.finished))&&(!b.status||["done","listening","want"].includes(b.status)); if(!ok) dropped++; return ok; })
+      .map(b=>Object.assign({},b,{id:b.id?String(b.id):uid()}));
+    const sessions=(Array.isArray(st.sessions)?st.sessions:[]).filter(x=>{ const ok=x&&isDay(x.d)&&num(x.m,1)&&x.m<=24*60; if(!ok) dropped++; return ok; })
+      .map(x=>Object.assign({},x,{id:x.id?String(x.id):uid(),at:isTime(x.at)?x.at:parseDay(x.d).toISOString()}));
+    const past=(Array.isArray(st.past)?st.past:[]).filter(x=>{ const ok=x&&num(x.h)&&x.h>0; if(!ok) dropped++; return ok; });
+    const out=Object.assign({},st,{books,sessions,past,timer:null,timerUnlogged:null,
+      total:num(st.total)?st.total:0,createdAt:isTime(st.createdAt)?st.createdAt:new Date().toISOString(),firstUseAt:isTime(st.firstUseAt)?st.firstUseAt:undefined,
+      settings:st.settings&&typeof st.settings==="object"?st.settings:{},user:st.user&&typeof st.user==="object"?st.user:{name:""}});
+    if(!num(st.totalBase)) delete out.totalBase;
+    if(out.legacy&&!Array.isArray(out.legacy.days)) delete out.legacy;
+    return {st:out,dropped};
+  }
   function mergeBackup(st){
     const norm=v=>(v||"").trim().toLowerCase(), key=b=>norm(b.t)+"|"+norm(b.author);
-    const ids=new Set(LIB.map(b=>b.id)), seen=new Set(LIB.map(key)), added={books:0,sessions:0};
-    (st.books||[]).forEach(b=>{ if(!b||!b.t||ids.has(b.id)||seen.has(key(b))) return; LIB.push(b); seen.add(key(b)); added.books++; });
+    const byId=new Map(LIB.map(b=>[b.id,b])), byKey=new Map(LIB.map(b=>[key(b),b])), added={books:0,sessions:0,past:0,pastH:0};
+    // the same book (by id, or by title and author) is matched, so its sessions attach to the book already here
+    const same={};
+    (st.books||[]).forEach(b=>{
+      const here=byId.get(b.id)||byKey.get(key(b));
+      if(here){ same[b.id]=here.id; return; }
+      LIB.push(b); byId.set(b.id,b); byKey.set(key(b),b); same[b.id]=b.id; added.books++;
+    });
     const sid=new Set(ST.sessions.map(x=>x.id)), sk=new Set(ST.sessions.map(x=>x.at+"|"+x.m));
-    (st.sessions||[]).forEach(x=>{ if(!x||!x.d||!(x.m>0)||sid.has(x.id)||sk.has(x.at+"|"+x.m)) return; ST.sessions.push(x); added.sessions++; });
+    (st.sessions||[]).forEach(x=>{ if(sid.has(x.id)||sk.has(x.at+"|"+x.m)) return; ST.sessions.push(Object.assign({},x,{book:x.book?same[x.book]||null:null})); added.sessions++; });
     const pk=new Set(ST.past.map(x=>x.at+"|"+x.h));
-    (st.past||[]).forEach(x=>{ if(!x||!(x.h>0)||pk.has(x.at+"|"+x.h)) return; ST.past.push(x); });
+    (st.past||[]).forEach(x=>{ if(pk.has(x.at+"|"+x.h)) return; ST.past.push(x); added.past++; added.pastH+=x.h; });
     if(st.legacy&&Array.isArray(st.legacy.days)) ST.legacy.days=[...new Set([...ST.legacy.days,...st.legacy.days])];
     ST.notesWritten=Math.max(ST.notesWritten||0,st.notesWritten||0);   // the total is recalculated from what was merged
     ST.medals=mergeMedalStores(ST.medals,st.medals); ST.createdAt=earliest(ST.createdAt,st.createdAt); ST.firstUseAt=earliest(ST.firstUseAt,st.firstUseAt,st.createdAt);
@@ -2796,16 +2821,21 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
       await ask({title:"That isn't an Earmark backup",msg:"Choose a backup file saved from Settings › Data › Export a backup. Its name starts with earmark-.",single:true}); return; }
     if((o.backupVersion||0)>BACKUP_VERSION){
       await ask({title:"This backup is from a newer Earmark",msg:"Refresh the app to get the latest version, then restore again.",single:true}); return; }
-    const st=backupState(o), how=await chooseRestore(st,o);
+    const checked=cleanBackup(backupState(o));
+    if(!checked){ await ask({title:"This backup looks damaged",msg:"Its list of books couldn't be read, so nothing was changed. Try another backup file.",single:true}); return; }
+    const st=checked.st, how=await chooseRestore(st,o), skipped=checked.dropped?` (${plural(checked.dropped,"damaged entry","damaged entries")} skipped)`:"";
     if(how==="replace"){
       if(!await ask({title:"Replace everything?",msg:"Everything on this device is swapped for the backup. Anything you haven't backed up will be lost. Medal levels you've already earned are kept.",ok:"Replace",danger:true})) return;
       const next=Object.assign(fresh(),st,{onboarded:true,medals:mergeMedalStores(ST.medals,st.medals),createdAt:earliest(ST.createdAt,st.createdAt),firstUseAt:earliest(ST.firstUseAt,st.firstUseAt,st.createdAt),welcomeSeen:true,lastBackup:o.exportedAt||ST.lastBackup});
-      try{ localStorage.setItem(KEY,JSON.stringify(next)); sessionStorage.setItem("earmark.flash","Restored from your backup"); }catch(err){ toast("Couldn't restore. There may not be enough space."); return; }
+      try{ localStorage.setItem(KEY,JSON.stringify(next)); sessionStorage.setItem("earmark.flash","Restored from your backup"+skipped); }catch(err){ toast("Couldn't restore. There may not be enough space."); return; }
       location.reload();
     } else if(how==="merge"){
       const a=mergeBackup(st);
-      if(!a.books&&!a.sessions){ save(); toast("Everything in that backup is already here"); return; }
-      save(); try{ sessionStorage.setItem("earmark.flash",`Merged: ${plural(a.books,"book","books")} and ${plural(a.sessions,"session","sessions")} added`); }catch(err){}
+      if(!a.books&&!a.sessions&&!a.past){ save(); toast("Everything in that backup is already here"); return; }
+      // "Added 120 past hours", or "Merged: 2 books, 14 sessions and 120 past hours added"
+      const bits=[a.books&&plural(a.books,"book","books"),a.sessions&&plural(a.sessions,"session","sessions"),a.past&&`${fmtN(a.pastH).toLocaleString()} past hour${a.pastH===1?"":"s"}`].filter(Boolean);
+      const msg=bits.length===1&&a.past?`Added ${bits[0]}`:`Merged: ${bits.length>1?bits.slice(0,-1).join(", ")+" and "+bits[bits.length-1]:bits[0]} added`;
+      save(); try{ sessionStorage.setItem("earmark.flash",msg+skipped); }catch(err){}
       location.reload();   // recalculates totals, streaks and medal levels from the merged data
     }
   };
