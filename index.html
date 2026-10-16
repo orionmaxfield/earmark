@@ -1752,7 +1752,7 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
      search isn't sent twice. Audiobook runtimes aren't in these sources, so hours are estimated
      from the page count and labelled as an estimate. */
   const PAGES_PER_HOUR=30;
-  const SEARCH_KEY="earmark.search.v1";
+  const SEARCH_KEY="earmark.search.v2";   // v2: results are filtered and ranked before they're remembered
   const searchMemo=new Map();
   try{ (JSON.parse(localStorage.getItem(SEARCH_KEY))||[]).forEach(([k,v])=>searchMemo.set(k,v)); }catch(e){}
   function remember(k,v){ searchMemo.delete(k); searchMemo.set(k,v); while(searchMemo.size>40) searchMemo.delete(searchMemo.keys().next().value); try{ localStorage.setItem(SEARCH_KEY,JSON.stringify([...searchMemo])); }catch(e){} }
@@ -1772,17 +1772,31 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
   }
   const estHours=pages=>pages>0?Math.max(.5,Math.round(pages/PAGES_PER_HOUR*2)/2):null;
   async function openLibrary(q,signal){
-    const r=await fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(q)}&limit=8&fields=key,title,author_name,first_publish_year,cover_i,number_of_pages_median,subject`,{signal});
+    const r=await fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(q)}&limit=25&fields=key,title,author_name,first_publish_year,cover_i,number_of_pages_median,subject,edition_count`,{signal});
     if(!r.ok) throw new Error("Open Library "+r.status);
     return ((await r.json()).docs||[]).map(d=>({...seriesOf(d.title,d.subject),src:"openlibrary",key:d.key,author:(d.author_name||[])[0]||null,year:d.first_publish_year||null,
-      cover:d.cover_i?`https://covers.openlibrary.org/b/id/${d.cover_i}-M.jpg`:null,pages:d.number_of_pages_median||null,genre:genreOf(d.subject)}));
+      cover:d.cover_i?`https://covers.openlibrary.org/b/id/${d.cover_i}-M.jpg`:null,pages:d.number_of_pages_median||null,genre:genreOf(d.subject),editions:d.edition_count||0}));
   }
   async function googleBooks(q,signal){
-    const r=await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&maxResults=8&printType=books`,{signal});
+    const r=await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&maxResults=20&printType=books`,{signal});
     if(!r.ok) throw new Error("Google Books "+r.status);
     return ((await r.json()).items||[]).map(it=>{ const v=it.volumeInfo||{}, img=v.imageLinks&&(v.imageLinks.thumbnail||v.imageLinks.smallThumbnail);
       return {...seriesOf(v.title||""),src:"googlebooks",key:it.id,author:(v.authors||[])[0]||null,year:v.publishedDate?+String(v.publishedDate).slice(0,4)||null:null,
         cover:img?img.replace(/^http:/,"https:").replace("&edge=curl",""):null,pages:v.pageCount||null,genre:genreOf(v.categories)}; }).filter(x=>x.t);
+  }
+  /* best matches first: drop summaries and study guides (unless asked for) and anything without an author,
+     rank by how closely the title and author match, then popularity (editions), then having a cover */
+  const JUNK=/\b(summar(y|ies)|workbooks?|analysis|study guides?|notes on|conversation starters)\b/i;
+  const plain=t=>String(t||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9 ]+/g," ").replace(/\s+/g," ").trim();
+  function rankBooks(list,q){
+    const nq=plain(q), words=nq.split(" ").filter(Boolean), askedJunk=JUNK.test(q);
+    return list.filter(r=>r.author&&(askedJunk||!JUNK.test(r.t))).map(r=>{
+      const t=plain(r.t), a=plain(r.author), tw=t.split(" "), aw=a.split(" ");
+      let score=t===nq?100:t.startsWith(nq)?60:nq.startsWith(t+" ")?50:0;   // "dune frank herbert" starts with the title
+      words.forEach(w=>{ score+=tw.includes(w)?10:aw.includes(w)?8:(t.includes(w)||a.includes(w))?3:0; });
+      score-=Math.max(0,tw.length-words.length)*1.5;                           // tighter titles first
+      return {r,score};
+    }).sort((x,y)=>y.score-x.score||(y.r.editions||0)-(x.r.editions||0)||(!!y.r.cover-!!x.r.cover)).slice(0,10).map(x=>x.r);
   }
   async function searchBooks(q,signal){
     const k=q.trim().toLowerCase().replace(/\s+/g," ");
@@ -1790,6 +1804,7 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
     let found=null, failed=false;
     try{ found=await openLibrary(k,signal); }catch(e){ if(e.name==="AbortError") throw e; failed=true; }
     if(!found||!found.length){ try{ const g=await googleBooks(k,signal); if(g.length||!found) found=g; failed=false; }catch(e){ if(e.name==="AbortError") throw e; if(!found) throw e; } }
+    found=rankBooks(found||[],q);
     if(!failed) remember(k,found);
     return found;
   }
