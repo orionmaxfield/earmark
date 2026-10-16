@@ -1036,7 +1036,7 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
     <div class="stlegend" id="stLegend" hidden>Less<i></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i><i class="l5"></i>More</div>
   </div>
   <div id="stNotes"></div>
-  <p class="stfoot">Imported past hours count toward your lifetime total but aren't shown here.</p>
+  <p class="stfoot">Imported past hours count toward your lifetime total but aren't shown here, and neither is the rest of a book's length added when you mark it finished.</p>
   <details class="sttable" id="stTableWrap"><summary>See all values</summary><div id="stTable"></div></details>
 </section>
 
@@ -1557,11 +1557,13 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
   const C={red:"#2A3A52",teal:"#17485A",gold:"#1D4F55",green:"#1F4A4A",plum:"#2F3D5C",rust:"#22466B",navy:"#1B3556",moss:"#24425A",wine:"#2B3550",slate:"#33445C"};   // navy, teal and slate tones
   $$("select.genre").forEach(sel=>sel.innerHTML=`<option value="">Genre (optional)</option>`+GENRES.map(([k,l])=>`<option value="${k}">${l}</option>`).join(""));
   const LIB=ST.books;   // the shelf is the saved library; a new account starts empty
-  /* a book is finished (no status, or "done"), "listening", or "want" (want to listen). Its length counts
-     toward the lifetime total only once it's finished, and not when its time was already logged to it. */
+  /* a book is finished (no status, or "done"), "listening", or "want" (want to listen).
+     How its hours count: time logged to it is real listening and counts everywhere. Once it's finished,
+     its finish remainder (length minus the time logged to it, never below zero) is added to the
+     lifetime total, rank and hour medals, but never to charts, streaks or today. Nothing counts twice. */
   const isDone=b=>!b.status||b.status==="done";
-  const counted=b=>isDone(b)&&!b.logged&&b.h>0;
   const progOf=b=>((D.bookMin&&D.bookMin[b.id])||0)/60;   // hours logged to this book
+  const remainderOf=b=>isDone(b)&&b.h>0?Math.max(0,b.h-progOf(b)):0;
   // shelf period by date finished; undated (backlog) books only appear under All
   const bucket=b=>{ if(!isDone(b)) return "open"; if(!b.finished) return "all"; const k=periodKeys(); return b.finished.slice(0,7)===k.month?"month":b.finished.slice(0,4)===k.year?"year":"all"; };
   const tsOf=b=>b.finished?parseDay(b.finished).getTime():null;
@@ -1649,10 +1651,8 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
   document.addEventListener("click",e=>{ const t=e.target.closest("[data-shelf-tab]"); if(t){ ST.shelfTab=t.dataset.shelfTab; save(); go("s-shelf"); } });
   /* moving a book between shelves keeps the lifetime total right */
   function setStatus(b,to){
-    const before=counted(b)?b.h:0, open=!isDone(b);
-    if(to==="done"){ delete b.status; if(open){ b.finished=b.finished||dayKey(new Date()); b.logged=progOf(b)>0; } }
+    if(to==="done"){ if(!isDone(b)) b.finished=b.finished||dayKey(new Date()); delete b.status; }
     else { b.status=to; b.finished=null; }
-    ST.total=Math.max(0,ST.total+(counted(b)?b.h:0)-before);
   }
   function finishBook(b){ setStatus(b,"done"); afterBooksChanged(); showFinished(b); }
   document.addEventListener("click",e=>{
@@ -1710,22 +1710,22 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
     const t=titleCase($("#bkTitle").value); if(!t){ $("#bkTitle").focus(); toast("A book needs a title"); return; }
     const H=Math.max(0,parseInt($("#bkH").value,10)||0), Mi=Math.min(59,Math.max(0,parseInt($("#bkM").value,10)||0));
     const len=H+Mi/60, h=len>0?len:null;
-    const before=counted(b)?b.h:0, lenChanged=Math.abs((h||0)-(b.h||0))>1e-9, wasOpen=!isDone(b);
+    const before=ST.total, lenChanged=Math.abs((h||0)-(b.h||0))>1e-9, wasOpen=!isDone(b);
     b.t=t; b.author=titleCase($("#bkAuthor").value)||null; b.series=titleCase($("#bkSeries").value)||null;
     const num=parseInt($("#bkNum").value,10); b.num=num>0?num:null; b.genre=$("#bkGenre").value||null; b.h=h;
-    if(bkStat==="done"){ delete b.status; b.finished=$("#bkDate").value||(wasOpen?dayKey(new Date()):null); if(wasOpen) b.logged=progOf(b)>0; }   // blank date = backlog: counts toward totals, never toward streaks
+    if(bkStat==="done"){ delete b.status; b.finished=$("#bkDate").value||(wasOpen?dayKey(new Date()):null); }   // blank date = backlog: counts toward totals, never toward streaks
     else { b.status=bkStat; b.finished=null; }
-    const delta=(counted(b)?b.h:0)-before; ST.total=Math.max(0,ST.total+delta);   // a finished book's hours count toward the lifetime total and rank
     if(newCover!==undefined){ b.cover=newCover||null; saveCover(b.cover); }
     if(lenChanged) b.hEst=false;
-    closePanel(); afterBooksChanged();
+    closePanel(); afterBooksChanged();   // recalculates the finish remainder and the total
+    const delta=ST.total-before;
     toast(Math.abs(delta)>1e-9?`Saved · ${delta>0?"+":"−"}${hm(Math.abs(delta))} on your total`:"Saved");
     if(wasOpen&&bkStat==="done") showFinished(b); else showPendingEarned();
   };
   $("#bkDelete").onclick=()=>{
     if(!delArmed){ delArmed=true; $("#bkDelete").textContent="Tap again to delete"; return; }
     const b=editing, i=LIB.indexOf(b); if(i<0) return;
-    LIB.splice(i,1); ST.total=Math.max(0,ST.total-(counted(b)?b.h:0));
+    LIB.splice(i,1);
     closePanel(); afterBooksChanged(); toast(`${b.t} removed from your shelf`);
   };
   document.addEventListener("click",e=>{ const c=e.target.closest("[data-book]"); if(c) openBook(c.dataset.book); });
@@ -1816,8 +1816,7 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
     const entry=Object.assign({id:uid(),t:title,author:author||null,series:null,h:hours,c:CLOTH[clothN++%CLOTH.length],added:new Date().toISOString(),finished:finished||null,ph:true,genre:genre||null},extra);
     saveCover(entry.cover);
     LIB.unshift(entry);               // newest book sits first on the shelf
-    if(hours!=null&&isDone(entry)) bump(hours);   // a finished book's hours count toward the lifetime total
-    derive(); save(); renderShelf(shelfMode); renderShelfAll(); renderNow(); renderGoals();
+    derive(); save(); renderHero(); renderShelf(shelfMode); renderShelfAll(); renderNow(); renderGoals();   // a finished book's length counts toward the total
     recomputeMedals();                // genre-stretch medals may have moved
     renderInsights();
     return entry;
@@ -1941,10 +1940,16 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
     // chart data: logged listening, plus finished books with hours on the day they were finished
     const cDay={}, cWeek={}, cMonth={}, cYear={};
     Object.entries(dayMin).forEach(([d,m])=>{ cDay[d]=m/60; });
-    LIB.forEach(b=>{ if(b.finished&&b.h>0&&!b.logged&&isDone(b)) cDay[b.finished]=(cDay[b.finished]||0)+b.h; });
     const bookMin={}; ST.sessions.forEach(x=>{ if(x.book) bookMin[x.book]=(bookMin[x.book]||0)+x.m; });
     Object.entries(cDay).forEach(([d,h])=>{ const wk=weekKeyOf(parseDay(d)), mk=d.slice(0,7), y=d.slice(0,4); cWeek[wk]=(cWeek[wk]||0)+h; cMonth[mk]=(cMonth[mk]||0)+h; cYear[y]=(cYear[y]||0)+h; });
     const cKeys=Object.keys(cDay).filter(d=>cDay[d]>0).sort();
+    // lifetime total = listening from before the session log + logged sessions + past hours + finish remainders
+    const sessH=ST.sessions.reduce((t,x)=>t+x.m,0)/60, pastH=ST.past.reduce((t,x)=>t+(x.h||0),0);
+    if(ST.totalBase==null){   // saved data from 0.10.0 and before: what's left of the old running total is listening from before the log
+      const oldBooks=LIB.reduce((t,b)=>t+(isDone(b)&&!b.logged&&b.h>0?b.h:0),0);
+      ST.totalBase=Math.max(0,(+ST.total||0)-sessH-pastH-oldBooks);
+    }
+    ST.total=ST.totalBase+sessH+pastH+LIB.reduce((t,b)=>t+(isDone(b)&&b.h>0?Math.max(0,b.h-(bookMin[b.id]||0)/60):0),0);
     D={listen,dayMin,notesByDay,bookMin,restBank,restUsed,cDay,cWeek,cMonth,cYear,cFirst:cKeys[0]||null,cDays:cKeys.length,
       run60:runOf(new Set(Object.keys(dayMin).filter(d=>dayMin[d]>=60))),
       bestWeekH:Math.max(0,...Object.values(weekMin))/60, bestMonthH:Math.max(0,...Object.values(monthMin))/60, pbs:beats(weekMin)+beats(monthMin),
@@ -2161,7 +2166,6 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
   }
   document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible"&&ST.timer) renderTimer(); });
   $$("[data-back]").forEach(b=>b.onclick=showMenu);
-  function bump(h){ ST.total+=h; save(); renderHero(); }
   const REST_IC=`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 15A8 8 0 0 1 9 4a8 8 0 1 0 11 11z"/></svg>`;
   /* goals on Home */
   function renderGoals(){
@@ -2224,12 +2228,11 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
     const welcome=!!prev&&prev!==d&&daysBetween(prev,d)>=8;   // a week or more away: welcome back
     // one session: it counts once toward today, the streak and the total, and toward the book's progress
     ST.sessions.push({id:uid(),at:now.toISOString(),d,m:Math.round(hours*60),note:note||null,book:book||null});
-    ST.total+=hours;
     if(note){ ST.notes.push({t:note,h:hours}); ST.notesWritten++; }
     derive(); save(); renderHero(); renderGoals(); renderNow(); renderNotes(); recomputeMedals(); renderInsights(); renderBackupNudge();
     return welcome;
   }
-  function addPastHours(hours,src){ ST.past.push({src,h:hours,at:new Date().toISOString()}); ST.total+=hours; save(); renderHero(); recomputeMedals(); renderInsights(); }
+  function addPastHours(hours,src){ ST.past.push({src,h:hours,at:new Date().toISOString()}); derive(); save(); renderHero(); recomputeMedals(); renderInsights(); }
   $$("[data-done]").forEach(b=>b.onclick=()=>{
     const k=b.dataset.done;
     if(k==="live"){
@@ -2703,14 +2706,13 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
   function mergeBackup(st){
     const norm=v=>(v||"").trim().toLowerCase(), key=b=>norm(b.t)+"|"+norm(b.author);
     const ids=new Set(LIB.map(b=>b.id)), seen=new Set(LIB.map(key)), added={books:0,sessions:0};
-    let hours=0;
-    (st.books||[]).forEach(b=>{ if(!b||!b.t||ids.has(b.id)||seen.has(key(b))) return; LIB.push(b); seen.add(key(b)); added.books++; if(counted(b)) hours+=b.h; });
+    (st.books||[]).forEach(b=>{ if(!b||!b.t||ids.has(b.id)||seen.has(key(b))) return; LIB.push(b); seen.add(key(b)); added.books++; });
     const sid=new Set(ST.sessions.map(x=>x.id)), sk=new Set(ST.sessions.map(x=>x.at+"|"+x.m));
-    (st.sessions||[]).forEach(x=>{ if(!x||!x.d||!(x.m>0)||sid.has(x.id)||sk.has(x.at+"|"+x.m)) return; ST.sessions.push(x); added.sessions++; hours+=x.m/60; });
+    (st.sessions||[]).forEach(x=>{ if(!x||!x.d||!(x.m>0)||sid.has(x.id)||sk.has(x.at+"|"+x.m)) return; ST.sessions.push(x); added.sessions++; });
     const pk=new Set(ST.past.map(x=>x.at+"|"+x.h));
-    (st.past||[]).forEach(x=>{ if(!x||!(x.h>0)||pk.has(x.at+"|"+x.h)) return; ST.past.push(x); hours+=x.h; });
+    (st.past||[]).forEach(x=>{ if(!x||!(x.h>0)||pk.has(x.at+"|"+x.h)) return; ST.past.push(x); });
     if(st.legacy&&Array.isArray(st.legacy.days)) ST.legacy.days=[...new Set([...ST.legacy.days,...st.legacy.days])];
-    ST.total+=hours; ST.notesWritten=Math.max(ST.notesWritten||0,st.notesWritten||0);
+    ST.notesWritten=Math.max(ST.notesWritten||0,st.notesWritten||0);   // the total is recalculated from what was merged
     ST.medals=mergeMedalStores(ST.medals,st.medals); ST.createdAt=earliest(ST.createdAt,st.createdAt); ST.firstUseAt=earliest(ST.firstUseAt,st.firstUseAt,st.createdAt);
     return added;
   }
@@ -2810,13 +2812,14 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
       <p><b>Listening you log</b> with the + button is dated. It counts toward everything: your totals, rank, streaks, goals and every medal.</p>
       <p><b>Hours from the past</b>, imported from apps like Audible or Libby, count toward your lifetime total, rank and time milestones, but never toward streaks or live medals.</p>
       <p><b>Your data</b> is saved in this browser on this device. Export a backup now and then from Settings › Data, and restore it on any device.</p>
+      <p><b>Finishing a book</b> adds the rest of its length (its length minus the time you logged to it) to your lifetime total, rank and hour medals. That part isn't counted toward charts, streaks or today, because it wasn't listened to today. Moving the book back to Listening takes it off again; time you logged always stays.</p>
       <p><b>Book hours</b> are the length you give a book on your shelf. They add to your lifetime total. Books without a date finished are backlog: they count toward totals and book medals, never toward streaks.</p>
       <h3>Medals</h3>
       <p>Each medal levels up through the same colours: bronze, silver, gold, platinum, diamond, obsidian, meteorite, iridium, osmium and celestial. Gold means the same thing on every medal. The final level of each medal earns a laurel wreath.</p>
       <p>Levels never go down. A medal shows the best you've ever reached, so a broken streak keeps its level.</p>
       <p>Listening medals only count listening you've logged on a date. Secret medals stay hidden until you find them.</p>
       <h3>Stats</h3>
-      <p>Tap Today, This week or This month on Home to see your listening history. Charts show logged listening, plus finished books with hours on the day you finished them. Imported past hours have no date, so they count toward your total but aren't charted.</p>`;
+      <p>Tap Today, This week or This month on Home to see your listening history. Charts show the listening you've logged. Imported past hours have no date, so they count toward your total but aren't charted.</p>`;
   }
 
   renderBackupNudge(); renderInstall(); renderNow(); renderTimer();
