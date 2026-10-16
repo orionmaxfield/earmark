@@ -701,6 +701,51 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
 .bscovers button{position:relative;aspect-ratio:2/3;padding:0;border:2px solid transparent;border-radius:6px;overflow:hidden;background:var(--surface-2);cursor:pointer}
 .bscovers button.on{border-color:var(--accent)}
 .bscovers img{width:100%;height:100%;object-fit:cover;display:block}
+
+/* currently listening, want to listen, the listening timer */
+.nowcard{margin-top:12px;text-align:left;padding:12px 16px 4px}
+.nowcard[hidden],.timerbar[hidden],#logBookRow[hidden],.addas[hidden],#shelfFilterBar[hidden],#viewSeg[hidden]{display:none}
+.nowcard .sechead h2{font-size:var(--t-16);margin:0}
+.nowcard .sechead .seeall{margin-right:-8px}
+.nowrow{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+.nowcard .nowrow:first-of-type,.lcard .nowrow:first-child{border-top:0}
+.nowrow .cover{width:44px;height:64px;padding:0;flex:0 0 auto;cursor:default}
+.nowrow .cover b,.nowrow .cover small,.nowrow .cover .hrs{display:none}
+.nowrow .cover.ph:before{top:8px;left:9px;right:6px} .nowrow .cover.ph:after{bottom:8px;left:9px;right:6px}
+.nowmeta{flex:1;min-width:0;padding:4px 0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.nowmeta b{display:block;font-size:var(--t-16);font-weight:600;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nowmeta .au{display:block;color:var(--ink-2);font-size:var(--t-14);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nowmeta small{display:block;margin-top:6px;color:var(--ink-3);font-size:var(--t-12);font-weight:500}
+.nowmeta .bar{margin-top:8px}
+.lact{flex:0 0 auto;min-height:40px;padding:0 14px;border-radius:var(--r-pill);border:1px solid var(--line-2);background:transparent;color:var(--ink);font:inherit;font-size:var(--t-14);font-weight:600;cursor:pointer}
+.lact.go{border:0;background:var(--grad);color:var(--accent-ink);font-weight:700}
+.lact:active{opacity:.8}
+.shelftabs{margin:0 0 12px}
+.shelftabs button{flex:1;min-height:36px;font-size:var(--t-14)}
+.lcard{padding:0 16px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);box-shadow:var(--sh-1)}
+.addas{margin:0 0 4px}
+.addas .seg button{flex:1;min-height:36px;font-size:var(--t-14)}
+.addas .seg{display:flex}
+.bkstat{display:flex;margin-top:14px}
+.bkstat button{flex:1;min-height:36px;font-size:var(--t-14)}
+.bkprog{margin-top:8px;color:var(--ink-2);font-size:var(--t-14)}
+.bkprog:empty{display:none}
+.timerbox{display:flex;align-items:center;gap:12px;margin-top:12px;padding:10px 12px 10px 14px;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--line)}
+.timerbox p{flex:1;min-width:0;font-size:13px;color:var(--ink-2);line-height:1.4}
+.timerbox p b{display:block;color:var(--ink);font-size:var(--t-14)}
+.timerbox .lact svg{width:16px;height:16px;vertical-align:-3px;margin-right:4px}
+.timerbar{position:fixed;top:0;left:0;right:0;z-index:18;display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:46px;padding:calc(env(safe-area-inset-top,0px) + 8px) 16px 8px;border:0;border-bottom:1px solid rgba(0,231,179,.3);background:#0A2F3A;color:var(--ink);font:inherit;font-size:var(--t-14);font-weight:600;cursor:pointer;box-shadow:var(--sh-2)}
+.timerbar .tdot{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:tpulse 1.6s ease-in-out infinite}
+.timerbar .ttime{font-variant-numeric:tabular-nums}
+.timerbar .tbook{color:var(--ink-2);font-weight:500;max-width:40vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.timerbar .tstop{margin-left:4px;padding:4px 12px;border-radius:var(--r-pill);background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:var(--t-12)}
+@keyframes tpulse{50%{opacity:.35}}
+body.timing .phone{padding-top:50px}
+body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
+.fincover .cover{width:120px;height:176px;margin:28px auto 22px;padding:12px 10px;cursor:default}
+.fincover .cover b{font-size:14px}
+.fincover .cover .hrs{display:none}
+.earned.open .fincover .cover{animation:mint var(--med) cubic-bezier(.34,1.4,.64,1) both}
 </style>
 </head>
 <body>
@@ -780,6 +825,10 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
       <button class="box" type="button" data-stats="week"><b id="t2">0</b><small>hrs this week</small></button>
       <button class="box" type="button" data-stats="month"><b id="t3">0</b><small>hrs this month</small></button>
     </div>
+    <div class="card nowcard" id="nowCard" hidden>
+      <div class="sechead"><h2>Currently listening</h2><button class="seeall" type="button" data-shelf-tab="listening">See all</button></div>
+      <div id="nowList"></div>
+    </div>
     <div class="goals card" id="goals">
       <div class="goal"><div class="gl"><span>Daily goal</span><b id="gDay"></b></div><div class="bar"><i id="gDayBar" style="width:0%"></i></div></div>
       <div class="goal"><div class="gl"><span>Weekly goal</span><b id="gWeek"></b></div><div class="bar"><i id="gWeekBar" style="width:0%"></i></div></div>
@@ -831,6 +880,7 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
 <!-- BOOKSHELF: every book, as a grid of three or a list one by one -->
 <section class="screen" id="s-shelf">
   <div class="hdr"><button class="backbtn" data-nav-back aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m15 5-7 7 7 7"/></svg>Back</button><div class="title">Bookshelf</div><div class="tag" id="shelfSum">No books yet</div></div>
+  <div class="seg shelftabs" id="shelfTabs" role="tablist" aria-label="Shelves"><button type="button" role="tab" data-tab="done">Finished</button><button type="button" role="tab" data-tab="listening">Listening</button><button type="button" role="tab" data-tab="want">Want to listen</button></div>
   <div class="shelfbar">
     <div class="seg viewseg" id="viewSeg" role="group" aria-label="Shelf view">
       <button data-view="grid" aria-label="Grid view" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4" y="4" width="6" height="7" rx="1"/><rect x="14" y="4" width="6" height="7" rx="1"/><rect x="4" y="14" width="6" height="7" rx="1"/><rect x="14" y="14" width="6" height="7" rx="1"/></svg></button>
@@ -838,7 +888,7 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     </div>
     <button class="pillbtn" data-go="s-add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 5v14M5 12h14"/></svg>Add books</button>
   </div>
-  <div class="shelfbar">
+  <div class="shelfbar" id="shelfFilterBar">
     <div class="seg" id="shelfFilter" role="group" aria-label="Show books finished"><button data-f="month">Month</button><button data-f="year">Year</button><button data-f="all">All</button></div>
     <select id="shelfSort" class="sortsel" aria-label="Sort books"><option value="newest">Newest</option><option value="oldest">Oldest</option><option value="longest">Longest</option><option value="title">Title</option></select>
   </div>
@@ -847,14 +897,15 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
 
 <!-- ADD BOOKS (onboarding-style bulk add) -->
 <section class="screen" id="s-add">
-  <div class="hdr"><button class="backbtn" data-nav-back aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m15 5-7 7 7 7"/></svg>Back</button><div class="title">Add books</div><div class="tag">Search for the books you've finished</div></div>
+  <div class="hdr"><button class="backbtn" data-nav-back aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m15 5-7 7 7 7"/></svg>Back</button><div class="title">Add books</div><div class="tag" id="addTag">Search for the books you've finished</div></div>
+  <div class="addas"><div class="seg" id="addAs" role="group" aria-label="Add to"><button type="button" data-v="done" class="on">Finished</button><button type="button" data-v="listening">Listening</button><button type="button" data-v="want">Want to listen</button></div></div>
   <div class="bsearch" id="addSearch"></div>
   <div class="manual" id="addManual" hidden>
     <div class="field"><input id="addTitle" autocapitalize="words" placeholder="Book title" autocomplete="off" aria-label="Book title"></div>
     <div class="field"><input id="addAuthor" autocapitalize="words" placeholder="Author (optional)" autocomplete="off" aria-label="Author"></div>
     <div class="field"><select class="genre" id="addGenre" aria-label="Genre (optional)"></select></div>
-    <label class="flabel" for="addDate">Finished · optional</label>
-    <div class="field"><input id="addDate" type="date"></div>
+    <div id="addDateRow"><label class="flabel" for="addDate">Finished · optional</label>
+    <div class="field"><input id="addDate" type="date"></div></div>
     <div class="field"><label><input id="addHours" type="number" inputmode="decimal" min="0" step="0.5" placeholder="Optional" aria-label="Hours it ran"><span>hours</span></label><button class="addbtn" id="addBtn">Add</button></div>
   </div>
   <div class="added" id="addedList" aria-live="polite"></div>
@@ -1000,7 +1051,7 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
       <button class="opt" data-form="f-book"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h12a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3z"/><path d="M4 17a3 3 0 0 1 3-3h12"/></svg></span><span><b>Finished a book</b><small>Puts it on your shelf. Add its hours, or skip them if they're already logged.</small></span></button>
       <button class="opt" data-form="f-past"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 8v4l2 2"/></svg></span><span><b>Add hours from the past</b><small>Audible, Libby, Libro.fm… Counts toward your total and rank only.</small></span></button>
     </div>
-    <div class="form" id="f-live"><h2 style="margin:0">Today's listening</h2><div class="field"><label><input type="number" inputmode="numeric" min="0" placeholder="0"><span>hours</span></label><label><input type="number" inputmode="numeric" min="0" max="59" placeholder="0"><span>min</span></label></div><div class="field"><input id="noteIn" placeholder="Note, e.g. Scythe, chapters 18–20"></div><button class="cta" data-done="live" id="logBtn">Log time</button><button class="ghost" data-back>Back</button></div>
+    <div class="form" id="f-live"><h2 style="margin:0">Today's listening</h2><div class="timerbox" id="timerBox"></div><div class="field"><label><input type="number" inputmode="numeric" min="0" placeholder="0"><span>hours</span></label><label><input type="number" inputmode="numeric" min="0" max="59" placeholder="0"><span>min</span></label></div><div class="field" id="logBookRow" hidden><select id="logBook" aria-label="Book this time goes toward"></select></div><div class="field"><input id="noteIn" placeholder="Note, e.g. Scythe, chapters 18–20"></div><button class="cta" data-done="live" id="logBtn">Log time</button><button class="ghost" data-back>Back</button></div>
     <div class="form" id="f-book"><h2 style="margin:0">Finished a book</h2>
       <div class="bsearch" id="sheetSearch"></div>
       <div class="manual" id="sheetManual" hidden>
@@ -1024,6 +1075,8 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     <div class="bkcover"><div id="bkCoverPrev"></div><div><button class="pillbtn" id="bkFindCover" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="6"/><path d="m20 20-4.6-4.6"/></svg>Find cover</button><button class="linkmini" id="bkNoCover" type="button" style="display:block;margin:6px 0 0 8px">Remove cover</button></div></div>
     <p class="bsstatus" id="bkCoverMsg" aria-live="polite"></p>
     <div class="bscovers" id="bkCovers"></div>
+    <div class="seg bkstat" id="bkStatus" role="group" aria-label="Shelf"><button type="button" data-v="done">Finished</button><button type="button" data-v="listening">Listening</button><button type="button" data-v="want">Want to listen</button></div>
+    <p class="bkprog" id="bkProg"></p>
     <label class="flabel" for="bkTitle">Title</label>
     <div class="field"><input id="bkTitle" autocapitalize="words" placeholder="Book title" autocomplete="off"></div>
     <label class="flabel" for="bkAuthor">Author</label>
@@ -1037,8 +1090,8 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     <label class="flabel" for="bkH">Length</label>
     <div class="field"><label><input id="bkH" type="number" inputmode="numeric" min="0" placeholder="0"><span>hours</span></label><label><input id="bkM" type="number" inputmode="numeric" min="0" max="59" placeholder="0" aria-label="Minutes"><span>min</span></label></div>
     <p class="bsest" id="bkEst" hidden></p>
-    <div class="flrow"><label class="flabel" for="bkDate">Finished</label><button class="linkmini" id="bkNoDate" type="button">No date</button></div>
-    <div class="field"><input id="bkDate" type="date"></div>
+    <div id="bkDateRow"><div class="flrow"><label class="flabel" for="bkDate">Finished</label><button class="linkmini" id="bkNoDate" type="button">No date</button></div>
+    <div class="field"><input id="bkDate" type="date"></div></div>
     <p class="note">Changing the length updates your lifetime total, rank and medals. Books without a date count toward your total but never toward streaks.</p>
     <button class="cta" id="bkSave">Save changes</button>
     <button class="ghost danger" id="bkDelete">Delete book</button>
@@ -1055,6 +1108,7 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
   <div class="abox"><h3 id="rTitle">Restore from backup</h3><div class="rprev" id="rPrev"></div><p>Merge adds books and listening from the backup that aren't on this device yet. Replace swaps everything here for the backup.</p>
     <div class="abtns col"><button id="rMerge" type="button">Merge into this device</button><button id="rReplace" class="danger" type="button">Replace everything</button><button id="rCancel" type="button">Cancel</button></div></div>
 </div>
+<button class="timerbar" id="timerBar" type="button" hidden aria-label="Listening timer running. Tap to stop."><span class="tdot"></span><span>Listening… <span class="ttime" id="timerTime">0:00</span></span><span class="tbook" id="timerBook"></span><span class="tstop">Stop</span></button>
 <button class="updbar" id="updBar" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 5v6h-6"/></svg>Update available — tap to refresh</button>
 
 <!-- MEDAL DETAIL / EARNED -->
@@ -1160,7 +1214,7 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     bestDayH:0,streak:0,bestStreak:0,lastLog:null,owl:false,byWeekday:[0,0,0,0,0,0,0],weekdayDays:[0,0,0,0,0,0,0],
     notes:[],books:[],past:[],keys:{day:"",week:"",month:"",year:""},
     createdAt:new Date().toISOString(),logDays:[],notesWritten:0,comeback:false,earlyBird:false,
-    shelfView:"grid",shelfFilter:"all",shelfSort:"newest",
+    shelfView:"grid",shelfFilter:"all",shelfSort:"newest",shelfTab:"done",timer:null,
     // every logged listening session: {id, at (ISO time), d (local day), m (minutes), note}
     sessions:[],legacy:{days:[],bestStreak:0,bestDayH:0,owl:false,earlyBird:false,comeback:false},carry:{},migratedSessions:false,
     shares:0,yearReviewViewed:false,wallOpen:{},
@@ -1437,7 +1491,18 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     $("#eBtns").style.display=lv&&!hiddenSecret(m)?"block":"none";
     $("#earned").classList.add("open"); $("#earned .ebox").scrollTop=0;
   }
-  function closeEarned(){ evoT.forEach(clearTimeout); evoT=[]; $("#earned").classList.remove("open"); }
+  let afterEarned=null;   // what to show once this overlay closes (medals earned by finishing a book)
+  function closeEarned(){ evoT.forEach(clearTimeout); evoT=[]; const was=$("#earned").classList.contains("open"); $("#earned").classList.remove("open"); const f=afterEarned; afterEarned=null; if(f&&was) setTimeout(f,260); }
+  function showFinished(b){
+    evoT.forEach(clearTimeout); evoT=[]; shownMedal=null; shownLv=0;
+    const n=LIB.filter(isDone).length;
+    $("#eTitle").textContent="You finished a book";
+    $("#eMedal").innerHTML=`<div class="fincover">${coverHTML(b,true)}</div>`;
+    $("#eName").textContent=b.t; $("#eDesc").textContent=[b.author,`Book ${n.toLocaleString()} on your shelf`].filter(Boolean).join(" · ");
+    $("#eProg").innerHTML=""; $("#eLevels").innerHTML=""; $("#eBtns").style.display="none";
+    afterEarned=showPendingEarned;
+    $("#earned").classList.add("open");
+  }
   document.addEventListener("click",e=>{
     const w=e.target.closest(".medalwrap, .nextup .card"); if(!w) return;
     const m=BY[w.dataset.id]; if(m) showMedal(m);
@@ -1472,8 +1537,13 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
   const C={red:"#2A3A52",teal:"#17485A",gold:"#1D4F55",green:"#1F4A4A",plum:"#2F3D5C",rust:"#22466B",navy:"#1B3556",moss:"#24425A",wine:"#2B3550",slate:"#33445C"};   // navy, teal and slate tones
   $$("select.genre").forEach(sel=>sel.innerHTML=`<option value="">Genre (optional)</option>`+GENRES.map(([k,l])=>`<option value="${k}">${l}</option>`).join(""));
   const LIB=ST.books;   // the shelf is the saved library; a new account starts empty
+  /* a book is finished (no status, or "done"), "listening", or "want" (want to listen). Its length counts
+     toward the lifetime total only once it's finished, and not when its time was already logged to it. */
+  const isDone=b=>!b.status||b.status==="done";
+  const counted=b=>isDone(b)&&!b.logged&&b.h>0;
+  const progOf=b=>((D.bookMin&&D.bookMin[b.id])||0)/60;   // hours logged to this book
   // shelf period by date finished; undated (backlog) books only appear under All
-  const bucket=b=>{ if(!b.finished) return "all"; const k=periodKeys(); return b.finished.slice(0,7)===k.month?"month":b.finished.slice(0,4)===k.year?"year":"all"; };
+  const bucket=b=>{ if(!isDone(b)) return "open"; if(!b.finished) return "all"; const k=periodKeys(); return b.finished.slice(0,7)===k.month?"month":b.finished.slice(0,4)===k.year?"year":"all"; };
   const tsOf=b=>b.finished?parseDay(b.finished).getTime():null;
   function sortBooks(list,mode){
     const by={
@@ -1504,7 +1574,7 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     const perRow=mode==="month"?list.length:6, rows=[];
     for(let i=0;i<list.length;i+=perRow) rows.push(list.slice(i,i+perRow));
     if(!list.length){
-      $("#bookcase").innerHTML=LIB.length
+      $("#bookcase").innerHTML=LIB.some(isDone)
         ? `<div class="shelf-empty">${I.book}<p>Nothing finished ${mode==="month"?"this month":"this year"} yet.</p><button type="button" data-go="s-shelf">See all books</button></div><div class="shelfline"></div>`
         : `<div class="shelf-empty">${I.book}<p>Nothing on this shelf yet.</p><button type="button" data-go="s-add">Add a book</button></div><div class="shelfline"></div>`;
       return;
@@ -1517,15 +1587,37 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
   /* bookshelf screen — the whole library, newest first, as a grid of three or a list */
   const GENRE_LABEL=Object.fromEntries(GENRES);
   const finishedLabel=b=>b.finished?parseDay(b.finished).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"}):"No date";
+  const progLine=b=>{ const p=progOf(b); return b.h>0?`${hm(p)} of ${hm(b.h)}${b.hEst?" (estimated)":""}`:p>0?`${hm(p)} listened`:"Not started yet"; };
+  // a row on the Listening or Want to listen shelf, and on Home's Currently listening card
+  function openRow(b,act){
+    const p=progOf(b), lbl={finish:"Finished",start:"Start",log:"Log"}[act];
+    return `<div class="nowrow">${coverHTML(b,true)}<button class="nowmeta" type="button" data-book="${b.id}"><b>${esc(b.t)}</b>${b.author?`<span class="au">${esc(b.author)}</span>`:""}${b.status==="listening"?`<div class="bar"><i style="width:${b.h>0?Math.min(100,p/b.h*100):0}%"></i></div><small>${progLine(b)}</small>`:`<small>${b.h>0?hm(b.h)+(b.hEst?" (estimated)":""):"Length not set"}</small>`}</button><button class="lact${act!=="finish"?" go":""}" type="button" data-act="${act}" data-id="${b.id}">${lbl}</button></div>`;
+  }
+  function renderNow(){
+    const list=LIB.filter(b=>b.status==="listening");
+    $("#nowCard").hidden=!list.length;
+    $("#nowList").innerHTML=list.slice(0,3).map(b=>openRow(b,"log")).join("");
+  }
   function renderShelfAll(){
+    const tab=["done","listening","want"].includes(ST.shelfTab)?ST.shelfTab:"done";
+    $$("#shelfTabs button").forEach(b=>{ const on=b.dataset.tab===tab; b.classList.toggle("on",on); b.setAttribute("aria-selected",on); });
+    $("#shelfFilterBar").hidden=$("#viewSeg").hidden=tab!=="done";
+    if(tab!=="done"){
+      const list=LIB.filter(b=>b.status===tab), name=tab==="want"?"Want to listen":"Listening";
+      $("#shelfSum").textContent=list.length?plural(list.length,"book","books")+(tab==="want"?" to listen to":" in progress"):name;
+      $("#shelfAll").innerHTML=list.length?`<div class="lcard">${list.map(b=>openRow(b,tab==="want"?"start":"finish")).join("")}</div>`
+        :`<div class="card shelf-empty">${I.book}<p>${tab==="want"?"Books you want to listen to will wait here.":"Nothing in progress. Start a book from Want to listen, or add one."}</p><button type="button" data-go="s-add">Add a book</button></div>`;
+      return;
+    }
+    const DONE=LIB.filter(isDone);
     const v=ST.shelfView==="list"?"list":"grid";
     $$("#viewSeg button").forEach(b=>{ const on=b.dataset.view===v; b.classList.toggle("on",on); b.setAttribute("aria-pressed",on); });
-    const hrs=LIB.reduce((t,b)=>t+(b.h||0),0);
-    $("#shelfSum").textContent=LIB.length?`${LIB.length} book${LIB.length===1?"":"s"}${hrs?` · ${fmtN(hrs).toLocaleString()} hours`:""}`:"No books yet";
+    const hrs=DONE.reduce((t,b)=>t+(b.h||0),0);
+    $("#shelfSum").textContent=DONE.length?`${DONE.length} book${DONE.length===1?"":"s"}${hrs?` · ${fmtN(hrs).toLocaleString()} hours`:""}`:"No books yet";
     const f=["month","year","all"].includes(ST.shelfFilter)?ST.shelfFilter:"all", order={month:0,year:1,all:2};
     $$("#shelfFilter button").forEach(b=>b.classList.toggle("on",b.dataset.f===f));
     $("#shelfSort").value=ST.shelfSort||"newest";
-    if(!LIB.length){ $("#shelfAll").innerHTML=`<div class="card shelf-empty">${I.book}<p>Your shelf is empty.</p><button type="button" data-go="s-add">Add a book</button></div>`; return; }
+    if(!DONE.length){ $("#shelfAll").innerHTML=`<div class="card shelf-empty">${I.book}<p>No finished books yet.</p><button type="button" data-go="s-add">Add a book</button></div>`; return; }
     const list=sortBooks(LIB.filter(b=>order[bucket(b)]<=order[f]),ST.shelfSort);
     if(!list.length){ $("#shelfAll").innerHTML=`<div class="card shelf-empty">${I.book}<p>Nothing finished ${f==="month"?"this month":"this year"} yet.</p><button type="button" id="showAllBooks">Show all books</button></div>`; $("#showAllBooks").onclick=()=>{ ST.shelfFilter="all"; save(); renderShelfAll(); }; return; }
     $("#shelfAll").innerHTML=v==="grid"
@@ -1533,6 +1625,23 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
       : `<div class="shelflist">${list.map(b=>`<button class="bookrow" data-book="${b.id}">${coverHTML(b,true)}<span class="meta"><b>${esc(b.t)}</b>${b.author?`<span class="au">${esc(b.author)}</span>`:""}<small>${[b.h!=null?hm(b.h):"",finishedLabel(b)].filter(Boolean).join(" · ")}</small></span>${I.chevR}</button>`).join("")}</div>`;
   }
   $$("#viewSeg button").forEach(b=>b.onclick=()=>{ ST.shelfView=b.dataset.view; save(); renderShelfAll(); });
+  $$("#shelfTabs button").forEach(b=>b.onclick=()=>{ ST.shelfTab=b.dataset.tab; save(); renderShelfAll(); });
+  document.addEventListener("click",e=>{ const t=e.target.closest("[data-shelf-tab]"); if(t){ ST.shelfTab=t.dataset.shelfTab; save(); go("s-shelf"); } });
+  /* moving a book between shelves keeps the lifetime total right */
+  function setStatus(b,to){
+    const before=counted(b)?b.h:0, open=!isDone(b);
+    if(to==="done"){ delete b.status; if(open){ b.finished=b.finished||dayKey(new Date()); b.logged=progOf(b)>0; } }
+    else { b.status=to; b.finished=null; }
+    ST.total=Math.max(0,ST.total+(counted(b)?b.h:0)-before);
+  }
+  function finishBook(b){ setStatus(b,"done"); afterBooksChanged(); showFinished(b); }
+  document.addEventListener("click",e=>{
+    const a=e.target.closest("[data-act]"); if(!a) return;
+    const b=LIB.find(x=>x.id===a.dataset.id); if(!b) return;
+    if(a.dataset.act==="start"){ setStatus(b,"listening"); afterBooksChanged(); toast(`${b.t} moved to Currently listening`); }
+    if(a.dataset.act==="finish") finishBook(b);
+    if(a.dataset.act==="log") openLive(b.id);
+  });
   $$("#shelfFilter button").forEach(b=>b.onclick=()=>{ ST.shelfFilter=b.dataset.f; save(); renderShelfAll(); });
   $("#shelfSort").onchange=()=>{ ST.shelfSort=$("#shelfSort").value; save(); renderShelfAll(); };
 
@@ -1545,11 +1654,19 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     const H=b.h?Math.floor(b.h):0, Mi=b.h?Math.round((b.h-H)*60):0;
     $("#bkH").value=b.h?(Mi===60?H+1:H):""; $("#bkM").value=b.h?(Mi===60?0:Mi):"";
     $("#bkDate").value=b.finished||""; $("#bkDate").max=dayKey(new Date());
+    bkStat=isDone(b)?"done":b.status; showBkStat();
     newCover=undefined; showBkCover(b.cover); $("#bkCovers").innerHTML=""; $("#bkCoverMsg").textContent="";
     $("#bkEst").hidden=!b.hEst; $("#bkEst").textContent=b.hEst&&b.pages?`Length is an estimate from ${b.pages.toLocaleString()} pages. Change it if you know the runtime.`:"Length is an estimate. Change it if you know the runtime.";
     openPanel($("#bookSheet"));
   }
   $("#bkNoDate").onclick=()=>{ $("#bkDate").value=""; };
+  let bkStat="done";
+  function showBkStat(){
+    $$("#bkStatus button").forEach(x=>{ const on=x.dataset.v===bkStat; x.classList.toggle("on",on); x.setAttribute("aria-pressed",on); });
+    $("#bkDateRow").hidden=bkStat!=="done";
+    const p=editing?progOf(editing):0; $("#bkProg").textContent=editing&&(bkStat==="listening"||p>0)?`Listened so far: ${editing.h>0?`${hm(p)} of ${hm(editing.h)}`:hm(p)}`:"";
+  }
+  $$("#bkStatus button").forEach(x=>x.onclick=()=>{ bkStat=x.dataset.v; showBkStat(); });
   // "Find cover": books typed in by hand can pick up a real cover
   let newCover, coverHits=[];   // newCover: undefined = unchanged, null = removed
   function showBkCover(url){ $("#bkCoverPrev").innerHTML=coverHTML({...editing,t:$("#bkTitle").value||editing.t,cover:url,h:null,author:null},true); $("#bkNoCover").hidden=!url; }
@@ -1567,26 +1684,28 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
   $("#bkCovers").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return; $$("#bkCovers button").forEach(x=>x.classList.toggle("on",x===b)); newCover=coverHits[+b.dataset.i].cover; showBkCover(newCover); });
   $("#bkNoCover").onclick=()=>{ newCover=null; $$("#bkCovers button").forEach(x=>x.classList.remove("on")); showBkCover(null); };
   $("#bkH").addEventListener("input",()=>{ $("#bkEst").hidden=true; }); $("#bkM").addEventListener("input",()=>{ $("#bkEst").hidden=true; });
-  function afterBooksChanged(){ save(); renderHero(); renderShelf(shelfMode); renderShelfAll(); recomputeMedals(); renderInsights(); }
+  function afterBooksChanged(){ derive(); save(); renderHero(); renderNow(); renderShelf(shelfMode); renderShelfAll(); recomputeMedals(); renderInsights(); }
   $("#bkSave").onclick=()=>{
     const b=editing; if(!b) return;
     const t=titleCase($("#bkTitle").value); if(!t){ $("#bkTitle").focus(); toast("A book needs a title"); return; }
     const H=Math.max(0,parseInt($("#bkH").value,10)||0), Mi=Math.min(59,Math.max(0,parseInt($("#bkM").value,10)||0));
     const len=H+Mi/60, h=len>0?len:null;
-    const delta=(h||0)-(b.h||0); ST.total=Math.max(0,ST.total+delta);   // hours on a book count toward the lifetime total and rank
+    const before=counted(b)?b.h:0, lenChanged=Math.abs((h||0)-(b.h||0))>1e-9, wasOpen=!isDone(b);
     b.t=t; b.author=titleCase($("#bkAuthor").value)||null; b.series=titleCase($("#bkSeries").value)||null;
     const num=parseInt($("#bkNum").value,10); b.num=num>0?num:null; b.genre=$("#bkGenre").value||null; b.h=h;
-    b.finished=$("#bkDate").value||null;   // blank = backlog: counts toward totals, never toward streaks
+    if(bkStat==="done"){ delete b.status; b.finished=$("#bkDate").value||(wasOpen?dayKey(new Date()):null); if(wasOpen) b.logged=progOf(b)>0; }   // blank date = backlog: counts toward totals, never toward streaks
+    else { b.status=bkStat; b.finished=null; }
+    const delta=(counted(b)?b.h:0)-before; ST.total=Math.max(0,ST.total+delta);   // a finished book's hours count toward the lifetime total and rank
     if(newCover!==undefined){ b.cover=newCover||null; saveCover(b.cover); }
-    if(Math.abs(delta)>1e-9) b.hEst=false;
+    if(lenChanged) b.hEst=false;
     closePanel(); afterBooksChanged();
     toast(Math.abs(delta)>1e-9?`Saved · ${delta>0?"+":"−"}${hm(Math.abs(delta))} on your total`:"Saved");
-    showPendingEarned();
+    if(wasOpen&&bkStat==="done") showFinished(b); else showPendingEarned();
   };
   $("#bkDelete").onclick=()=>{
     if(!delArmed){ delArmed=true; $("#bkDelete").textContent="Tap again to delete"; return; }
     const b=editing, i=LIB.indexOf(b); if(i<0) return;
-    LIB.splice(i,1); ST.total=Math.max(0,ST.total-(b.h||0));
+    LIB.splice(i,1); ST.total=Math.max(0,ST.total-(counted(b)?b.h:0));
     closePanel(); afterBooksChanged(); toast(`${b.t} removed from your shelf`);
   };
   document.addEventListener("click",e=>{ const c=e.target.closest("[data-book]"); if(c) openBook(c.dataset.book); });
@@ -1677,14 +1796,14 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     const entry=Object.assign({id:uid(),t:title,author:author||null,series:null,h:hours,c:CLOTH[clothN++%CLOTH.length],added:new Date().toISOString(),finished:finished||null,ph:true,genre:genre||null},extra);
     saveCover(entry.cover);
     LIB.unshift(entry);               // newest book sits first on the shelf
-    if(hours!=null) bump(hours);      // hours count toward the lifetime total only when given
-    save(); renderShelf(shelfMode); renderShelfAll();
+    if(hours!=null&&isDone(entry)) bump(hours);   // a finished book's hours count toward the lifetime total
+    derive(); save(); renderShelf(shelfMode); renderShelfAll(); renderNow();
     recomputeMedals();                // genre-stretch medals may have moved
     renderInsights();
     return entry;
   }
   // dated: books from "Finished a book" are finished today; elsewhere the date is optional (blank = backlog)
-  function wireEntry({title,author,hours,genre,date,btn,list,search,manual,dated=false}){
+  function wireEntry({title,author,hours,genre,date,btn,list,search,manual,dated=false,status=()=>"done"}){
     const tIn=$(title), aIn=$(author), hrIn=$(hours), gIn=$(genre), dIn=date?$(date):null, listEl=$(list), added=[], man=$(manual);
     if(dIn) dIn.max=dayKey(new Date());
     // a picked search result: its cover and details, shown above the fields it filled in
@@ -1704,28 +1823,37 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     pickEl.addEventListener("click",e=>{ if(e.target.closest(".linkmini")){ pick=null; pickEl.hidden=true; estEl.hidden=true; man.hidden=true; sr.manualBtn.hidden=false; tIn.value=aIn.value=hrIn.value=""; gIn.value=""; sr.focus(); } });
     hrIn.addEventListener("input",()=>{ estEl.hidden=true; if(pick) pick.edited=true; });
     function renderList(){
-      listEl.innerHTML=added.length?`<div class="lbl">Added</div>`+added.map(b=>`<div class="item"><b>${esc(b.t)}</b><small>${b.h!=null?fmtH(b.h)+" · counted":"no hours"}</small></div>`).join("")
+      listEl.innerHTML=added.length?`<div class="lbl">Added</div>`+added.map(b=>`<div class="item"><b>${esc(b.t)}</b><small>${b.status==="want"?"want to listen":b.status==="listening"?"listening":b.h!=null?fmtH(b.h)+" · counted":"no hours"}</small></div>`).join("")
         :`<div class="empty">${I.book}<span>Books you add will appear here.</span></div>`;
     }
     function submit(){
       const t=titleCase(tIn.value); if(!t){ tIn.focus(); return; }
       const raw=hrIn.value.trim(), n=parseFloat(raw);
       const hours=raw!==""&&isFinite(n)&&n>0?n:null;   // blank or invalid → book only, no hours
-      const finished=dIn&&dIn.value?dIn.value:(dated?dayKey(new Date()):null);
+      const shelfTo=status(), open=shelfTo!=="done";
+      const finished=open?null:dIn&&dIn.value?dIn.value:(dated?dayKey(new Date()):null);
       const extra=pick?{cover:pick.cover||null,pages:pick.pages||null,year:pick.year||null,series:pick.series||null,num:pick.num||null,
         hEst:hours!=null&&!pick.edited&&estHours(pick.pages)===hours,src:pick.src,srcKey:pick.key}:{};
+      if(open) extra.status=shelfTo;
       const fromSearch=!!pick;
       const b=addBook(t,hours,gIn.value,titleCase(aIn.value),finished,extra); added.push(b); renderList();
       tIn.value=""; aIn.value=""; hrIn.value=""; gIn.value=""; if(dIn) dIn.value=""; hrIn.placeholder="Optional";
       pick=null; pickEl.hidden=true; estEl.hidden=true;
       if(fromSearch){ man.hidden=true; sr.manualBtn.hidden=false; sr.clear(); sr.focus(); } else tIn.focus();   // searched: back to search; typed: ready for the next one
-      toast(hours!=null?`${t} added · ${fmtH(hours)} to your total`:`${t} added to your shelf`);
+      toast(open?`${t} added to ${shelfTo==="want"?"Want to listen":"Currently listening"}`:hours!=null?`${t} added · ${fmtH(hours)} to your total`:`${t} added to your shelf`);
     }
     $(btn).onclick=submit;
     [tIn,aIn,hrIn].forEach(i=>i.addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); submit(); } }));
     return {reset(){ added.length=0; renderList(); tIn.value=""; aIn.value=""; hrIn.value=""; gIn.value=""; if(dIn) dIn.value=""; pick=null; pickEl.hidden=true; estEl.hidden=true; man.hidden=true; sr.manualBtn.hidden=false; sr.clear(); }};
   }
-  const addEntry=wireEntry({title:"#addTitle",author:"#addAuthor",hours:"#addHours",genre:"#addGenre",date:"#addDate",btn:"#addBtn",list:"#addedList",search:"#addSearch",manual:"#addManual"});
+  let addAs="done";
+  const addEntry=wireEntry({title:"#addTitle",author:"#addAuthor",hours:"#addHours",genre:"#addGenre",date:"#addDate",btn:"#addBtn",list:"#addedList",search:"#addSearch",manual:"#addManual",status:()=>addAs});
+  function setAddAs(v){
+    addAs=v; $$("#addAs button").forEach(x=>{ const on=x.dataset.v===v; x.classList.toggle("on",on); x.setAttribute("aria-pressed",on); });
+    $("#addDateRow").hidden=v!=="done";
+    $("#addTag").textContent={done:"Search for the books you've finished",listening:"Search for what you're listening to now",want:"Search for books you want to listen to"}[v];
+  }
+  $$("#addAs button").forEach(x=>x.onclick=()=>setAddAs(x.dataset.v));
   wireEntry({title:"#obTitle",author:"#obAuthor",hours:"#obHours",genre:"#obGenre",btn:"#obAddBtn",list:"#obAddedList",search:"#obSearch",manual:"#obManual"});
   const sheetEntry=wireEntry({title:"#sheetTitle",author:"#sheetAuthor",hours:"#sheetHours",genre:"#sheetGenre",btn:"#sheetAddBtn",list:"#sheetAddedList",search:"#sheetSearch",manual:"#sheetManual",dated:true});
   $("#addDone").onclick=()=>{ back(); showPendingEarned(); };
@@ -1779,10 +1907,11 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     // chart data: logged listening, plus finished books with hours on the day they were finished
     const cDay={}, cWeek={}, cMonth={}, cYear={};
     Object.entries(dayMin).forEach(([d,m])=>{ cDay[d]=m/60; });
-    LIB.forEach(b=>{ if(b.finished&&b.h>0) cDay[b.finished]=(cDay[b.finished]||0)+b.h; });
+    LIB.forEach(b=>{ if(b.finished&&b.h>0&&!b.logged&&isDone(b)) cDay[b.finished]=(cDay[b.finished]||0)+b.h; });
+    const bookMin={}; ST.sessions.forEach(x=>{ if(x.book) bookMin[x.book]=(bookMin[x.book]||0)+x.m; });
     Object.entries(cDay).forEach(([d,h])=>{ const wk=weekKeyOf(parseDay(d)), mk=d.slice(0,7), y=d.slice(0,4); cWeek[wk]=(cWeek[wk]||0)+h; cMonth[mk]=(cMonth[mk]||0)+h; cYear[y]=(cYear[y]||0)+h; });
     const cKeys=Object.keys(cDay).filter(d=>cDay[d]>0).sort();
-    D={listen,dayMin,notesByDay,cDay,cWeek,cMonth,cYear,cFirst:cKeys[0]||null,cDays:cKeys.length,
+    D={listen,dayMin,notesByDay,bookMin,cDay,cWeek,cMonth,cYear,cFirst:cKeys[0]||null,cDays:cKeys.length,
       run60:runOf(new Set(Object.keys(dayMin).filter(d=>dayMin[d]>=60))),
       bestWeekH:Math.max(0,...Object.values(weekMin))/60, bestMonthH:Math.max(0,...Object.values(monthMin))/60, pbs:beats(weekMin)+beats(monthMin),
       pweeks:Object.values(wkC).filter(n=>n>=7).length,
@@ -1796,6 +1925,7 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
   const pendingEarned=[];
   const fmtN=h=>Number.isInteger(h)?h:+h.toFixed(1);
   function medalStats(){
+    const LIB=ST.books.filter(isDone);   // medals count the finished shelf
     const maxOf=o=>Math.max(0,...Object.values(o));
     const norm=v=>(v||"").trim().toLowerCase(), tally=key=>{ const t={}; LIB.forEach(b=>{ const v=norm(b[key]); if(v) t[v]=(t[v]||0)+1; }); return t; };
     const dated=LIB.filter(b=>b.finished), byYear={}, byMonth={}, kinds={}, firstLast={};
@@ -1868,6 +1998,7 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     $$(".nav button[data-go]").forEach(b=>b.classList.toggle("on",b.dataset.go===tab));
     document.body.classList.toggle("can-back",hist.length>0);
     if(id==="s-shelf") renderShelfAll();
+    if(id==="s-add"&&anim==="in-fwd") setAddAs(hist[hist.length-1]==="s-shelf"?(ST.shelfTab||"done"):"done");   // adding from a shelf adds to that shelf
     if(id==="s-settings") renderSettings();
     if(id==="s-help") renderHelp();
     if(id==="s-welcome") renderWelcome();
@@ -1955,7 +2086,46 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
   dragDismiss($("#earned"),{mover:ebox,scroller:ebox,threshold:120,onClose:closeEarned,fade:p=>{ ebox.style.opacity=p==null?"":String(1-p*.9); }});
   function showMenu(){ $("#menu").style.display="block"; $$(".form").forEach(f=>f.classList.remove("show")); }
   $("#n-plus").onclick=openSheet; scrim.onclick=closePanel;
-  $$(".opt").forEach(o=>o.onclick=()=>{ $("#menu").style.display="none"; $("#"+o.dataset.form).classList.add("show"); });
+  $$(".opt").forEach(o=>o.onclick=()=>{ $("#menu").style.display="none"; $("#"+o.dataset.form).classList.add("show"); if(o.dataset.form==="f-live") renderLiveForm(); });
+  // the logging sheet, ready for a book (from a Log button, or the timer)
+  function openLive(bookId,mins){
+    openSheet(); $("#menu").style.display="none"; $("#f-live").classList.add("show"); renderLiveForm(bookId);
+    if(mins){ hIn.value=Math.floor(mins/60)||""; mIn.value=mins%60||""; logLabel(); }
+  }
+  function renderLiveForm(bookId){
+    const list=LIB.filter(b=>b.status==="listening");
+    $("#logBookRow").hidden=!list.length;
+    $("#logBook").innerHTML=`<option value="">No particular book</option>`+list.map(b=>`<option value="${b.id}">${esc(b.t)}</option>`).join("");
+    $("#logBook").value=list.some(b=>b.id===bookId)?bookId:"";
+    renderTimer();
+  }
+  /* start/stop timer: only the start time is saved, so it keeps counting while the app is closed or the phone is locked */
+  const PLAY=`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l10.5-6.5z"/></svg>`;
+  const clock=ms=>{ const t=Math.max(0,Math.floor(ms/1000)), h=Math.floor(t/3600), m=Math.floor(t%3600/60), sec=t%60; return h?`${h}:${pad(m)}:${pad(sec)}`:`${m}:${pad(sec)}`; };
+  let timerTick=null;
+  function renderTimer(){
+    const t=ST.timer, on=!!t;
+    document.body.classList.toggle("timing",on); $("#timerBar").hidden=!on;
+    const book=on&&t.book&&LIB.find(b=>b.id===t.book);
+    $("#timerBook").textContent=book?book.t:"";
+    $("#timerBox").innerHTML=on?`<p><b>Timer running since ${new Date(t.start).toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"})}</b>Stop it to fill in the time.</p><button class="lact go" type="button" id="timerStop">Stop</button>`
+      :`<p><b>Use a timer</b>Start when you begin listening. It keeps time even if you lock your phone.</p><button class="lact go" type="button" id="timerStart">${PLAY}Start</button>`;
+    clearInterval(timerTick);
+    if(on){ const upd=()=>{ $("#timerTime").textContent=clock(Date.now()-Date.parse(t.start)); }; upd(); timerTick=setInterval(upd,1000); }
+  }
+  $("#timerBox").addEventListener("click",e=>{
+    if(e.target.closest("#timerStart")){ ST.timer={start:new Date().toISOString(),book:$("#logBook").value||null}; save(); closeSheet(); renderTimer(); toast("Timer started. Tap the bar at the top to stop."); }
+    if(e.target.closest("#timerStop")) stopTimer();
+  });
+  $("#timerBar").onclick=stopTimer;
+  async function stopTimer(){
+    const t=ST.timer; if(!t) return;
+    const ms=Date.now()-Date.parse(t.start); let mins=Math.max(1,Math.round(ms/60000));
+    if(ms>12*3600e3&&!await ask({title:`Your timer ran for ${hm(ms/3600e3)}`,msg:"That's more than 12 hours. Use the full time, or enter how long you really listened?",ok:"Use the full time",cancel:"Enter it myself"})) mins=0;
+    ST.timer=null; save(); renderTimer();
+    openLive(t.book,mins);
+  }
+  document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible"&&ST.timer) renderTimer(); });
   $$("[data-back]").forEach(b=>b.onclick=showMenu);
   function bump(h){ ST.total+=h; save(); renderHero(); }
   /* goals on Home */
@@ -1993,13 +2163,14 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
   hIn.oninput=mIn.oninput=logLabel;
   $("#pastH").oninput=()=>{ const h=+$("#pastH").value||0; $("#pastBtn").textContent=h?`Add ${fmtN(h)} hours`:"Add hours"; };
   /* a real listening session: today, week, month, year, total, streak, best day, weekday pattern */
-  function logListening(hours,note){
+  function logListening(hours,note,book){
     const now=new Date(), d=dayKey(now), prev=ST.lastLog;
     const welcome=!!prev&&prev!==d&&daysBetween(prev,d)>=8;   // a week or more away: welcome back
-    ST.sessions.push({id:uid(),at:now.toISOString(),d,m:Math.round(hours*60),note:note||null});
+    // one session: it counts once toward today, the streak and the total, and toward the book's progress
+    ST.sessions.push({id:uid(),at:now.toISOString(),d,m:Math.round(hours*60),note:note||null,book:book||null});
     ST.total+=hours;
     if(note){ ST.notes.push({t:note,h:hours}); ST.notesWritten++; }
-    derive(); save(); renderHero(); renderGoals(); renderNotes(); recomputeMedals(); renderInsights(); renderBackupNudge();
+    derive(); save(); renderHero(); renderGoals(); renderNow(); renderNotes(); recomputeMedals(); renderInsights(); renderBackupNudge();
     return welcome;
   }
   function addPastHours(hours,src){ ST.past.push({src,h:hours,at:new Date().toISOString()}); ST.total+=hours; save(); renderHero(); recomputeMedals(); renderInsights(); }
@@ -2008,9 +2179,17 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     if(k==="live"){
       const h=+hIn.value||0, m=+mIn.value||0, hours=h+m/60;
       if(hours<=0){ toast("Enter how long you listened"); return; }
-      const welcome=logListening(hours,$("#noteIn").value.trim());
+      const bookId=$("#logBook").value||null, book=bookId&&LIB.find(x=>x.id===bookId);
+      const welcome=logListening(hours,$("#noteIn").value.trim(),bookId);
       hIn.value=""; mIn.value=""; $("#noteIn").value=""; logLabel();
-      closeSheet(); go("s-home",{tab:true}); toast(welcome?`Welcome back. Logged ${hm(hours)}.`:`Logged ${hm(hours)}. Streak: ${ST.streak} day${ST.streak===1?"":"s"}`); showPendingEarned(); return;
+      closeSheet(); go("s-home",{tab:true}); toast(welcome?`Welcome back. Logged ${hm(hours)}.`:book?`Logged ${hm(hours)} of ${book.t}`:`Logged ${hm(hours)}. Streak: ${ST.streak} day${ST.streak===1?"":"s"}`);
+      // the whole length listened: gently ask, once
+      if(book&&book.status==="listening"&&book.h>0&&progOf(book)>=book.h-1e-9&&!book.askedDone){
+        book.askedDone=true; save();
+        setTimeout(async()=>{ if(await ask({title:"Did you finish it?",msg:`You've listened to ${hm(progOf(book))} of ${book.t}, its whole length.`,ok:"Yes, I finished it",cancel:"Not yet"})) finishBook(book); else showPendingEarned(); },500);
+        return;
+      }
+      showPendingEarned(); return;
     }
     if(k==="past"){
       const h=+$("#pastH").value||0; if(h<=0){ toast("Enter the hours to add"); return; }
@@ -2030,7 +2209,7 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     /* starter lines for a brand-new account */
     ()=>ST.total===0&&{ic:I.star,b:"Your first 25 hours earn Bronze",s:"Log a session with the + button, or add hours from the past."},
     ()=>ST.streak===0&&ST.total>0&&{ic:I.flame,b:"Start a streak today",s:"Any listening logged today counts as day one."},
-    ()=>!LIB.length&&{ic:I.book,b:"Your shelf is waiting",s:"Add a book you've finished and it goes straight on the shelf."},
+    ()=>!LIB.some(isDone)&&{ic:I.book,b:"Your shelf is waiting",s:"Add a book you've finished and it goes straight on the shelf."},
     /* lines that need some history */
     ()=>ST.monthH>ST.lastMonthH&&ST.lastMonthH>0&&{ic:I.up,b:"You're listening more than last month",s:`Already up ${hm(ST.monthH-ST.lastMonthH)} this month.`},
     ()=>{ if(ST.streak<2) return null; const next=BY.streak.levels.map(L=>L.t).find(n=>n>ST.streak);
@@ -2043,7 +2222,7 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     ()=>{ const b=LIB.filter(x=>bucket(x)==="month"); if(!b.length) return null;
           return {ic:I.book,b:`${b.length} book${b.length>1?"s":""} finished this month`,s:esc(b.slice(0,3).map(x=>x.t).join(", "))+(b.length>3?"…":"")}; },
     ()=>ST.yearH>0&&{ic:I.cal,b:`${fmtN(ST.yearH).toLocaleString()} hours this year`,s:"Tap Today, This week or This month above to see your trends."},
-    ()=>{ const g=BY.gexp, n=new Set(LIB.map(b=>b.genre).filter(Boolean)).size, nx=g.levels[g.lv]; return n>=3&&{ic:I.globe,b:`${n} genres on your shelf`,s:nx?`Genre Explorer reaches ${lvName(g,g.lv+1)} at ${nx.req.toLowerCase()}.`:"Every genre sampled. Omnivore."}; },
+    ()=>{ const g=BY.gexp, n=new Set(LIB.filter(isDone).map(b=>b.genre).filter(Boolean)).size, nx=g.levels[g.lv]; return n>=3&&{ic:I.globe,b:`${n} genres on your shelf`,s:nx?`Genre Explorer reaches ${lvName(g,g.lv+1)} at ${nx.req.toLowerCase()}.`:"Every genre sampled. Omnivore."}; },
     ()=>ST.todayH>0&&{ic:I.bolt,b:`${hm(ST.todayH)} in today already`,s:"Every minute counts toward your streak."}
   ];
   function renderInsights(){
@@ -2398,7 +2577,7 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
   }
 
   /* settings: every change saves and updates the app straight away */
-  function refreshAll(){ derive(); save(); applyMotion(); renderHero(); renderGoals(); renderNotes(); renderShelf(shelfMode); renderShelfAll(); recomputeMedals(true); renderInsights(); if(current==="s-stats") renderStats(false); }
+  function refreshAll(){ derive(); save(); applyMotion(); renderHero(); renderGoals(); renderNotes(); renderShelf(shelfMode); renderShelfAll(); recomputeMedals(true); renderInsights(); renderNow(); if(current==="s-stats") renderStats(false); }
   function applyMotion(){ const r=ST.settings.reduceMotion, h=document.documentElement; h.classList.toggle("rm-on",r==="on"); h.classList.toggle("rm-off",r==="off"); }
   function renderSettings(){
     const S=ST.settings;
@@ -2466,7 +2645,7 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     const norm=v=>(v||"").trim().toLowerCase(), key=b=>norm(b.t)+"|"+norm(b.author);
     const ids=new Set(LIB.map(b=>b.id)), seen=new Set(LIB.map(key)), added={books:0,sessions:0};
     let hours=0;
-    (st.books||[]).forEach(b=>{ if(!b||!b.t||ids.has(b.id)||seen.has(key(b))) return; LIB.push(b); seen.add(key(b)); added.books++; if(b.h>0) hours+=b.h; });
+    (st.books||[]).forEach(b=>{ if(!b||!b.t||ids.has(b.id)||seen.has(key(b))) return; LIB.push(b); seen.add(key(b)); added.books++; if(counted(b)) hours+=b.h; });
     const sid=new Set(ST.sessions.map(x=>x.id)), sk=new Set(ST.sessions.map(x=>x.at+"|"+x.m));
     (st.sessions||[]).forEach(x=>{ if(!x||!x.d||!(x.m>0)||sid.has(x.id)||sk.has(x.at+"|"+x.m)) return; ST.sessions.push(x); added.sessions++; hours+=x.m/60; });
     const pk=new Set(ST.past.map(x=>x.at+"|"+x.h));
@@ -2580,7 +2759,7 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
       <p>Tap Today, This week or This month on Home to see your listening history. Charts show logged listening, plus finished books with hours on the day you finished them. Imported past hours have no date, so they count toward your total but aren't charted.</p>`;
   }
 
-  renderBackupNudge(); renderInstall();
+  renderBackupNudge(); renderInstall(); renderNow(); renderTimer();
   // ask the browser to keep this site's data; a quiet no is fine
   try{ if(navigator.storage&&navigator.storage.persist) navigator.storage.persisted().then(p=>p||navigator.storage.persist()).catch(()=>{}); }catch(e){}
   try{ const flash=sessionStorage.getItem("earmark.flash"); if(flash){ sessionStorage.removeItem("earmark.flash"); setTimeout(()=>toast(flash),1700); } }catch(e){}
