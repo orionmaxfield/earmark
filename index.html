@@ -624,6 +624,37 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
 @keyframes stGrow{from{transform:scaleY(0)}}
 @keyframes stDraw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
 @keyframes stFade{from{opacity:0}}
+
+/* backups, the add-to-home-screen guide, and offline updates */
+.nudge{display:flex;align-items:center;gap:12px;margin-top:12px;padding:12px 6px 12px 14px;text-align:left}
+.nudge[hidden],.install[hidden],.updbar[hidden]{display:none}
+.nudge .nic{width:36px;height:36px;flex:0 0 auto;border-radius:50%;display:grid;place-items:center;color:var(--accent);background:var(--accent-dim)}
+.nudge .nic svg{width:18px;height:18px}
+.nudge .nt{flex:1;min-width:0}
+.nudge .nt b{display:block;font-size:var(--t-14);font-weight:600;line-height:1.35}
+.nudge .nt small{display:block;color:var(--ink-2);font-size:var(--t-12);margin-top:2px;line-height:1.4}
+.nbtn{flex:0 0 auto;min-height:36px;padding:0 14px;border:0;border-radius:var(--r-pill);background:var(--grad);color:var(--accent-ink);font:inherit;font-size:var(--t-14);font-weight:700;cursor:pointer}
+.nx{flex:0 0 auto;width:44px;height:44px;border:0;background:transparent;color:var(--ink-3);font-size:22px;line-height:1;border-radius:50%;cursor:pointer}
+.install{position:relative;margin:0 0 8px;padding:16px 16px 14px;text-align:left}
+.install .nx{position:absolute;top:4px;right:4px}
+.install>b{display:block;font-size:var(--t-16);font-weight:700;padding-right:36px;line-height:1.35}
+.install>p{color:var(--ink-2);font-size:var(--t-14);margin-top:4px;line-height:1.45}
+.isteps{list-style:none;margin:14px 0 0;padding:0;display:grid;gap:10px}
+.isteps li{display:flex;align-items:center;gap:12px;font-size:var(--t-14);color:var(--ink-2);line-height:1.4}
+.isteps li b{color:var(--ink);font-weight:600}
+.isteps .ib{width:38px;height:38px;flex:0 0 auto;border-radius:10px;display:grid;place-items:center;background:var(--surface-2);border:1px solid var(--line-2);color:#5AA9FF}
+.isteps .ib svg{width:20px;height:20px}
+.isteps .ib img{width:26px;height:26px;border-radius:6px}
+.install .cta{margin-top:12px}
+.updbar{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:30;display:flex;align-items:center;gap:8px;min-height:44px;padding:0 18px;border-radius:var(--r-pill);border:1px solid var(--accent);background:var(--bg-raised);color:var(--ink);font:inherit;font-size:var(--t-14);font-weight:600;box-shadow:var(--sh-2);cursor:pointer;white-space:nowrap}
+.updbar svg{width:18px;height:18px;color:var(--accent)}
+.abtns.col{grid-template-columns:1fr}
+.abtns.col button+button{border-left:0;border-top:1px solid var(--line-2)}
+.abtns button[hidden]{display:none}
+.alert .abtns:has(button[hidden]){grid-template-columns:1fr}
+.rprev{margin:0 16px 16px;padding:12px 14px;border-radius:var(--r-sm);background:var(--well);text-align:left;font-size:var(--t-14);line-height:1.5}
+.rprev b{display:block;font-size:var(--t-16)}
+.rprev span{color:var(--ink-2)}
 </style>
 </head>
 <body>
@@ -676,6 +707,12 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
 <section class="screen active" id="s-home">
   <button class="gear" data-go="s-settings" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
   <div class="brandblock"><div class="brandrow"><img src="icons/earmark-mark.png" alt="" width="32" height="32"><div class="brand">Ear<span class="mk">mark</span></div></div><div class="tagline">Listen up<span class="dot">.</span></div></div>
+  <div class="card install" id="installCard" hidden>
+    <button class="nx" id="installX" type="button" aria-label="Not now">×</button>
+    <b>Add Earmark to your home screen</b>
+    <p>Keeps your history safe and opens like a real app.</p>
+    <div id="installBody"></div>
+  </div>
 
   <div class="hero">
     <div class="glow"></div>
@@ -692,6 +729,11 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     <div class="goals card" id="goals">
       <div class="goal"><div class="gl"><span>Daily goal</span><b id="gDay"></b></div><div class="bar"><i id="gDayBar" style="width:0%"></i></div></div>
       <div class="goal"><div class="gl"><span>Weekly goal</span><b id="gWeek"></b></div><div class="bar"><i id="gWeekBar" style="width:0%"></i></div></div>
+    </div>
+    <div class="card nudge" id="backupNudge" hidden>
+      <div class="nic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19.5h14"/></svg></div>
+      <div class="nt"><b>Save a backup of your listening history</b><small>A file you keep, in case this browser clears its data.</small></div>
+      <button class="nbtn" id="nudgeSave" type="button">Save</button><button class="nx" id="nudgeX" type="button" aria-label="Dismiss">×</button>
     </div>
     <div class="notes" id="notes"></div>
     <div class="totalline"><b id="heroNum">0</b><small>hours listened, lifetime</small></div>
@@ -804,9 +846,13 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
   <div class="sgh">Data</div>
   <div class="sgroup">
     <button class="srow" id="setImport" type="button"><span class="sl">Add hours from the past</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button>
-    <button class="srow" id="setExport" type="button"><span class="sl">Export my data</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button>
+    <button class="srow" id="setExport" type="button"><span class="sl">Export a backup</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button>
+    <button class="srow" id="setRestore" type="button"><span class="sl">Restore from backup</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button>
+    <div class="srow static"><span class="sl">Last backup</span><span class="sv" id="setLastBackup">Never</span></div>
     <button class="srow danger" id="setReset" type="button"><span class="sl">Reset all data</span></button>
   </div>
+  <p class="sgnote">A backup is a file you keep. Restore it on any device to bring your books, listening and medals back.</p>
+  <input type="file" id="restoreFile" accept=".json,application/json" hidden>
 
   <div class="sgh">Notifications</div>
   <div class="sgroup"><div class="srow static"><span class="sl">Listening reminders</span><span class="sv">Coming soon</span></div></div>
@@ -931,6 +977,13 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
   <div class="abox"><h3 id="aTitle"></h3><p id="aMsg"></p><div class="abtns"><button id="aCancel" type="button">Cancel</button><button id="aOk" type="button">OK</button></div></div>
 </div>
 
+<!-- RESTORE: preview a backup, then merge or replace -->
+<div class="alert" id="restoreDlg" role="alertdialog" aria-modal="true" aria-labelledby="rTitle">
+  <div class="abox"><h3 id="rTitle">Restore from backup</h3><div class="rprev" id="rPrev"></div><p>Merge adds books and listening from the backup that aren't on this device yet. Replace swaps everything here for the backup.</p>
+    <div class="abtns col"><button id="rMerge" type="button">Merge into this device</button><button id="rReplace" class="danger" type="button">Replace everything</button><button id="rCancel" type="button">Cancel</button></div></div>
+</div>
+<button class="updbar" id="updBar" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 5v6h-6"/></svg>Update available — tap to refresh</button>
+
 <!-- MEDAL DETAIL / EARNED -->
 <div class="earned" id="earned" role="dialog" aria-modal="true">
   <div class="ebox">
@@ -1024,6 +1077,7 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
   const KEY="earmark.state.v1";
   const APP_VERSION="0.9.0 (beta)";
   const FEEDBACK_EMAIL="orionsmaxfield@gmail.com";   // "Send feedback" opens a new email to this address
+  const BACKUP_VERSION=1;   // the format of exported backups; restore reads this version and every one before it
   const SETTINGS_DEFAULT={email:"",dailyGoalMin:30,weeklyGoalH:5,showGoals:true,streakMinMin:5,weekStart:"mon",timeFormat:"hm",reduceMotion:"system",chartStyle:"bars"};
   const fresh=()=>({v:1,onboarded:false,user:{name:""},total:0,todayH:0,weekH:0,monthH:0,lastMonthH:0,yearH:0,
     bestDayH:0,streak:0,bestStreak:0,lastLog:null,owl:false,byWeekday:[0,0,0,0,0,0,0],weekdayDays:[0,0,0,0,0,0,0],
@@ -1035,6 +1089,7 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     shares:0,yearReviewViewed:false,wallOpen:{},
     // medal families: {id: {lv: best level reached, at: [ISO date each level was earned]}}
     medals:{},medalsV:0,
+    lastBackup:null,backupNudgeDismissed:null,installDismissed:null,
     settings:{...SETTINGS_DEFAULT}});
   /* TODO: set this to the public launch date (e.g. "2027-03-01"). Accounts created before it are
      Founding Listeners; while it is null, every account is (we are still in early testing). */
@@ -1747,7 +1802,7 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     ST.sessions.push({id:uid(),at:now.toISOString(),d,m:Math.round(hours*60),note:note||null});
     ST.total+=hours;
     if(note){ ST.notes.push({t:note,h:hours}); ST.notesWritten++; }
-    derive(); save(); renderHero(); renderGoals(); renderNotes(); recomputeMedals(); renderInsights();
+    derive(); save(); renderHero(); renderGoals(); renderNotes(); recomputeMedals(); renderInsights(); renderBackupNudge();
     return welcome;
   }
   function addPastHours(hours,src){ ST.past.push({src,h:hours,at:new Date().toISOString()}); ST.total+=hours; save(); renderHero(); recomputeMedals(); renderInsights(); }
@@ -2122,16 +2177,17 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     $("#obNext1").onclick=()=>{ const h=+$("#obPast").value||0; if(h>0) addPastHours(h,$("#obSrc").value); obGo(2); };
     $("#obSkip1").onclick=()=>obGo(2);
     $("#obNext2").onclick=$("#obSkip2").onclick=()=>obGo(3);
-    $("#obFinish").onclick=()=>{ ST.onboarded=true; save(); ob.classList.remove("open"); go("s-home",{tab:true});
+    $("#obFinish").onclick=()=>{ ST.onboarded=true; save(); ob.classList.remove("open"); go("s-home",{tab:true}); renderInstall();
       // welcome with the Founding Listener medal while early testing lasts
       const fl=BY.fl; if(fl.lv&&!pendingEarned.some(e=>e.m===fl)) pendingEarned.unshift({m:fl,from:0,to:1});
       showPendingEarned(); };
   }
   /* alerts — an iPhone-style two-button dialog */
-  function ask({title,msg,ok="OK",danger=false}){
+  function ask({title,msg,ok="OK",cancel="Cancel",danger=false,single=false}){
     return new Promise(res=>{
       const a=$("#alert"), okB=$("#aOk"), noB=$("#aCancel");
       $("#aTitle").textContent=title; $("#aMsg").textContent=msg; okB.textContent=ok; okB.classList.toggle("danger",danger);
+      noB.textContent=cancel; noB.hidden=single;
       a.classList.add("open"); noB.focus();
       const done=v=>{ a.classList.remove("open"); okB.onclick=noB.onclick=null; res(v); };
       okB.onclick=()=>done(true); noB.onclick=()=>done(false);
@@ -2153,6 +2209,7 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     $("#setDaily").value=S.dailyGoalMin; $("#setWeekly").value=S.weeklyGoalH; $("#setMinMin").value=S.streakMinMin;
     const sw=$("#setShowGoals"); sw.classList.toggle("on",!!S.showGoals); sw.setAttribute("aria-checked",!!S.showGoals);
     $$(".sseg").forEach(seg=>{ const k=seg.dataset.set, v=k in S?S[k]:ST[k]; seg.querySelectorAll("button").forEach(b=>{ b.classList.toggle("on",b.dataset.v===v); b.setAttribute("aria-pressed",b.dataset.v===v); }); });
+    $("#setLastBackup").textContent=ST.lastBackup?fmtDay(ST.lastBackup):"Never";
     $("#setVersion").textContent=APP_VERSION; $("#setFounding").hidden=!BY.fl.lv;
     $("#setFeedback").href=`mailto:${FEEDBACK_EMAIL}?subject=${encodeURIComponent("Earmark feedback")}&body=${encodeURIComponent(`\n\n—\nEarmark ${APP_VERSION}`)}`;
   }
@@ -2175,12 +2232,108 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
   };
   $("#setReset").onclick=resetFlow;
   $("#setImport").onclick=()=>{ openSheet(); $("#menu").style.display="none"; $("#f-past").classList.add("show"); };
-  $("#setExport").onclick=()=>{
-    const data={app:"Earmark",version:APP_VERSION,exportedAt:new Date().toISOString(),user:ST.user,settings:ST.settings,totalHours:ST.total,
-      books:ST.books,sessions:ST.sessions,pastHours:ST.past,medals:MEDALS.filter(m=>m.lv).map(m=>({id:m.id,name:m.name,level:m.lv,of:nLv(m),levelName:lvName(m,m.lv)}))};
-    downloadFile(new File([JSON.stringify(data,null,2)],`earmark-data-${dayKey(new Date())}.json`,{type:"application/json"}));
-    toast("Your data was downloaded");
+  /* backups: a readable summary plus the whole saved state, stamped with BACKUP_VERSION */
+  function exportBackup(){
+    ST.lastBackup=new Date().toISOString(); ST.backupNudgeDismissed=null; save();
+    const data={app:"Earmark",backupVersion:BACKUP_VERSION,appVersion:APP_VERSION,exportedAt:ST.lastBackup,user:ST.user,settings:ST.settings,totalHours:ST.total,
+      books:ST.books,sessions:ST.sessions,pastHours:ST.past,medals:MEDALS.filter(m=>m.lv).map(m=>({id:m.id,name:m.name,level:m.lv,of:nLv(m),levelName:lvName(m,m.lv)})),
+      state:ST};
+    downloadFile(new File([JSON.stringify(data,null,2)],`earmark-backup-${dayKey(new Date())}.json`,{type:"application/json"}));
+    renderBackupNudge(); if(current==="s-settings") renderSettings();
+    toast("Backup saved to your downloads");
+  }
+  $("#setExport").onclick=exportBackup;
+  // a backup's saved state; backups from 0.9 only carry the readable fields, so rebuild from those
+  function backupState(o){
+    if(o.state&&typeof o.state==="object"&&Array.isArray(o.state.books)) return o.state;
+    const books=o.books||[], sessions=Array.isArray(o.sessions)?o.sessions:[], first=[...sessions.map(x=>x.at),...books.map(b=>b.added)].filter(Boolean).sort()[0];
+    return {onboarded:true,user:o.user||{name:""},settings:o.settings||{},books,sessions,past:o.pastHours||[],total:+o.totalHours||0,
+      migratedSessions:true,createdAt:first||o.exportedAt||new Date().toISOString()};
+  }
+  // levels never go down: keep the higher level of each medal and the earliest date for each level
+  function mergeMedalStores(a,b){
+    const out=JSON.parse(JSON.stringify(a||{}));
+    Object.entries(b||{}).forEach(([id,r])=>{ if(!r) return; const m=out[id]||(out[id]={lv:0,at:[]}); m.lv=Math.max(m.lv||0,r.lv||0); (r.at||[]).forEach((d,i)=>{ if(d&&(!m.at[i]||d<m.at[i])) m.at[i]=d; }); });
+    return out;
+  }
+  const earliest=(...d)=>d.filter(Boolean).sort()[0]||null;
+  function chooseRestore(st,o){
+    const n=(st.books||[]).length, when=o.exportedAt?new Date(o.exportedAt):null;
+    $("#rPrev").innerHTML=`<b>${when?esc(when.toLocaleDateString(undefined,{month:"long",day:"numeric",year:"numeric"})):"Backup"}</b><span>${plural(n,"book","books")} · ${esc(hm(+st.total||0))} listened${st.user&&st.user.name?` · ${esc(st.user.name)}`:""}</span>`;
+    return new Promise(res=>{
+      const d=$("#restoreDlg"), done=v=>{ d.classList.remove("open"); res(v); };
+      $("#rMerge").onclick=()=>done("merge"); $("#rReplace").onclick=()=>done("replace"); $("#rCancel").onclick=()=>done(null);
+      d.classList.add("open"); $("#rCancel").focus();
+    });
+  }
+  function mergeBackup(st){
+    const norm=v=>(v||"").trim().toLowerCase(), key=b=>norm(b.t)+"|"+norm(b.author);
+    const ids=new Set(LIB.map(b=>b.id)), seen=new Set(LIB.map(key)), added={books:0,sessions:0};
+    let hours=0;
+    (st.books||[]).forEach(b=>{ if(!b||!b.t||ids.has(b.id)||seen.has(key(b))) return; LIB.push(b); seen.add(key(b)); added.books++; if(b.h>0) hours+=b.h; });
+    const sid=new Set(ST.sessions.map(x=>x.id)), sk=new Set(ST.sessions.map(x=>x.at+"|"+x.m));
+    (st.sessions||[]).forEach(x=>{ if(!x||!x.d||!(x.m>0)||sid.has(x.id)||sk.has(x.at+"|"+x.m)) return; ST.sessions.push(x); added.sessions++; hours+=x.m/60; });
+    const pk=new Set(ST.past.map(x=>x.at+"|"+x.h));
+    (st.past||[]).forEach(x=>{ if(!x||!(x.h>0)||pk.has(x.at+"|"+x.h)) return; ST.past.push(x); hours+=x.h; });
+    if(st.legacy&&Array.isArray(st.legacy.days)) ST.legacy.days=[...new Set([...ST.legacy.days,...st.legacy.days])];
+    ST.total+=hours; ST.notesWritten=Math.max(ST.notesWritten||0,st.notesWritten||0);
+    ST.medals=mergeMedalStores(ST.medals,st.medals); ST.createdAt=earliest(ST.createdAt,st.createdAt);
+    return added;
+  }
+  $("#setRestore").onclick=()=>$("#restoreFile").click();
+  $("#restoreFile").onchange=async e=>{
+    const f=e.target.files&&e.target.files[0]; e.target.value=""; if(!f) return;
+    let o=null; try{ o=JSON.parse(await f.text()); }catch(err){}
+    if(!o||o.app!=="Earmark"||!Array.isArray(o.books)){
+      await ask({title:"That isn't an Earmark backup",msg:"Choose a backup file saved from Settings › Data › Export a backup. Its name starts with earmark-.",single:true}); return; }
+    if((o.backupVersion||0)>BACKUP_VERSION){
+      await ask({title:"This backup is from a newer Earmark",msg:"Refresh the app to get the latest version, then restore again.",single:true}); return; }
+    const st=backupState(o), how=await chooseRestore(st,o);
+    if(how==="replace"){
+      if(!await ask({title:"Replace everything?",msg:"Everything on this device is swapped for the backup. Anything you haven't backed up will be lost. Medal levels you've already earned are kept.",ok:"Replace",danger:true})) return;
+      const next=Object.assign(fresh(),st,{onboarded:true,medals:mergeMedalStores(ST.medals,st.medals),createdAt:earliest(ST.createdAt,st.createdAt),lastBackup:o.exportedAt||ST.lastBackup});
+      try{ localStorage.setItem(KEY,JSON.stringify(next)); sessionStorage.setItem("earmark.flash","Restored from your backup"); }catch(err){ toast("Couldn't restore. There may not be enough space."); return; }
+      location.reload();
+    } else if(how==="merge"){
+      const a=mergeBackup(st);
+      if(!a.books&&!a.sessions){ save(); toast("Everything in that backup is already here"); return; }
+      save(); try{ sessionStorage.setItem("earmark.flash",`Merged: ${plural(a.books,"book","books")} and ${plural(a.sessions,"session","sessions")} added`); }catch(err){}
+      location.reload();   // recalculates totals, streaks and medal levels from the merged data
+    }
   };
+  /* gentle reminder: two weeks since the last backup, once there's a week of listening history */
+  function renderBackupNudge(){
+    const now=Date.now(), since=d=>d?now-Date.parse(d):Infinity, day=864e5;
+    const show=ST.onboarded&&(ST.sessions.length>0||LIB.length>0)&&since(ST.createdAt)>=7*day&&since(ST.lastBackup)>=14*day&&since(ST.backupNudgeDismissed)>=3*day;
+    $("#backupNudge").hidden=!show;
+  }
+  $("#nudgeSave").onclick=exportBackup;
+  $("#nudgeX").onclick=()=>{ ST.backupNudgeDismissed=new Date().toISOString(); save(); renderBackupNudge(); };
+
+  /* add to home screen: on iPhone Safari, data from sites not opened for about a week can be cleared;
+     home-screen apps are kept. Never shown once installed; after "Not now", back in three days. */
+  const isStandalone=()=>matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
+  const UA=navigator.userAgent, isIOS=/iPhone|iPad|iPod/.test(UA)||(/Macintosh/.test(UA)&&navigator.maxTouchPoints>1);
+  const iosSafari=isIOS&&/Safari/.test(UA)&&!/CriOS|FxiOS|EdgiOS|OPiOS|GSA\//.test(UA);
+  let installPrompt=null;
+  addEventListener("beforeinstallprompt",e=>{ e.preventDefault(); installPrompt=e; renderInstall(); });
+  addEventListener("appinstalled",()=>{ installPrompt=null; renderInstall(); });
+  const IOS_SHARE=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 15V4M8 7.5 12 4l4 3.5"/><path d="M7 10H5.5v10h13V10H17"/></svg>`;
+  const IOS_ADD=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8.5v7M8.5 12h7"/></svg>`;
+  function renderInstall(){
+    const mode=isStandalone()?null:iosSafari?"ios":installPrompt?"android":null;
+    const waiting=ST.installDismissed&&Date.now()-Date.parse(ST.installDismissed)<3*864e5;
+    $("#installCard").hidden=!mode||waiting||!ST.onboarded;
+    if(mode==="ios") $("#installBody").innerHTML=`<ol class="isteps" aria-label="How to add Earmark to your home screen">
+      <li><span class="ib">${IOS_SHARE}</span><span>Tap <b>Share</b> in Safari's toolbar</span></li>
+      <li><span class="ib">${IOS_ADD}</span><span>Scroll down and tap <b>Add to Home Screen</b></span></li>
+      <li><span class="ib"><img src="icons/apple-touch-icon.png" alt=""></span><span>Open <b>Earmark</b> from your home screen from now on</span></li></ol>`;
+    else if(mode==="android") $("#installBody").innerHTML=`<button class="cta" id="installBtn" type="button">Install app</button>`;
+  }
+  $("#installCard").addEventListener("click",async e=>{
+    if(e.target.closest("#installX")){ ST.installDismissed=new Date().toISOString(); save(); renderInstall(); return; }
+    if(e.target.closest("#installBtn")&&installPrompt){ const p=installPrompt; installPrompt=null; p.prompt(); try{ await p.userChoice; }catch(err){} renderInstall(); }
+  });
   function renderHelp(){
     const n=ST.settings.streakMinMin;
     $("#helpBody").innerHTML=`<h3>Streaks</h3>
@@ -2190,6 +2343,7 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
       <h3>Hours</h3>
       <p><b>Listening you log</b> with the + button is dated. It counts toward everything: your totals, rank, streaks, goals and every medal.</p>
       <p><b>Hours from the past</b>, imported from apps like Audible or Libby, count toward your lifetime total, rank and time milestones, but never toward streaks or live medals.</p>
+      <p><b>Your data</b> is saved in this browser on this device. Export a backup now and then from Settings › Data, and restore it on any device.</p>
       <p><b>Book hours</b> are the length you give a book on your shelf. They add to your lifetime total. Books without a date finished are backlog: they count toward totals and book medals, never toward streaks.</p>
       <h3>Medals</h3>
       <p>Each medal levels up through the same colours: bronze, silver, gold, platinum, diamond, obsidian, meteorite, iridium, osmium and celestial. Gold means the same thing on every medal. The final level of each medal earns a laurel wreath.</p>
@@ -2197,6 +2351,27 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
       <p>Listening medals only count listening you've logged on a date. Secret medals stay hidden until you find them.</p>
       <h3>Stats</h3>
       <p>Tap Today, This week or This month on Home to see your listening history. Charts show logged listening, plus finished books with hours on the day you finished them. Imported past hours have no date, so they count toward your total but aren't charted.</p>`;
+  }
+
+  renderBackupNudge(); renderInstall();
+  // ask the browser to keep this site's data; a quiet no is fine
+  try{ if(navigator.storage&&navigator.storage.persist) navigator.storage.persisted().then(p=>p||navigator.storage.persist()).catch(()=>{}); }catch(e){}
+  try{ const flash=sessionStorage.getItem("earmark.flash"); if(flash){ sessionStorage.removeItem("earmark.flash"); setTimeout(()=>toast(flash),1700); } }catch(e){}
+
+  /* offline: sw.js caches the app; a new version waits for a tap on "Update available" */
+  if("serviceWorker" in navigator&&/^https?:$/.test(location.protocol)){
+    let wantReload=false;
+    const offerUpdate=apply=>{ const b=$("#updBar"); b.hidden=false; b.onclick=()=>{ wantReload=true; b.hidden=true; apply(); setTimeout(()=>location.reload(),1500); }; };
+    navigator.serviceWorker.addEventListener("controllerchange",()=>{ if(wantReload) location.reload(); });
+    navigator.serviceWorker.addEventListener("message",e=>{ if(e.data&&e.data.type==="update-available") offerUpdate(()=>location.reload()); });
+    navigator.serviceWorker.register("sw.js").then(reg=>{
+      const waiting=w=>{ if(w&&navigator.serviceWorker.controller) offerUpdate(()=>w.postMessage("skip-waiting")); };
+      waiting(reg.waiting);
+      reg.addEventListener("updatefound",()=>{ const w=reg.installing; if(w) w.addEventListener("statechange",()=>{ if(w.state==="installed") waiting(w); }); });
+      const check=()=>{ reg.update().catch(()=>{}); if(navigator.serviceWorker.controller) navigator.serviceWorker.controller.postMessage("check-update"); };
+      document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") check(); });
+      setInterval(check,30*60*1000);
+    }).catch(()=>{});
   }
 
   /* splash: fades in with the page, holds briefly, fades out; removed either way */
