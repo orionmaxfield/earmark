@@ -2046,7 +2046,7 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
   const TABS=new Set(["s-home","s-shelf"]);
   let current="s-home", hist=[];
   function show(id,anim){
-    current=id;
+    const leaving=current; current=id;
     closeEarned();
     $$(".screen").forEach(s=>{ s.classList.toggle("active",s.id===id); s.style.transform=""; });
     const tab=TABS.has(id)?id:([...hist].reverse().find(x=>TABS.has(x))||"s-home");
@@ -2057,6 +2057,8 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
     if(id==="s-settings") renderSettings();
     if(id==="s-help") renderHelp();
     if(id==="s-welcome") renderWelcome();
+    // medals waiting behind the Welcome page show once it closes, however it's closed
+    if(leaving==="s-welcome"&&id!=="s-welcome") setTimeout(showPendingEarned,anim?300:0);
     if(id==="s-stats") renderStats(true);
     const el=$("#"+id); el.classList.remove("in-fwd","in-back");
     if(anim){ void el.offsetWidth; el.classList.add(anim); el.addEventListener("animationend",()=>el.classList.remove(anim),{once:true}); }
@@ -2825,7 +2827,7 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
     <p>Feedback forms are optional. What you write in them goes to the developer.</p>
     <p>A backup you export is your own file. It stays wherever you save it.</p>`;
   $("#privacyBody").innerHTML=$("#obPrivacy").innerHTML=PRIVACY;
-  $("#welcomeDone").onclick=()=>{ back(); showPendingEarned(); };
+  $("#welcomeDone").onclick=()=>back();
   $("#obPrivacyBtn").onclick=()=>obGo(9); $("#obPrivacyBack").onclick=()=>obGo(0);
   function renderHelp(){
     const n=ST.settings.streakMinMin;
