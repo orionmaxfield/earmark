@@ -768,6 +768,15 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
 .ob [data-step="8"] .lead{margin-bottom:4px}
 .isteps .num{width:38px;height:38px;flex:0 0 auto;border-radius:50%;display:grid;place-items:center;background:var(--accent-dim);color:var(--accent);font-weight:800;font-size:var(--t-16)}
 .isteps .lact{margin-left:auto}
+
+/* stopped timer time that hasn't been logged yet */
+.pend[hidden]{display:none}
+.pend{display:flex;align-items:center;gap:10px;margin-top:12px;padding:12px 12px 12px 14px;text-align:left}
+.pend .nt{flex:1;min-width:0}
+.pend .nt b{display:block;font-size:var(--t-14);font-weight:600}
+.pend .nt small{display:block;color:var(--ink-2);font-size:var(--t-12);margin-top:2px}
+.pend .lact{min-height:36px;padding:0 12px}
+#menu .pend{margin:8px 0 4px;background:var(--surface);border:1px solid var(--line-2);border-radius:var(--r-md)}
 </style>
 </head>
 <body>
@@ -857,6 +866,7 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
       <button class="box" type="button" data-stats="week"><b id="t2">0</b><small>hrs this week</small></button>
       <button class="box" type="button" data-stats="month"><b id="t3">0</b><small>hrs this month</small></button>
     </div>
+    <div class="card pend" id="pendHome" hidden><div class="nt"><b class="pendText"></b><small>From your stopped timer</small></div><button class="lact go" type="button" data-pend="log">Log it</button><button class="lact" type="button" data-pend="discard">Discard</button></div>
     <div class="card nowcard" id="nowCard" hidden>
       <div class="sechead"><h2>Currently listening</h2><button class="seeall" type="button" data-shelf-tab="listening">See all</button></div>
       <div id="nowList"></div>
@@ -1083,6 +1093,7 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
     <div class="handle"></div>
     <div id="menu">
       <h2 style="margin:0 0 4px">Add hours</h2>
+      <div class="pend" id="pendMenu" hidden><div class="nt"><b class="pendText"></b><small>From your stopped timer</small></div><button class="lact go" type="button" data-pend="log">Log it</button><button class="lact" type="button" data-pend="discard">Discard</button></div>
       <button class="opt" data-form="f-live"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span><b>Log today's listening</b><small>Keeps your streak alive and counts toward daily achievements.</small></span></button>
       <button class="opt" data-form="f-book"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h12a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3z"/><path d="M4 17a3 3 0 0 1 3-3h12"/></svg></span><span><b>Finished a book</b><small>Puts it on your shelf. Add its hours, or skip them if they're already logged.</small></span></button>
       <button class="opt" data-form="f-past"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 8v4l2 2"/></svg></span><span><b>Add hours from the past</b><small>Audible, Libby, Libro.fm… Counts toward your total and rank only.</small></span></button>
@@ -1250,7 +1261,7 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
     bestDayH:0,streak:0,bestStreak:0,lastLog:null,owl:false,byWeekday:[0,0,0,0,0,0,0],weekdayDays:[0,0,0,0,0,0,0],
     notes:[],books:[],past:[],keys:{day:"",week:"",month:"",year:""},
     createdAt:new Date().toISOString(),logDays:[],notesWritten:0,comeback:false,earlyBird:false,
-    shelfView:"grid",shelfFilter:"all",shelfSort:"newest",shelfTab:"done",timer:null,
+    shelfView:"grid",shelfFilter:"all",shelfSort:"newest",shelfTab:"done",timer:null,timerUnlogged:null,
     // every logged listening session: {id, at (ISO time), d (local day), m (minutes), note}
     sessions:[],legacy:{days:[],bestStreak:0,bestDayH:0,owl:false,earlyBird:false,comeback:false},carry:{},migratedSessions:false,
     shares:0,yearReviewViewed:false,wallOpen:{},
@@ -1920,8 +1931,8 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
     for(const x of ST.sessions){
       dayMin[x.d]=(dayMin[x.d]||0)+x.m;
       const h=new Date(x.at).getHours();
-      if(h>=22||h<4){ owl=true; owlN++; }      // night owl: after 10 p.m.
-      if(h>=4&&h<7){ early=true; earlyN++; }   // early bird: before 7 a.m.
+      if(!x.part&&(h>=22||h<4)){ owl=true; owlN++; }      // night owl: after 10 p.m.
+      if(!x.part&&h>=4&&h<7){ early=true; earlyN++; }   // early bird: before 7 a.m.
       const ap=dayAmPm[x.d]=dayAmPm[x.d]||{}; if(h<7) ap.am=1; if(h>=22) ap.pm=1;
       if(x.note) (notesByDay[x.d]=notesByDay[x.d]||[]).push({t:x.note,m:x.m});
     }
@@ -2026,7 +2037,7 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
       firstLog:ST.sessions.length>0||ST.legacy.days.length>0,importer:ST.past.length>0,undated,stocker:undated>=10,
       newYear:days.some(d=>d.endsWith("-01-01")),holiday:days.some(d=>d.endsWith("-12-25")),leap:days.some(d=>d.endsWith("-02-29")),
       comeback:!!ST.comeback,founding:!FOUNDING_CUTOFF_DATE||ST.firstUseAt<FOUNDING_CUTOFF_DATE,wrap:!!ST.yearReviewViewed,
-      answer:ST.sessions.some(x=>x.m===42),onTime:ST.sessions.some(x=>x.m===60),bookends:Object.values(firstLast).some(f=>f.a&&f.z),nightDay:D.nightDay};
+      answer:ST.sessions.some(x=>x.m===42&&!x.part),onTime:ST.sessions.some(x=>x.m===60&&!x.part),bookends:Object.values(firstLast).some(f=>f.a&&f.z),nightDay:D.nightDay};
     MEDALS.forEach(m=>{ if(m.genres) S[m.v]=LIB.filter(b=>m.genres.includes(b.genre)).reduce((t,b)=>t+(b.h||0),0); });
     return S;
   }
@@ -2115,7 +2126,7 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
     document.documentElement.classList.add("locked");
   }
   function closePanel(){ if(openP) openP.classList.remove("open"); openP=null; scrim.classList.remove("open"); scrim.style.opacity=""; document.documentElement.classList.remove("locked"); }
-  function openSheet(){ showMenu(); sheetEntry.reset(); openPanel(sheet); }
+  function openSheet(){ showMenu(); sheetEntry.reset(); fromTimer=false; renderPending(); openPanel(sheet); }
   function closeSheet(){ closePanel(); }
   /* drag down to dismiss — follows the finger, closes past ~30% of its height or on a quick flick,
      springs back otherwise; only starts when the content is scrolled to the top, like iOS sheets */
@@ -2162,9 +2173,11 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
   $("#n-plus").onclick=openSheet; scrim.onclick=closePanel;
   $$(".opt").forEach(o=>o.onclick=()=>{ $("#menu").style.display="none"; $("#"+o.dataset.form).classList.add("show"); if(o.dataset.form==="f-live") renderLiveForm(); });
   // the logging sheet, ready for a book (from a Log button, or the timer)
-  function openLive(bookId,mins){
+  let fromTimer=false;   // the form holds the stopped timer's time: logging it splits at midnight and clears it
+  function openLive(bookId,mins,timer=false){
     openSheet(); $("#menu").style.display="none"; $("#f-live").classList.add("show"); renderLiveForm(bookId);
     if(mins){ hIn.value=Math.floor(mins/60)||""; mIn.value=mins%60||""; logLabel(); }
+    fromTimer=timer;
   }
   function renderLiveForm(bookId){
     const list=LIB.filter(b=>b.status==="listening");
@@ -2196,9 +2209,21 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
     const t=ST.timer; if(!t) return;
     const ms=Date.now()-Date.parse(t.start); let mins=Math.max(1,Math.round(ms/60000));
     if(ms>12*3600e3&&!await ask({title:`Your timer ran for ${hm(ms/3600e3)}`,msg:"That's more than 12 hours. Use the full time, or enter how long you really listened?",ok:"Use the full time",cancel:"Enter it myself"})) mins=0;
-    ST.timer=null; save(); renderTimer();
-    openLive(t.book,mins);
+    ST.timer=null;
+    if(mins>0) ST.timerUnlogged={start:t.start,end:new Date(Date.parse(t.start)+ms).toISOString(),book:t.book||null,mins};   // kept until logged or discarded
+    save(); renderTimer();
+    openLive(t.book,mins,mins>0);
   }
+  // "You have 42 min unlogged — Log it / Discard", on Home and in the + sheet
+  function renderPending(){
+    const u=ST.timerUnlogged;
+    $$(".pend").forEach(el=>{ el.hidden=!u; if(u) el.querySelector(".pendText").textContent=`You have ${hm(u.mins/60)} unlogged`; });
+  }
+  document.addEventListener("click",e=>{
+    const b=e.target.closest("[data-pend]"); if(!b||!ST.timerUnlogged) return;
+    if(b.dataset.pend==="log"){ const u=ST.timerUnlogged; openLive(u.book,u.mins,true); }
+    else { ST.timerUnlogged=null; save(); renderPending(); toast("Timer time discarded"); }
+  });
   document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible"&&ST.timer) renderTimer(); });
   $$("[data-back]").forEach(b=>b.onclick=showMenu);
   const REST_IC=`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 15A8 8 0 0 1 9 4a8 8 0 1 0 11 11z"/></svg>`;
@@ -2258,11 +2283,22 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
   hIn.oninput=mIn.oninput=logLabel;
   $("#pastH").oninput=()=>{ const h=+$("#pastH").value||0; $("#pastBtn").textContent=h?`Add ${fmtN(h)} hours`:"Add hours"; };
   /* a real listening session: today, week, month, year, total, streak, best day, weekday pattern */
-  function logListening(hours,note,book){
+  // minutes from a start–end span, split at each midnight in proportion to the time on each side
+  function splitByDay(start,end,total){
+    const s=Date.parse(start), e=Date.parse(end), parts=[];
+    if(!(e>s)) return [{at:new Date(e||Date.now()).toISOString(),d:dayKey(new Date(e||Date.now())),m:total}];
+    for(let a=s;a<e;){ const n=new Date(a); n.setHours(24,0,0,0); const b=Math.min(e,n.getTime()); parts.push({a,len:b-a}); a=b; }
+    const span=e-s; let left=total;
+    parts.forEach(p=>{ p.raw=total*p.len/span; p.m=Math.floor(p.raw); left-=p.m; });
+    parts.slice().sort((x,y)=>(y.raw-y.m)-(x.raw-x.m)).slice(0,left).forEach(p=>p.m++);
+    return parts.filter(p=>p.m>0).map(p=>({at:new Date(p.a).toISOString(),d:dayKey(new Date(p.a)),m:p.m}));
+  }
+  function logListening(hours,note,book,span){
     const now=new Date(), d=dayKey(now), prev=ST.lastLog;
     const welcome=!!prev&&prev!==d&&daysBetween(prev,d)>=8;   // a week or more away: welcome back
-    // one session: it counts once toward today, the streak and the total, and toward the book's progress
-    ST.sessions.push({id:uid(),at:now.toISOString(),d,m:Math.round(hours*60),note:note||null,book:book||null});
+    // one session (split at midnight when timed across it): it counts once toward each day, the streak and the total, and the book's progress
+    const parts=span?splitByDay(span.start,span.end,Math.round(hours*60)):[{at:now.toISOString(),d,m:Math.round(hours*60)}];
+    parts.forEach((x,i)=>ST.sessions.push(Object.assign({id:uid(),at:x.at,d:x.d,m:x.m,note:i?null:note||null,book:book||null},i?{part:true}:{})));
     if(note){ ST.notes.push({t:note,h:hours}); ST.notesWritten++; }
     derive(); save(); renderHero(); renderGoals(); renderNow(); renderNotes(); recomputeMedals(); renderInsights(); renderBackupNudge();
     return welcome;
@@ -2274,7 +2310,8 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
       const h=+hIn.value||0, m=+mIn.value||0, hours=h+m/60;
       if(hours<=0){ toast("Enter how long you listened"); return; }
       const bookId=$("#logBook").value||null, book=bookId&&LIB.find(x=>x.id===bookId);
-      const welcome=logListening(hours,$("#noteIn").value.trim(),bookId);
+      const u=fromTimer&&ST.timerUnlogged, welcome=logListening(hours,$("#noteIn").value.trim(),bookId,u?{start:u.start,end:u.end}:null);
+      if(u){ ST.timerUnlogged=null; fromTimer=false; save(); renderPending(); }
       hIn.value=""; mIn.value=""; $("#noteIn").value=""; logLabel();
       closeSheet(); go("s-home",{tab:true}); toast(welcome?`Welcome back. Logged ${hm(hours)}.`:book?`Logged ${hm(hours)} of ${book.t}`:`Logged ${hm(hours)}. Streak: ${ST.streak} day${ST.streak===1?"":"s"}`);
       // the whole length listened: gently ask, once
@@ -2867,7 +2904,7 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
       <p>Tap Today, This week or This month on Home to see your listening history. Charts show the listening you've logged. Imported past hours have no date, so they count toward your total but aren't charted.</p>`;
   }
 
-  renderBackupNudge(); renderInstall(); renderNow(); renderTimer();
+  renderBackupNudge(); renderInstall(); renderNow(); renderTimer(); renderPending();
   if(!ST.onboarded&&iosSafari&&!isStandalone()){
     $("#obInstallSteps").innerHTML=IOS_STEPS; obGo(8);
     $("#obSafari").onclick=()=>obGo(0);
