@@ -667,6 +667,40 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
 .welcome .cta{margin-top:20px}
 .obprivacy{margin-top:16px;font-size:var(--t-14);color:var(--ink-3)}
 .obprivacy button{background:none;border:0;color:var(--accent);font:inherit;font-weight:600;padding:12px 4px;cursor:pointer}
+
+/* book search: results with covers, a picked book, estimated hours */
+.bsearch{margin-top:12px}
+.bsearch .field{margin-top:0}
+.bsearch input[type=search]{-webkit-appearance:none;appearance:none}
+.bsres{display:grid;gap:2px;margin-top:6px}
+.bsrow{display:flex;align-items:center;gap:12px;width:100%;min-height:68px;padding:8px;border:0;border-radius:var(--r-sm);background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.bsrow:active{background:var(--surface-2)}
+.bscov{position:relative;width:38px;height:56px;flex:0 0 auto;border-radius:3px 5px 5px 3px;overflow:hidden;background:var(--cloth,#1B3556);box-shadow:inset 3px 0 0 rgba(0,0,0,.2)}
+.bscov img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.bsmeta{flex:1;min-width:0}
+.bsmeta b{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:15px;font-weight:600;line-height:1.3}
+.bsmeta small{display:block;margin-top:2px;color:var(--ink-3);font-size:var(--t-12)}
+.bsstatus{padding:10px 4px 0;color:var(--ink-2);font-size:var(--t-14);line-height:1.45}
+.bsstatus:empty{display:none}
+.bsmanual{display:block;margin:2px 0 0 -4px}
+.manual[hidden],.bspick[hidden],.bsest[hidden],.bsmanual[hidden]{display:none}
+.bspick{display:flex;align-items:center;gap:12px;margin-top:12px;padding:10px 12px;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--line-2)}
+.bspick .bscov{width:46px;height:68px}
+.bspick .bsmeta b{font-size:var(--t-16)}
+.bspick .linkmini{margin:0;align-self:flex-start}
+.bsest{margin-top:8px;color:var(--ink-3);font-size:13px;line-height:1.45}
+.cover .cimg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:inherit;z-index:0}
+.cover .hrs{z-index:1}
+.bkcover{display:flex;align-items:center;gap:14px;margin-top:12px}
+.bkcover .cover{width:56px;height:82px;flex:0 0 auto;padding:6px}
+.bkcover .cover b{font-size:9px}
+.bkcover .cover small,.bkcover .cover .hrs{display:none}
+.bkcover .pillbtn{min-height:40px}
+.bscovers{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}
+.bscovers:empty{display:none}
+.bscovers button{position:relative;aspect-ratio:2/3;padding:0;border:2px solid transparent;border-radius:6px;overflow:hidden;background:var(--surface-2);cursor:pointer}
+.bscovers button.on{border-color:var(--accent)}
+.bscovers img{width:100%;height:100%;object-fit:cover;display:block}
 </style>
 </head>
 <body>
@@ -698,12 +732,14 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     <section class="ob-step" data-step="2">
       <div class="eyebrow">Step 2 of 3</div>
       <h2>Books you've finished</h2>
-      <p class="lead">Add a few favourites to start your shelf. Hours are optional; when you add them they count toward your total.</p>
-      <!-- TODO: free-type title is a stopgap until titles come from the book database with covers and runtimes. -->
-      <div class="field"><input id="obTitle" autocapitalize="words" placeholder="Book title" autocomplete="off" aria-label="Book title"></div>
-      <div class="field"><input id="obAuthor" autocapitalize="words" placeholder="Author (optional)" autocomplete="off" aria-label="Author"></div>
-      <div class="field"><select class="genre" id="obGenre" aria-label="Genre (optional)"></select></div>
-      <div class="field"><label><input id="obHours" type="number" inputmode="decimal" min="0" step="0.5" placeholder="Optional" aria-label="Hours it ran"><span>hours</span></label><button class="addbtn" id="obAddBtn">Add</button></div>
+      <p class="lead">Search for a few favourites to start your shelf. Their hours count toward your total.</p>
+      <div class="bsearch" id="obSearch"></div>
+      <div class="manual" id="obManual" hidden>
+        <div class="field"><input id="obTitle" autocapitalize="words" placeholder="Book title" autocomplete="off" aria-label="Book title"></div>
+        <div class="field"><input id="obAuthor" autocapitalize="words" placeholder="Author (optional)" autocomplete="off" aria-label="Author"></div>
+        <div class="field"><select class="genre" id="obGenre" aria-label="Genre (optional)"></select></div>
+        <div class="field"><label><input id="obHours" type="number" inputmode="decimal" min="0" step="0.5" placeholder="Optional" aria-label="Hours it ran"><span>hours</span></label><button class="addbtn" id="obAddBtn">Add</button></div>
+      </div>
       <div class="added" id="obAddedList" aria-live="polite"></div>
       <button class="cta" id="obNext2">Continue</button>
       <button class="ghost" id="obSkip2">Skip for now</button>
@@ -810,20 +846,19 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
 </section>
 
 <!-- ADD BOOKS (onboarding-style bulk add) -->
-<!-- TODO: this free-type title field is a stopgap. It will later become a real book search
-     backed by the book database, returning covers and runtimes instead of typed titles and hours. -->
 <section class="screen" id="s-add">
-  <div class="hdr"><button class="backbtn" data-nav-back aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m15 5-7 7 7 7"/></svg>Back</button><div class="title">Add books</div><div class="tag">Type in everything you've finished</div></div>
-  <div class="field"><input id="addTitle" autocapitalize="words" placeholder="Book title" autocomplete="off" aria-label="Book title"></div>
-  <div class="field"><input id="addAuthor" autocapitalize="words" placeholder="Author (optional)" autocomplete="off" aria-label="Author"></div>
-  <!-- TODO: genre is a manual pick for now. It will be fetched automatically from the book database
-       (along with cover art and runtime) once titles come from a real search. -->
-  <div class="field"><select class="genre" id="addGenre" aria-label="Genre (optional)"></select></div>
-  <label class="flabel" for="addDate">Finished · optional</label>
-  <div class="field"><input id="addDate" type="date"></div>
-  <div class="field"><label><input id="addHours" type="number" inputmode="decimal" min="0" step="0.5" placeholder="Optional" aria-label="Hours it ran"><span>hours</span></label><button class="addbtn" id="addBtn">Add</button></div>
+  <div class="hdr"><button class="backbtn" data-nav-back aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m15 5-7 7 7 7"/></svg>Back</button><div class="title">Add books</div><div class="tag">Search for the books you've finished</div></div>
+  <div class="bsearch" id="addSearch"></div>
+  <div class="manual" id="addManual" hidden>
+    <div class="field"><input id="addTitle" autocapitalize="words" placeholder="Book title" autocomplete="off" aria-label="Book title"></div>
+    <div class="field"><input id="addAuthor" autocapitalize="words" placeholder="Author (optional)" autocomplete="off" aria-label="Author"></div>
+    <div class="field"><select class="genre" id="addGenre" aria-label="Genre (optional)"></select></div>
+    <label class="flabel" for="addDate">Finished · optional</label>
+    <div class="field"><input id="addDate" type="date"></div>
+    <div class="field"><label><input id="addHours" type="number" inputmode="decimal" min="0" step="0.5" placeholder="Optional" aria-label="Hours it ran"><span>hours</span></label><button class="addbtn" id="addBtn">Add</button></div>
+  </div>
   <div class="added" id="addedList" aria-live="polite"></div>
-  <p class="note" style="margin-top:14px">Each book goes on your shelf and counts toward achievements. Add the hours it ran if you know them and they count toward your total; leave hours blank to add the book only. Leave the date blank for books from a while back.</p>
+  <p class="note" style="margin-top:14px">Each book goes on your shelf and counts toward achievements. Its hours count toward your total; leave hours blank to add the book only. Leave the date blank for books from a while back.</p>
   <button class="cta" id="addDone" style="margin-top:18px">Done</button>
 </section>
 
@@ -966,14 +1001,14 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
       <button class="opt" data-form="f-past"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 8v4l2 2"/></svg></span><span><b>Add hours from the past</b><small>Audible, Libby, Libro.fm… Counts toward your total and rank only.</small></span></button>
     </div>
     <div class="form" id="f-live"><h2 style="margin:0">Today's listening</h2><div class="field"><label><input type="number" inputmode="numeric" min="0" placeholder="0"><span>hours</span></label><label><input type="number" inputmode="numeric" min="0" max="59" placeholder="0"><span>min</span></label></div><div class="field"><input id="noteIn" placeholder="Note, e.g. Scythe, chapters 18–20"></div><button class="cta" data-done="live" id="logBtn">Log time</button><button class="ghost" data-back>Back</button></div>
-    <!-- TODO: this free-type title field is a stopgap. It will later become a real book search
-         backed by the book database, returning covers and runtimes instead of typed titles and hours. -->
     <div class="form" id="f-book"><h2 style="margin:0">Finished a book</h2>
-      <div class="field"><input id="sheetTitle" autocapitalize="words" placeholder="Book title" autocomplete="off" aria-label="Book title"></div>
-      <div class="field"><input id="sheetAuthor" autocapitalize="words" placeholder="Author (optional)" autocomplete="off" aria-label="Author"></div>
-      <!-- TODO: genre is a manual pick for now; later it comes automatically from the book database. -->
-      <div class="field"><select class="genre" id="sheetGenre" aria-label="Genre (optional)"></select></div>
-      <div class="field"><label><input id="sheetHours" type="number" inputmode="decimal" min="0" step="0.5" placeholder="Optional" aria-label="Hours it ran"><span>hours</span></label><button class="addbtn" id="sheetAddBtn">Add</button></div>
+      <div class="bsearch" id="sheetSearch"></div>
+      <div class="manual" id="sheetManual" hidden>
+        <div class="field"><input id="sheetTitle" autocapitalize="words" placeholder="Book title" autocomplete="off" aria-label="Book title"></div>
+        <div class="field"><input id="sheetAuthor" autocapitalize="words" placeholder="Author (optional)" autocomplete="off" aria-label="Author"></div>
+        <div class="field"><select class="genre" id="sheetGenre" aria-label="Genre (optional)"></select></div>
+        <div class="field"><label><input id="sheetHours" type="number" inputmode="decimal" min="0" step="0.5" placeholder="Optional" aria-label="Hours it ran"><span>hours</span></label><button class="addbtn" id="sheetAddBtn">Add</button></div>
+      </div>
       <div class="added" id="sheetAddedList" aria-live="polite"></div>
       <p class="note">Hours you enter count toward your total. Leave them blank if they're already logged.</p>
       <button class="cta" data-done="book">Done</button><button class="ghost" data-back>Back</button></div>
@@ -986,6 +1021,9 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
   <div class="inner">
     <div class="handle"></div>
     <h2 style="margin:0 0 4px">Edit book</h2>
+    <div class="bkcover"><div id="bkCoverPrev"></div><div><button class="pillbtn" id="bkFindCover" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="6"/><path d="m20 20-4.6-4.6"/></svg>Find cover</button><button class="linkmini" id="bkNoCover" type="button" style="display:block;margin:6px 0 0 8px">Remove cover</button></div></div>
+    <p class="bsstatus" id="bkCoverMsg" aria-live="polite"></p>
+    <div class="bscovers" id="bkCovers"></div>
     <label class="flabel" for="bkTitle">Title</label>
     <div class="field"><input id="bkTitle" autocapitalize="words" placeholder="Book title" autocomplete="off"></div>
     <label class="flabel" for="bkAuthor">Author</label>
@@ -998,6 +1036,7 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     <div class="field"><select class="genre" id="bkGenre"></select></div>
     <label class="flabel" for="bkH">Length</label>
     <div class="field"><label><input id="bkH" type="number" inputmode="numeric" min="0" placeholder="0"><span>hours</span></label><label><input id="bkM" type="number" inputmode="numeric" min="0" max="59" placeholder="0" aria-label="Minutes"><span>min</span></label></div>
+    <p class="bsest" id="bkEst" hidden></p>
     <div class="flrow"><label class="flabel" for="bkDate">Finished</label><button class="linkmini" id="bkNoDate" type="button">No date</button></div>
     <div class="field"><input id="bkDate" type="date"></div>
     <p class="note">Changing the length updates your lifetime total, rank and medals. Books without a date count toward your total but never toward streaks.</p>
@@ -1454,7 +1493,7 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     // Free-typed books have no cover art yet: render a cloth-bound hardback placeholder with the title only.
     // Covers on a shelf open the book editor; inside a list row the row itself is the button.
     const tap=inRow?"":` data-book="${b.id}" role="button" tabindex="0" aria-label="Edit ${esc(b.t)}"`;
-    if(b.ph) return `<div class="cover ph" style="--cloth:${coverTone(b.t)}"${tap}>${b.h!=null?`<span class="hrs">${fmtH(b.h)}</span>`:""}<b>${esc(b.t)}</b>${b.author?`<small>${esc(b.author)}</small>`:""}</div>`;
+    if(b.ph) return `<div class="cover ph" style="--cloth:${coverTone(b.t)}"${tap}>${b.cover?`<img class="cimg" src="${esc(b.cover)}" alt="" loading="lazy" onerror="this.remove()">`:""}${b.h!=null?`<span class="hrs">${fmtH(b.h)}</span>`:""}<b>${esc(b.t)}</b>${b.author?`<small>${esc(b.author)}</small>`:""}</div>`;
     return `<div class="cover" style="background:linear-gradient(165deg,${b.c},#06162C)"><span class="hrs">${b.h}h</span><b>${b.t}</b><small>${b.a}</small></div>`;
   }
   let shelfMode="month";
@@ -1506,9 +1545,28 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     const H=b.h?Math.floor(b.h):0, Mi=b.h?Math.round((b.h-H)*60):0;
     $("#bkH").value=b.h?(Mi===60?H+1:H):""; $("#bkM").value=b.h?(Mi===60?0:Mi):"";
     $("#bkDate").value=b.finished||""; $("#bkDate").max=dayKey(new Date());
+    newCover=undefined; showBkCover(b.cover); $("#bkCovers").innerHTML=""; $("#bkCoverMsg").textContent="";
+    $("#bkEst").hidden=!b.hEst; $("#bkEst").textContent=b.hEst&&b.pages?`Length is an estimate from ${b.pages.toLocaleString()} pages. Change it if you know the runtime.`:"Length is an estimate. Change it if you know the runtime.";
     openPanel($("#bookSheet"));
   }
   $("#bkNoDate").onclick=()=>{ $("#bkDate").value=""; };
+  // "Find cover": books typed in by hand can pick up a real cover
+  let newCover, coverHits=[];   // newCover: undefined = unchanged, null = removed
+  function showBkCover(url){ $("#bkCoverPrev").innerHTML=coverHTML({...editing,t:$("#bkTitle").value||editing.t,cover:url,h:null,author:null},true); $("#bkNoCover").hidden=!url; }
+  $("#bkFindCover").onclick=async()=>{
+    const q=[$("#bkTitle").value,$("#bkAuthor").value].join(" ").trim(); if(!q) return;
+    $("#bkCovers").innerHTML="";
+    if(!navigator.onLine){ $("#bkCoverMsg").textContent="You're offline, so covers can't be found right now."; return; }
+    $("#bkCoverMsg").textContent="Looking for covers…";
+    try{
+      coverHits=(await searchBooks(q)).filter(r=>r.cover).slice(0,8);
+      $("#bkCoverMsg").textContent=coverHits.length?"Tap a cover to use it.":"No covers found for this book.";
+      $("#bkCovers").innerHTML=coverHits.map((r,i)=>`<button type="button" data-i="${i}" aria-label="${esc(r.t)}${r.author?" by "+esc(r.author):""}"><img src="${esc(r.cover)}" alt="" loading="lazy" onerror="this.parentNode.remove()"></button>`).join("");
+    }catch(e){ $("#bkCoverMsg").textContent=FAIL_MSG.replace(", or add the book by hand","")+""; }
+  };
+  $("#bkCovers").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return; $$("#bkCovers button").forEach(x=>x.classList.toggle("on",x===b)); newCover=coverHits[+b.dataset.i].cover; showBkCover(newCover); });
+  $("#bkNoCover").onclick=()=>{ newCover=null; $$("#bkCovers button").forEach(x=>x.classList.remove("on")); showBkCover(null); };
+  $("#bkH").addEventListener("input",()=>{ $("#bkEst").hidden=true; }); $("#bkM").addEventListener("input",()=>{ $("#bkEst").hidden=true; });
   function afterBooksChanged(){ save(); renderHero(); renderShelf(shelfMode); renderShelfAll(); recomputeMedals(); renderInsights(); }
   $("#bkSave").onclick=()=>{
     const b=editing; if(!b) return;
@@ -1519,6 +1577,8 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     b.t=t; b.author=titleCase($("#bkAuthor").value)||null; b.series=titleCase($("#bkSeries").value)||null;
     const num=parseInt($("#bkNum").value,10); b.num=num>0?num:null; b.genre=$("#bkGenre").value||null; b.h=h;
     b.finished=$("#bkDate").value||null;   // blank = backlog: counts toward totals, never toward streaks
+    if(newCover!==undefined){ b.cover=newCover||null; saveCover(b.cover); }
+    if(Math.abs(delta)>1e-9) b.hEst=false;
     closePanel(); afterBooksChanged();
     toast(Math.abs(delta)>1e-9?`Saved · ${delta>0?"+":"−"}${hm(Math.abs(delta))} on your total`:"Saved");
     showPendingEarned();
@@ -1532,11 +1592,90 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
   document.addEventListener("click",e=>{ const c=e.target.closest("[data-book]"); if(c) openBook(c.dataset.book); });
   document.addEventListener("keydown",e=>{ if((e.key==="Enter"||e.key===" ")&&e.target.matches&&e.target.matches("div[data-book]")){ e.preventDefault(); openBook(e.target.dataset.book); } });
 
-  /* free-type book entry — shared by the Add books screen and the plus-button sheet.
-     TODO: this is a stopgap. Replace the typed title/hours with a real book search backed by the
-     book database, which will supply the cover art and runtime for each result. */
-  function addBook(title,hours,genre,author,finished){
-    const entry={id:uid(),t:title,author:author||null,series:null,h:hours,c:CLOTH[clothN++%CLOTH.length],added:new Date().toISOString(),finished:finished||null,ph:true,genre:genre||null};
+  /* ---- book search: Open Library first (free, no key), Google Books when it finds nothing ----
+     Searches wait for a 300 ms pause in typing, and recent searches are remembered so the same
+     search isn't sent twice. Audiobook runtimes aren't in these sources, so hours are estimated
+     from the page count and labelled as an estimate. */
+  const PAGES_PER_HOUR=30;
+  const SEARCH_KEY="earmark.search.v1";
+  const searchMemo=new Map();
+  try{ (JSON.parse(localStorage.getItem(SEARCH_KEY))||[]).forEach(([k,v])=>searchMemo.set(k,v)); }catch(e){}
+  function remember(k,v){ searchMemo.delete(k); searchMemo.set(k,v); while(searchMemo.size>40) searchMemo.delete(searchMemo.keys().next().value); try{ localStorage.setItem(SEARCH_KEY,JSON.stringify([...searchMemo])); }catch(e){} }
+  // subject tags → the app's genres; the first rule that matches wins
+  const GENRE_RULES=[["truecrime",/true crime/],["ya",/young adult|teen/],["children",/juvenile|children/],["scifi",/science fiction|sci-fi|space opera|dystopia/],["fantasy",/fantasy/],
+    ["mystery",/mystery|thriller|detective|crime|suspense/],["romance",/romance|love stories/],["horror",/horror|ghost stories/],["western",/western/],["humor",/humor|humour/],
+    ["classic",/classic/],["biography",/biography|autobiograph/],["memoir",/memoir/],["history",/\bhistory\b/],["selfhelp",/self-help|self help|personal development|self-actualization|success/],
+    ["business",/business|economics|management|finance|entrepreneur/],["psychology",/psychology/],["philosophy",/philosophy/],["religion",/religion|spiritual|christian|bible|buddhis|theology/],
+    ["science",/science|physics|biology|astronomy|chemistry|evolution/],["litfic",/fiction/],["nonfiction",/nonfiction|non-fiction|essays/]];
+  const genreOf=subjects=>{ const all=(subjects||[]).join(" | ").toLowerCase(); const hit=GENRE_RULES.find(([,re])=>re.test(all)); return hit?hit[0]:""; };
+  // "The Way of Kings (The Stormlight Archive, #1)" → series and number, when a source gives them
+  function seriesOf(title,subjects){
+    const m=/\(([^()#]+?),?\s*#\s*(\d+)\)\s*$/.exec(title||"");
+    if(m) return {t:title.slice(0,m.index).trim(),series:m[1].trim(),num:+m[2]};
+    const tag=(subjects||[]).find(x=>/^series:/i.test(x));
+    return {t:title,series:tag?tag.slice(7).replace(/_/g," ").trim():null,num:null};
+  }
+  const estHours=pages=>pages>0?Math.max(.5,Math.round(pages/PAGES_PER_HOUR*2)/2):null;
+  async function openLibrary(q,signal){
+    const r=await fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(q)}&limit=8&fields=key,title,author_name,first_publish_year,cover_i,number_of_pages_median,subject`,{signal});
+    if(!r.ok) throw new Error("Open Library "+r.status);
+    return ((await r.json()).docs||[]).map(d=>({...seriesOf(d.title,d.subject),src:"openlibrary",key:d.key,author:(d.author_name||[])[0]||null,year:d.first_publish_year||null,
+      cover:d.cover_i?`https://covers.openlibrary.org/b/id/${d.cover_i}-M.jpg`:null,pages:d.number_of_pages_median||null,genre:genreOf(d.subject)}));
+  }
+  async function googleBooks(q,signal){
+    const r=await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&maxResults=8&printType=books`,{signal});
+    if(!r.ok) throw new Error("Google Books "+r.status);
+    return ((await r.json()).items||[]).map(it=>{ const v=it.volumeInfo||{}, img=v.imageLinks&&(v.imageLinks.thumbnail||v.imageLinks.smallThumbnail);
+      return {...seriesOf(v.title||""),src:"googlebooks",key:it.id,author:(v.authors||[])[0]||null,year:v.publishedDate?+String(v.publishedDate).slice(0,4)||null:null,
+        cover:img?img.replace(/^http:/,"https:").replace("&edge=curl",""):null,pages:v.pageCount||null,genre:genreOf(v.categories)}; }).filter(x=>x.t);
+  }
+  async function searchBooks(q,signal){
+    const k=q.trim().toLowerCase().replace(/\s+/g," ");
+    if(searchMemo.has(k)) return searchMemo.get(k);
+    let found=null, failed=false;
+    try{ found=await openLibrary(k,signal); }catch(e){ if(e.name==="AbortError") throw e; failed=true; }
+    if(!found||!found.length){ try{ const g=await googleBooks(k,signal); if(g.length||!found) found=g; failed=false; }catch(e){ if(e.name==="AbortError") throw e; if(!found) throw e; } }
+    if(!failed) remember(k,found);
+    return found;
+  }
+  // keep a book's cover on the device so the shelf works offline (the service worker serves it)
+  function saveCover(url){
+    if(!url||!("caches" in window)) return;
+    caches.open("earmark-covers").then(c=>c.match(url).then(hit=>hit||fetch(url,{mode:"no-cors"}).then(r=>c.put(url,r)))).catch(()=>{});
+  }
+  const OFFLINE_MSG="You're offline, so search isn't available right now. You can add the book by hand instead.";
+  const FAIL_MSG="Search isn't working right now. Check your connection, or add the book by hand.";
+  const thumb=r=>`<span class="bscov" style="--cloth:${coverTone(r.t)}">${r.cover?`<img src="${esc(r.cover)}" alt="" loading="lazy" onerror="this.remove()">`:""}</span>`;
+  // the search box, its results, and "Can't find it? Add it manually"
+  function mountSearch(box,{onPick,onManual}){
+    box.innerHTML=`<div class="field"><input type="search" class="bsq" placeholder="Search by title or author" autocomplete="off" autocapitalize="words" enterkeyhint="search" aria-label="Search for a book"></div>
+      <div class="bsres" role="list"></div><p class="bsstatus" aria-live="polite"></p><button class="linkbtn bsmanual" type="button">Can't find it? Add it manually</button>`;
+    const q=box.querySelector(".bsq"), list=box.querySelector(".bsres"), status=box.querySelector(".bsstatus");
+    let timer=null, ctl=null, results=[];
+    const say=t=>{ status.textContent=t; };
+    async function run(){
+      const text=q.value.trim(); list.innerHTML=""; results=[];
+      if(text.length<2){ say(""); return; }
+      if(!navigator.onLine&&!searchMemo.has(text.toLowerCase().replace(/\s+/g," "))){ say(OFFLINE_MSG); return; }
+      if(ctl) ctl.abort(); ctl=new AbortController(); say("Searching…");
+      try{
+        results=await searchBooks(text,ctl.signal);
+        if(q.value.trim()!==text) return;
+        say(results.length?"":"No matches. Try the author's name, or add it by hand.");
+        list.innerHTML=results.map((r,i)=>`<button class="bsrow" type="button" role="listitem" data-i="${i}">${thumb(r)}<span class="bsmeta"><b>${esc(r.t)}</b><small>${esc([r.author,r.year].filter(Boolean).join(" · ")||"Unknown author")}</small></span></button>`).join("");
+      }catch(e){ if(e.name!=="AbortError") say(navigator.onLine?FAIL_MSG:OFFLINE_MSG); }
+    }
+    q.addEventListener("input",()=>{ clearTimeout(timer); timer=setTimeout(run,300); });
+    q.addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); clearTimeout(timer); run(); } });
+    list.addEventListener("click",e=>{ const b=e.target.closest(".bsrow"); if(b) onPick(results[+b.dataset.i]); });
+    box.querySelector(".bsmanual").onclick=onManual;
+    return {clear(){ clearTimeout(timer); if(ctl) ctl.abort(); q.value=""; list.innerHTML=""; results=[]; say(""); }, focus(){ q.focus(); }, input:q, manualBtn:box.querySelector(".bsmanual")};
+  }
+
+  /* book entry — onboarding, the plus-button sheet and the Add books screen: search, or type it in */
+  function addBook(title,hours,genre,author,finished,extra={}){
+    const entry=Object.assign({id:uid(),t:title,author:author||null,series:null,h:hours,c:CLOTH[clothN++%CLOTH.length],added:new Date().toISOString(),finished:finished||null,ph:true,genre:genre||null},extra);
+    saveCover(entry.cover);
     LIB.unshift(entry);               // newest book sits first on the shelf
     if(hours!=null) bump(hours);      // hours count toward the lifetime total only when given
     save(); renderShelf(shelfMode); renderShelfAll();
@@ -1545,9 +1684,25 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
     return entry;
   }
   // dated: books from "Finished a book" are finished today; elsewhere the date is optional (blank = backlog)
-  function wireEntry({title,author,hours,genre,date,btn,list,dated=false}){
-    const tIn=$(title), aIn=$(author), hrIn=$(hours), gIn=$(genre), dIn=date?$(date):null, listEl=$(list), added=[];
+  function wireEntry({title,author,hours,genre,date,btn,list,search,manual,dated=false}){
+    const tIn=$(title), aIn=$(author), hrIn=$(hours), gIn=$(genre), dIn=date?$(date):null, listEl=$(list), added=[], man=$(manual);
     if(dIn) dIn.max=dayKey(new Date());
+    // a picked search result: its cover and details, shown above the fields it filled in
+    const pickEl=document.createElement("div"); pickEl.className="bspick"; pickEl.hidden=true; man.prepend(pickEl);
+    const estEl=document.createElement("p"); estEl.className="bsest"; estEl.hidden=true; hrIn.closest(".field").after(estEl);
+    let pick=null;
+    const sr=mountSearch($(search),{
+      onPick(r){
+        pick=r; man.hidden=false; sr.manualBtn.hidden=true; sr.input.closest(".bsearch").querySelector(".bsres").innerHTML="";
+        tIn.value=r.t; aIn.value=r.author||""; gIn.value=r.genre||""; const est=estHours(r.pages); hrIn.value=est!=null?est:"";
+        pickEl.hidden=false; pickEl.innerHTML=`${thumb(r)}<span class="bsmeta"><b>${esc(r.t)}</b><small>${esc([r.author,r.year,r.series?`${r.series}${r.num?" #"+r.num:""}`:""].filter(Boolean).join(" · "))}</small></span><button class="linkmini" type="button">Change</button>`;
+        estEl.hidden=est==null; estEl.textContent=est!=null?`Hours are an estimate from ${r.pages.toLocaleString()} pages (about ${PAGES_PER_HOUR} pages an hour). Change them if you know the runtime.`:"";
+        if(est==null) hrIn.placeholder="Hours, if you know them";
+      },
+      onManual(){ pick=null; pickEl.hidden=true; estEl.hidden=true; man.hidden=false; sr.manualBtn.hidden=true; tIn.focus(); }
+    });
+    pickEl.addEventListener("click",e=>{ if(e.target.closest(".linkmini")){ pick=null; pickEl.hidden=true; estEl.hidden=true; man.hidden=true; sr.manualBtn.hidden=false; tIn.value=aIn.value=hrIn.value=""; gIn.value=""; sr.focus(); } });
+    hrIn.addEventListener("input",()=>{ estEl.hidden=true; if(pick) pick.edited=true; });
     function renderList(){
       listEl.innerHTML=added.length?`<div class="lbl">Added</div>`+added.map(b=>`<div class="item"><b>${esc(b.t)}</b><small>${b.h!=null?fmtH(b.h)+" · counted":"no hours"}</small></div>`).join("")
         :`<div class="empty">${I.book}<span>Books you add will appear here.</span></div>`;
@@ -1557,17 +1712,22 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
       const raw=hrIn.value.trim(), n=parseFloat(raw);
       const hours=raw!==""&&isFinite(n)&&n>0?n:null;   // blank or invalid → book only, no hours
       const finished=dIn&&dIn.value?dIn.value:(dated?dayKey(new Date()):null);
-      const b=addBook(t,hours,gIn.value,titleCase(aIn.value),finished); added.push(b); renderList();
-      tIn.value=""; aIn.value=""; hrIn.value=""; gIn.value=""; if(dIn) dIn.value=""; tIn.focus();
+      const extra=pick?{cover:pick.cover||null,pages:pick.pages||null,year:pick.year||null,series:pick.series||null,num:pick.num||null,
+        hEst:hours!=null&&!pick.edited&&estHours(pick.pages)===hours,src:pick.src,srcKey:pick.key}:{};
+      const fromSearch=!!pick;
+      const b=addBook(t,hours,gIn.value,titleCase(aIn.value),finished,extra); added.push(b); renderList();
+      tIn.value=""; aIn.value=""; hrIn.value=""; gIn.value=""; if(dIn) dIn.value=""; hrIn.placeholder="Optional";
+      pick=null; pickEl.hidden=true; estEl.hidden=true;
+      if(fromSearch){ man.hidden=true; sr.manualBtn.hidden=false; sr.clear(); sr.focus(); } else tIn.focus();   // searched: back to search; typed: ready for the next one
       toast(hours!=null?`${t} added · ${fmtH(hours)} to your total`:`${t} added to your shelf`);
     }
     $(btn).onclick=submit;
     [tIn,aIn,hrIn].forEach(i=>i.addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); submit(); } }));
-    return {reset(){ added.length=0; renderList(); tIn.value=""; aIn.value=""; hrIn.value=""; gIn.value=""; if(dIn) dIn.value=""; }};
+    return {reset(){ added.length=0; renderList(); tIn.value=""; aIn.value=""; hrIn.value=""; gIn.value=""; if(dIn) dIn.value=""; pick=null; pickEl.hidden=true; estEl.hidden=true; man.hidden=true; sr.manualBtn.hidden=false; sr.clear(); }};
   }
-  wireEntry({title:"#addTitle",author:"#addAuthor",hours:"#addHours",genre:"#addGenre",date:"#addDate",btn:"#addBtn",list:"#addedList"});
-  wireEntry({title:"#obTitle",author:"#obAuthor",hours:"#obHours",genre:"#obGenre",btn:"#obAddBtn",list:"#obAddedList"});
-  const sheetEntry=wireEntry({title:"#sheetTitle",author:"#sheetAuthor",hours:"#sheetHours",genre:"#sheetGenre",btn:"#sheetAddBtn",list:"#sheetAddedList",dated:true});
+  const addEntry=wireEntry({title:"#addTitle",author:"#addAuthor",hours:"#addHours",genre:"#addGenre",date:"#addDate",btn:"#addBtn",list:"#addedList",search:"#addSearch",manual:"#addManual"});
+  wireEntry({title:"#obTitle",author:"#obAuthor",hours:"#obHours",genre:"#obGenre",btn:"#obAddBtn",list:"#obAddedList",search:"#obSearch",manual:"#obManual"});
+  const sheetEntry=wireEntry({title:"#sheetTitle",author:"#sheetAuthor",hours:"#sheetHours",genre:"#sheetGenre",btn:"#sheetAddBtn",list:"#sheetAddedList",search:"#sheetSearch",manual:"#sheetManual",dated:true});
   $("#addDone").onclick=()=>{ back(); showPendingEarned(); };
 
   /* derive(): today / week / month / year, streaks, the medal counts and the chart data, all from the
