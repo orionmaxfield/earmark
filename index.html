@@ -746,6 +746,21 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
 .fincover .cover b{font-size:14px}
 .fincover .cover .hrs{display:none}
 .earned.open .fincover .cover{animation:mint var(--med) cubic-bezier(.34,1.4,.64,1) both}
+
+/* yearly book goal ring, streak rest days */
+.bookgoal{display:flex;align-items:center;gap:16px;margin-top:12px;text-align:left;padding:14px 16px}
+.bookgoal[hidden],.restdays[hidden]{display:none}
+.bookgoal svg{width:64px;height:64px;flex:0 0 auto}
+.bookgoal .rtrack{fill:none;stroke:var(--well);stroke-width:7}
+.bookgoal .rfill{fill:none;stroke:url(#ringG);stroke-width:7;stroke-linecap:round;transform:rotate(-90deg);transform-origin:50% 50%;transition:stroke-dashoffset var(--med) var(--ease)}
+.bookgoal .rnum{font-family:var(--font);font-size:20px;font-weight:800;fill:var(--ink)}
+.bookgoal b{display:block;font-size:var(--t-16);font-weight:600;line-height:1.35}
+.bookgoal small{display:block;color:var(--ink-2);font-size:var(--t-14);margin-top:2px;line-height:1.4}
+.bookgoal small.ahead{color:var(--accent)}
+.restdays{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:8px;font-size:var(--t-12);font-weight:600;color:var(--ink-3);letter-spacing:.02em}
+.restdays i{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:var(--accent-dim);color:var(--accent)}
+.restdays i svg{width:12px;height:12px}
+.streakwrap .sub.rest{color:var(--accent)}
 </style>
 </head>
 <body>
@@ -819,6 +834,7 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
       <div class="medal streakbadge m-locked" id="streakMedal" role="img" aria-label="0-day streak"><div class="sb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-9z"/></svg><b id="streakNum">0</b></div></div>
       <div class="unit">Day streak</div>
       <div class="sub" id="streakSub"></div>
+      <div class="restdays" id="restDays" hidden></div>
     </div>
     <div class="boxes">
       <button class="box" type="button" data-stats="day"><b id="t1">0h</b><small>today</small></button>
@@ -833,6 +849,7 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
       <div class="goal"><div class="gl"><span>Daily goal</span><b id="gDay"></b></div><div class="bar"><i id="gDayBar" style="width:0%"></i></div></div>
       <div class="goal"><div class="gl"><span>Weekly goal</span><b id="gWeek"></b></div><div class="bar"><i id="gWeekBar" style="width:0%"></i></div></div>
     </div>
+    <div class="card bookgoal" id="bookGoal" hidden></div>
     <div class="card nudge" id="backupNudge" hidden>
       <div class="nic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19.5h14"/></svg></div>
       <div class="nt"><b>Save a backup of your listening history</b><small>A file you keep, in case this browser clears its data.</small></div>
@@ -929,14 +946,17 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
   <div class="sgroup">
     <label class="srow static"><span class="sl">Daily goal</span><span class="sv"><input id="setDaily" class="snum" type="number" inputmode="numeric" min="1" max="1440"> min</span></label>
     <label class="srow static"><span class="sl">Weekly goal</span><span class="sv"><input id="setWeekly" class="snum" type="number" inputmode="decimal" min="0.5" max="168" step="0.5"> hours</span></label>
+    <label class="srow static"><span class="sl">Books this year</span><span class="sv"><input id="setBooks" class="snum" type="number" inputmode="numeric" min="0" max="1000" placeholder="24"> books</span></label>
     <div class="srow static"><span class="sl">Show goal progress on Home</span><button class="sw" id="setShowGoals" role="switch" aria-label="Show goal progress on Home"></button></div>
   </div>
 
   <div class="sgh">Streaks</div>
   <div class="sgroup">
+    <div class="srow static"><span class="sl">Rest days</span><button class="sw" id="setRest" role="switch" aria-label="Rest days"></button></div>
     <label class="srow static"><span class="sl">Minimum to count a day</span><span class="sv"><input id="setMinMin" class="snum" type="number" inputmode="numeric" min="1" max="600"> min</span></label>
     <div class="srow static stack"><span class="sl">Week starts on</span><div class="seg sseg" data-set="weekStart" role="group" aria-label="Week starts on"><button data-v="sun">Sunday</button><button data-v="mon">Monday</button></div></div>
   </div>
+  <p class="sgnote">Rest days: earn one for every 7 days in a row, up to 2 saved. If you miss a day, one is used for you and your streak carries on. Rest days don't count toward Perfect Week or Perfect Month.</p>
 
   <div class="sgh">Display</div>
   <div class="sgroup">
@@ -1209,7 +1229,7 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
   const TEST_END_DATE=null;          // TODO: the last day of the beta, e.g. "2026-12-15" (shown on the welcome page)
   const FOUNDING_CUTOFF_DATE=null;   // TODO: e.g. "2027-01-01". Only people whose first use is before this date earn Founding Listener; while null, everyone does
   const BACKUP_VERSION=1;   // the format of exported backups; restore reads this version and every one before it
-  const SETTINGS_DEFAULT={email:"",dailyGoalMin:30,weeklyGoalH:5,showGoals:true,streakMinMin:5,weekStart:"mon",timeFormat:"hm",reduceMotion:"system",chartStyle:"bars"};
+  const SETTINGS_DEFAULT={email:"",dailyGoalMin:30,weeklyGoalH:5,showGoals:true,streakMinMin:5,weekStart:"mon",timeFormat:"hm",reduceMotion:"system",chartStyle:"bars",bookGoal:24,restDays:true};
   const fresh=()=>({v:1,onboarded:false,user:{name:""},total:0,todayH:0,weekH:0,monthH:0,lastMonthH:0,yearH:0,
     bestDayH:0,streak:0,bestStreak:0,lastLog:null,owl:false,byWeekday:[0,0,0,0,0,0,0],weekdayDays:[0,0,0,0,0,0,0],
     notes:[],books:[],past:[],keys:{day:"",week:"",month:"",year:""},
@@ -1684,7 +1704,7 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
   $("#bkCovers").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return; $$("#bkCovers button").forEach(x=>x.classList.toggle("on",x===b)); newCover=coverHits[+b.dataset.i].cover; showBkCover(newCover); });
   $("#bkNoCover").onclick=()=>{ newCover=null; $$("#bkCovers button").forEach(x=>x.classList.remove("on")); showBkCover(null); };
   $("#bkH").addEventListener("input",()=>{ $("#bkEst").hidden=true; }); $("#bkM").addEventListener("input",()=>{ $("#bkEst").hidden=true; });
-  function afterBooksChanged(){ derive(); save(); renderHero(); renderNow(); renderShelf(shelfMode); renderShelfAll(); recomputeMedals(); renderInsights(); }
+  function afterBooksChanged(){ derive(); save(); renderHero(); renderGoals(); renderNow(); renderShelf(shelfMode); renderShelfAll(); recomputeMedals(); renderInsights(); }
   $("#bkSave").onclick=()=>{
     const b=editing; if(!b) return;
     const t=titleCase($("#bkTitle").value); if(!t){ $("#bkTitle").focus(); toast("A book needs a title"); return; }
@@ -1797,7 +1817,7 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
     saveCover(entry.cover);
     LIB.unshift(entry);               // newest book sits first on the shelf
     if(hours!=null&&isDone(entry)) bump(hours);   // a finished book's hours count toward the lifetime total
-    derive(); save(); renderShelf(shelfMode); renderShelfAll(); renderNow();
+    derive(); save(); renderShelf(shelfMode); renderShelfAll(); renderNow(); renderGoals();
     recomputeMedals();                // genre-stretch medals may have moved
     renderInsights();
     return entry;
@@ -1876,10 +1896,24 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
     const listen=new Set([...Object.keys(dayMin),...L.days]);
     const qual=new Set([...Object.keys(dayMin).filter(d=>dayMin[d]>=minQ),...L.days]);   // days that count toward a streak
     const today=dayKey(new Date()), yd=new Date(); yd.setDate(yd.getDate()-1);
-    let streak=0, c=qual.has(today)?parseDay(today):qual.has(dayKey(yd))?yd:null;
-    while(c&&qual.has(dayKey(c))){ streak++; c.setDate(c.getDate()-1); }
     const runOf=set=>{ const a=[...set].sort(); let best=0,cur=0,prev=null; a.forEach(d=>{ cur=prev&&daysBetween(prev,d)===1?cur+1:1; best=Math.max(best,cur); prev=d; }); return best; };
-    ST.streak=streak; ST.bestStreak=Math.max(runOf(qual),L.bestStreak||0,streak);
+    let streak=0, restBest=0, restBank=0; const restUsed=[];
+    if(ST.settings.restDays&&qual.size){
+      // walk the calendar: every 7 streak days earns a rest day (2 saved at most); a missed day uses one
+      let earn=0; const end=parseDay(today);
+      for(const d=parseDay([...qual].sort()[0]);d<=end;d.setDate(d.getDate()+1)){
+        const k=dayKey(d);
+        if(qual.has(k)){ streak++; if(++earn>=7){ earn=0; restBank=Math.min(2,restBank+1); } }
+        else if(k===today){}                                              // today isn't over yet
+        else if(streak>0&&restBank>0){ restBank--; restUsed.push(k); }     // rest day: the streak carries on
+        else { streak=0; earn=0; }
+        restBest=Math.max(restBest,streak);
+      }
+    } else {
+      let c=qual.has(today)?parseDay(today):qual.has(dayKey(yd))?yd:null;
+      while(c&&qual.has(dayKey(c))){ streak++; c.setDate(c.getDate()-1); }
+    }
+    ST.streak=streak; ST.bestStreak=Math.max(runOf(qual),restBest,L.bestStreak||0,streak);
     const k=periodKeys(), C=ST.carry||{}, carry=(p,key)=>C[p]&&C[p].k===key?C[p].h:0;
     const weekMin={}, monthMin={}, seasonH={}, byWd=[0,0,0,0,0,0,0], wdDays=[0,0,0,0,0,0,0];
     Object.entries(dayMin).forEach(([d,m])=>{
@@ -1911,7 +1945,7 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
     const bookMin={}; ST.sessions.forEach(x=>{ if(x.book) bookMin[x.book]=(bookMin[x.book]||0)+x.m; });
     Object.entries(cDay).forEach(([d,h])=>{ const wk=weekKeyOf(parseDay(d)), mk=d.slice(0,7), y=d.slice(0,4); cWeek[wk]=(cWeek[wk]||0)+h; cMonth[mk]=(cMonth[mk]||0)+h; cYear[y]=(cYear[y]||0)+h; });
     const cKeys=Object.keys(cDay).filter(d=>cDay[d]>0).sort();
-    D={listen,dayMin,notesByDay,bookMin,cDay,cWeek,cMonth,cYear,cFirst:cKeys[0]||null,cDays:cKeys.length,
+    D={listen,dayMin,notesByDay,bookMin,restBank,restUsed,cDay,cWeek,cMonth,cYear,cFirst:cKeys[0]||null,cDays:cKeys.length,
       run60:runOf(new Set(Object.keys(dayMin).filter(d=>dayMin[d]>=60))),
       bestWeekH:Math.max(0,...Object.values(weekMin))/60, bestMonthH:Math.max(0,...Object.values(monthMin))/60, pbs:beats(weekMin)+beats(monthMin),
       pweeks:Object.values(wkC).filter(n=>n>=7).length,
@@ -2128,14 +2162,27 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
   document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible"&&ST.timer) renderTimer(); });
   $$("[data-back]").forEach(b=>b.onclick=showMenu);
   function bump(h){ ST.total+=h; save(); renderHero(); }
+  const REST_IC=`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 15A8 8 0 0 1 9 4a8 8 0 1 0 11 11z"/></svg>`;
   /* goals on Home */
   function renderGoals(){
-    const g=$("#goals"), S=ST.settings; g.hidden=!S.showGoals; if(!S.showGoals) return;
+    const g=$("#goals"), S=ST.settings; g.hidden=!S.showGoals; renderBookGoal(); if(!S.showGoals) return;
     const dm=Math.round(ST.todayH*60), dg=Math.max(1,+S.dailyGoalMin||30), wg=Math.max(.5,+S.weeklyGoalH||5);
     const dayMet=dm>=dg, weekMet=ST.weekH>=wg;
     $("#gDay").textContent=dayMet?`Goal met · ${dm} min`:`${dm} of ${dg} min`; $("#gDay").classList.toggle("met",dayMet);
     $("#gWeek").textContent=weekMet?`Goal met · ${hm(ST.weekH)}`:`${hm(ST.weekH)} of ${hm(wg)}`; $("#gWeek").classList.toggle("met",weekMet);
     $("#gDayBar").style.width=`${Math.min(100,dm/dg*100)}%`; $("#gWeekBar").style.width=`${Math.min(100,ST.weekH/wg*100)}%`;
+  }
+  // "9 of 24 books this year": a ring, and a gentle note when ahead of pace (never a "behind")
+  function renderBookGoal(){
+    const goal=Math.max(0,parseInt(ST.settings.bookGoal,10)||0), el=$("#bookGoal");
+    el.hidden=!ST.settings.showGoals||!goal; if(el.hidden) return;
+    const now=new Date(), y=String(now.getFullYear()), done=LIB.filter(b=>isDone(b)&&b.finished&&b.finished.startsWith(y)).length;
+    const start=new Date(now.getFullYear(),0,1), days=(new Date(now.getFullYear()+1,0,1)-start)/864e5, pace=goal*((now-start)/864e5+1)/days;
+    const note=done>=goal?["ahead","Goal reached. Every book from here is a bonus."]:done>0&&done>=Math.ceil(pace)?["ahead","Ahead of pace. Nice going."]:["",`${plural(goal-done,"book","books")} to go this year.`];
+    const r=27, len=2*Math.PI*r, f=Math.min(1,done/goal);
+    el.innerHTML=`<svg viewBox="0 0 64 64" role="img" aria-label="${done} of ${goal} books this year"><defs><linearGradient id="ringG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#34F9B2"/><stop offset="1" stop-color="#00C0CA"/></linearGradient></defs>
+      <circle class="rtrack" cx="32" cy="32" r="${r}"/><circle class="rfill" cx="32" cy="32" r="${r}" stroke-dasharray="${len.toFixed(2)}" stroke-dashoffset="${(len*(1-f)).toFixed(2)}"${f?"":' stroke-opacity="0"'}/><text class="rnum" x="32" y="39" text-anchor="middle">${done}</text></svg>
+      <div><b>${done} of ${goal} books this year</b><small class="${note[0]}">${note[1]}</small></div>`;
   }
   /* hero + rank card, all from state */
   function renderHero(){
@@ -2148,6 +2195,15 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
     $("#streakMedal").className=`medal streakbadge m-${tier} ${ringCls(sf,lvNow)}`;
     $("#streakMedal").setAttribute("aria-label",`${ST.streak}-day streak${lvNow?`, ${tier} level`:""}`);
     $("#streakSub").textContent=lvNow&&nxt?`${cap(tier)} streak · ${cap(TIERS[lvNow])} in ${left} day${left===1?"":"s"}`:nxt?`${cap(TIERS[0])} streak at ${nxt.t} days`:"The highest streak level there is";
+    const ydk=(()=>{ const y=new Date(); y.setDate(y.getDate()-1); return dayKey(y); })(), restToday=ST.settings.restDays&&ST.streak>0&&(D.restUsed||[]).includes(ydk);
+    if(restToday){
+      $("#streakSub").textContent=`Rest day used. Your ${ST.streak}-day streak is safe.`;
+      if(ST.restNotice!==ydk){ ST.restNotice=ydk; save(); setTimeout(()=>toast(`Rest day used. Your ${ST.streak}-day streak is safe.`),1800); }
+    }
+    $("#streakSub").classList.toggle("rest",!!restToday);
+    const bank=ST.settings.restDays?D.restBank||0:0;
+    $("#restDays").hidden=!bank;
+    $("#restDays").innerHTML=bank?`${`<i aria-hidden="true">${REST_IC}</i>`.repeat(bank)}<span>${bank} rest day${bank>1?"s":""} saved</span>`:"";
     const GLOW={bronze:"212,164,122",silver:"226,229,234",gold:"233,211,155",platinum:"222,233,236",diamond:"205,227,238",obsidian:"207,195,230",meteorite:"220,198,174",iridium:"242,214,222",osmium:"203,216,247",celestial:"233,211,155"}, gl=$(".hero .glow");
     const rgb=GLOW[tier]||"169,182,201", a=GLOW[tier]?.16:.05;   // unlit: only a faint cool glow
     gl.style.setProperty("--hg",`rgba(${rgb},${a})`); gl.style.setProperty("--hg2",`rgba(${rgb},${a/3})`);
@@ -2582,7 +2638,8 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
   function renderSettings(){
     const S=ST.settings;
     $("#setName").value=ST.user.name; $("#setEmail").textContent=S.email||"Not connected";
-    $("#setDaily").value=S.dailyGoalMin; $("#setWeekly").value=S.weeklyGoalH; $("#setMinMin").value=S.streakMinMin;
+    $("#setDaily").value=S.dailyGoalMin; $("#setWeekly").value=S.weeklyGoalH; $("#setMinMin").value=S.streakMinMin; $("#setBooks").value=S.bookGoal||"";
+    const rs=$("#setRest"); rs.classList.toggle("on",!!S.restDays); rs.setAttribute("aria-checked",!!S.restDays);
     const sw=$("#setShowGoals"); sw.classList.toggle("on",!!S.showGoals); sw.setAttribute("aria-checked",!!S.showGoals);
     $$(".sseg").forEach(seg=>{ const k=seg.dataset.set, v=k in S?S[k]:ST[k]; seg.querySelectorAll("button").forEach(b=>{ b.classList.toggle("on",b.dataset.v===v); b.setAttribute("aria-pressed",b.dataset.v===v); }); });
     $("#setLastBackup").textContent=ST.lastBackup?fmtDay(ST.lastBackup):"Never";
@@ -2592,7 +2649,9 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
   $("#setName").addEventListener("blur",e=>{ ST.user.name=e.target.value.trim(); e.target.value=ST.user.name; save(); });
   const numSetting=(sel,key,min,max)=>$(sel).addEventListener("input",e=>{ const v=parseFloat(e.target.value); if(!isFinite(v)) return; ST.settings[key]=Math.min(max,Math.max(min,v)); refreshAll(); });
   numSetting("#setDaily","dailyGoalMin",1,1440); numSetting("#setWeekly","weeklyGoalH",.5,168); numSetting("#setMinMin","streakMinMin",1,600);
-  $$("#setDaily,#setWeekly,#setMinMin").forEach(i=>i.addEventListener("blur",renderSettings));
+  $("#setBooks").addEventListener("input",e=>{ const v=parseInt(e.target.value,10); ST.settings.bookGoal=isFinite(v)?Math.min(1000,Math.max(0,v)):0; save(); renderBookGoal(); });   // 0 or blank hides the ring
+  $$("#setDaily,#setWeekly,#setMinMin,#setBooks").forEach(i=>i.addEventListener("blur",renderSettings));
+  $("#setRest").onclick=()=>{ ST.settings.restDays=!ST.settings.restDays; refreshAll(); renderSettings(); };
   $("#setShowGoals").onclick=()=>{ ST.settings.showGoals=!ST.settings.showGoals; refreshAll(); renderSettings(); };
   $$(".sseg button").forEach(b=>b.onclick=()=>{
     const k=b.closest(".sseg").dataset.set, v=b.dataset.v;
@@ -2745,6 +2804,7 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
     $("#helpBody").innerHTML=`<h3>Streaks</h3>
       <p>A day counts toward your streak when you log at least ${n} minute${n==1?"":"s"} of listening that day. You can change the minimum in Settings.</p>
       <p>Log something every day to keep the streak going. If a day passes with nothing logged, the next session starts a new streak. Your best streak is kept forever.</p>
+      <p><b>Rest days</b> soften a missed day. You earn one for every 7 days in a row, and can save up to 2. If you miss a day and have one saved, it's used for you and your streak carries on. They don't count toward Perfect Week or Perfect Month, and you can turn them off in Settings › Streaks.</p>
       <p>The streak medal changes colour as it grows: bronze from 3 days, silver from 7, gold from 30, platinum from 100, diamond from 365, then obsidian, meteorite and iridium.</p>
       <h3>Hours</h3>
       <p><b>Listening you log</b> with the + button is dated. It counts toward everything: your totals, rank, streaks, goals and every medal.</p>
