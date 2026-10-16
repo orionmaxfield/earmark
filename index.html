@@ -310,10 +310,10 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
 .earned.open{display:flex}
 .earned .ebox{max-width:360px;width:100%;position:relative}
 .earned h3{font-size:var(--t-20);line-height:1.35;font-weight:600;color:var(--ink-2)}
-.earned .medal{width:148px;height:148px;margin:32px auto 24px}
-.earned .medal:before{inset:-8px}
-.earned .medal svg,.earned .medal span{width:56px;height:56px;font-size:var(--t-32)}
-.earned.open .medal{animation:mint var(--med) cubic-bezier(.34,1.4,.64,1) both}
+.earned .emedal .medal{width:148px;height:148px;margin:32px auto 24px}
+.earned .emedal .medal:before{inset:-8px}
+.earned .emedal .medal svg,.earned .emedal .medal span{width:56px;height:56px;font-size:var(--t-32)}
+.earned.open .emedal .medal{animation:mint var(--med) cubic-bezier(.34,1.4,.64,1) both}
 @keyframes mint{from{transform:scale(.86);opacity:0}to{transform:scale(1);opacity:1}}
 .earned .name{font-size:var(--t-32);font-weight:800;letter-spacing:-.02em;line-height:1.15}
 .earned .desc{color:var(--ink-2);margin-top:8px;font-size:var(--t-16)}
@@ -478,6 +478,152 @@ html.rm-on *,html.rm-on *:before,html.rm-on *:after{transition:none !important;a
 @media (prefers-reduced-motion:reduce){
   html:not(.rm-off) *,html:not(.rm-off) *:before,html:not(.rm-off) *:after{transition:none !important;animation:none !important}
 }
+
+/* medals: the full ladder — bronze, silver, gold, platinum, diamond, obsidian, meteorite, iridium, osmium, celestial */
+.medal{--rw:5px}
+.m-meteorite{--m-hi:#DCC6AE;--m-mid:#9C8169;--m-lo:#57473A}
+.m-iridium{--m-hi:#F2D6DE;--m-mid:#C4919F;--m-lo:#7D5562}
+.m-osmium{--m-hi:#CBD8F7;--m-mid:#7F96CB;--m-lo:#465A8C}
+.m-celestial{--m-hi:#E9D39B;--m-mid:#B5A0C9;--m-lo:#8B7CA8}
+.m-celestial:before{background:conic-gradient(from 200deg,#B86868,#CBA55A,#8FB07E,#6E9DBB,#9A8AC0,#B86868)}
+/* the ring grows more detailed with each level: plain ring → inner rim → double rim → gems → shimmer */
+.medal.r1:after{box-shadow:inset 0 1px 1px rgba(255,255,255,.05), inset 0 -2px 6px rgba(0,0,0,.4)}
+.medal.r3:after{box-shadow:inset 0 0 0 3px #081730, inset 0 0 0 4px var(--m-lo), inset 0 0 0 6px #0C1F3B, inset 0 0 0 7px var(--m-mid), inset 0 1px 1px rgba(255,255,255,.05), inset 0 -2px 6px rgba(0,0,0,.4)}
+.medal .gem{position:absolute;inset:calc(var(--rw) * -1);border-radius:50%;z-index:1;pointer-events:none;--g:calc(var(--rw) / 2);
+  background:radial-gradient(circle at 50% var(--g),#fff 0 1.4px,rgba(255,255,255,.35) 1.8px,transparent 2.6px),radial-gradient(circle at 50% calc(100% - var(--g)),#fff 0 1.4px,rgba(255,255,255,.35) 1.8px,transparent 2.6px),
+    radial-gradient(circle at var(--g) 50%,#fff 0 1.4px,rgba(255,255,255,.35) 1.8px,transparent 2.6px),radial-gradient(circle at calc(100% - var(--g)) 50%,#fff 0 1.4px,rgba(255,255,255,.35) 1.8px,transparent 2.6px)}
+.medal.shim:before{background:linear-gradient(115deg,var(--m-lo) 0%,var(--m-mid) 28%,var(--m-hi) 44%,#fff 50%,var(--m-hi) 56%,var(--m-mid) 72%,var(--m-lo) 100%);background-size:300% 300%;animation:shim 4.8s ease-in-out infinite}
+.m-celestial.shim:before{background:conic-gradient(from 200deg,#B86868,#CBA55A,#8FB07E,#6E9DBB,#9A8AC0,#B86868);animation:spin 14s linear infinite}
+@keyframes shim{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@keyframes spin{to{transform:rotate(1turn)}}
+/* "Mastered": a laurel wreath around the final level of any family */
+.medal .laurel{position:absolute;inset:-18%;pointer-events:none;color:var(--m-hi);opacity:.92}
+.medal .laurel svg{color:inherit}
+/* level dots under a medal: "level 3 of 8" */
+.lvdots{display:flex;justify-content:center;flex-wrap:wrap;gap:3px;margin:-4px auto 6px;max-width:84px}
+.lvdots i{width:5px;height:5px;border-radius:50%;background:var(--line-2)}
+.lvdots i.on{background:var(--m-hi)}
+.medal.ghost{opacity:.5;filter:saturate(.7)}
+/* medal detail: a timeline of every level */
+.earned .ebox{max-height:100%;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;padding:4px 2px}
+.earned .ebox::-webkit-scrollbar{display:none}
+.earned .emedal .medal{--rw:8px}
+.ltl{list-style:none;margin:20px 0 0;padding:0;text-align:left;border-top:1px solid var(--line)}
+.ltl:empty{display:none}
+.ltl li{display:flex;align-items:center;gap:12px;padding:10px 4px;border-bottom:1px solid var(--line)}
+.ltl .medal{width:34px;height:34px;margin:0 4px;flex:0 0 auto;--rw:3px}
+.ltl .medal:before{inset:-3px}
+.ltl .medal svg,.ltl .medal span{width:15px;height:15px;font-size:11px}
+.ltl .medal.r3:after{box-shadow:inset 0 0 0 2px #081730, inset 0 0 0 3px var(--m-lo), inset 0 0 0 4px #0C1F3B, inset 0 0 0 5px var(--m-mid)}
+.ltl .lt{flex:1;min-width:0}
+.ltl .lt b{display:block;font-size:var(--t-14);font-weight:600}
+.ltl .lt small{display:block;color:var(--ink-3);font-size:var(--t-12);margin-top:1px}
+.ltl .ld{font-size:var(--t-12);color:var(--ink-2);white-space:nowrap}
+.ltl li.todo .lt b{color:var(--ink-2)}
+.ltl li.todo .ld{color:var(--ink-3)}
+.ltl li.cur .lt b{color:var(--ink)}
+.medal.outline:before{background:none;box-shadow:inset 0 0 0 1.5px var(--line-2)}
+.medal.outline:after{background:none;box-shadow:none}
+.medal.outline svg,.medal.outline span{color:var(--ink-3)}
+/* the level-up moment: the old medal brightens and turns into the new one */
+.emedal .medal.fade{transition:transform 300ms var(--ease),filter 300ms var(--ease);transform:scale(.9);filter:brightness(1.7) saturate(.3)}
+.earned.open .emedal .medal.evolve{animation:evolve 560ms cubic-bezier(.34,1.4,.64,1) both}
+@keyframes evolve{0%{transform:scale(.9);filter:brightness(1.9) saturate(.4)}60%{transform:scale(1.07);filter:brightness(1.2)}100%{transform:scale(1);filter:none}}
+/* achievements header */
+.wallstats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 16px}
+
+/* home: the three stat boxes open Stats */
+button.box{font:inherit;color:inherit;width:100%;text-align:center;cursor:pointer;-webkit-appearance:none;appearance:none;transition:transform var(--fast) var(--ease),opacity var(--fast) var(--ease)}
+button.box:active{transform:scale(.98);opacity:.85}
+
+/* stats: listening history */
+.stabs{margin:4px 0 8px}
+.stabs button{flex:1;min-height:36px;font-size:var(--t-14)}
+.strange{display:flex;align-items:center;gap:2px;margin:0 -8px 12px}
+.strange[hidden],.stsum[hidden],.stgoalkey[hidden],.sttable[hidden],.stlegend[hidden],.stmenu[hidden],.sttip[hidden]{display:none}
+.stnav{flex:0 0 auto;width:44px;height:44px;border:0;background:transparent;color:var(--ink-2);border-radius:50%;display:grid;place-items:center;cursor:pointer}
+.stnav svg{width:22px;height:22px}
+.stnav:disabled{opacity:.28;cursor:default}
+.strlabel{flex:1;min-width:0;text-align:center;font-size:15px;font-weight:600;line-height:1.3}
+.sttoday{flex:0 0 auto;min-height:32px;padding:0 12px;margin-left:4px;border-radius:var(--r-pill);border:1px solid var(--accent);background:var(--accent-dim);color:var(--accent);font:inherit;font-size:var(--t-12);font-weight:700;cursor:pointer}
+.sttoday.off{display:none}
+.stsum{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.sttile{padding:12px 14px;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--line);box-shadow:var(--sh-1);min-width:0;text-align:left}
+.sttile small{display:block;color:var(--ink-3);font-size:var(--t-12);font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.sttile b{display:flex;align-items:center;gap:4px;font-size:var(--t-20);font-weight:700;letter-spacing:-.01em;margin-top:4px;line-height:1.2}
+.sttile span{display:block;color:var(--ink-2);font-size:13px;margin-top:2px;line-height:1.35}
+.sttile.t-up b{color:var(--accent)}
+.sttile.t-up b svg{width:18px;height:18px;flex:0 0 auto}
+.sttile.t-down b{color:var(--ink-2)}
+.stcard{padding:12px 12px 10px;overflow:visible}
+.stcardhead{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:32px;position:relative}
+.sthint{font-size:var(--t-12);color:var(--ink-3)}
+.ststyle{flex:0 0 auto;width:44px;height:44px;margin:-6px -8px -6px 0;border:0;background:transparent;color:var(--ink-2);border-radius:var(--r-sm);display:grid;place-items:center;cursor:pointer}
+.ststyle svg{width:22px;height:22px}
+.ststyle:active{background:var(--surface-2)}
+.stmenu{position:absolute;right:-4px;top:40px;z-index:6;min-width:208px;padding:4px;background:var(--bg-raised);border:1px solid var(--line-2);border-radius:var(--r-md);box-shadow:var(--sh-3)}
+.stmenu button{display:flex;align-items:center;gap:10px;width:100%;min-height:44px;padding:0 12px;border:0;background:transparent;color:var(--ink);font:inherit;font-size:var(--t-14);font-weight:600;border-radius:var(--r-sm);text-align:left;cursor:pointer}
+.stmenu button svg{width:18px;height:18px;color:var(--ink-2)}
+.stmenu button.on{color:var(--accent)} .stmenu button.on svg{color:var(--accent)}
+.stmenu button:disabled{color:var(--ink-3);cursor:default} .stmenu button:disabled svg{color:var(--ink-3)}
+.stmenu small{margin-left:auto;font-size:var(--t-12);font-weight:500;color:var(--ink-3)}
+.stmenu button:not(:disabled):active{background:var(--surface-2)}
+.stchart{position:relative;touch-action:pan-y;outline-offset:4px;border-radius:var(--r-sm)}
+.stchart:focus-visible{outline:2px solid var(--accent)}
+#stSvg>svg{display:block;width:100%;height:auto;overflow:visible}
+.sttip{position:absolute;top:0;left:0;z-index:2;pointer-events:none;padding:6px 10px;background:var(--bg-raised);border:1px solid var(--line-2);border-radius:var(--r-sm);box-shadow:var(--sh-2);white-space:nowrap;text-align:center}
+.sttip b{display:block;font-size:var(--t-16);font-weight:700;line-height:1.25}
+.sttip small{display:block;font-size:var(--t-12);color:var(--ink-2)}
+.stgrid{stroke:var(--line);stroke-width:1}
+.sttick,.stx,.stbest,.sthd{font-family:var(--font);font-size:11px;font-weight:600;fill:var(--ink-3);paint-order:stroke;stroke:var(--surface);stroke-width:3px;stroke-linejoin:round}
+.stx.on{fill:var(--ink)}
+.stbest{fill:var(--ink);font-size:12px;font-weight:700}
+.stgoal{stroke:var(--ink-3);stroke-width:1;stroke-dasharray:4 4;opacity:.8}
+.stbar{fill:#1FA595;transform-box:fill-box;transform-origin:50% 100%}
+.stbar.best{fill:url(#stBestG)}
+.stbar.sel{fill:var(--mint)}
+.stzero{fill:var(--line-2)}
+svg.has-sel .stbar:not(.sel){opacity:.42}
+.stline{fill:none;stroke:var(--accent);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.starea{fill:url(#stAreaG)}
+.stdot{fill:var(--accent);stroke:var(--surface);stroke-width:2}
+.stdot.sel{fill:var(--mint)}
+.stguide{stroke:var(--ink-3);stroke-width:1;opacity:.55}
+.stghost{fill:rgba(255,255,255,.05)}
+.sthc rect{fill:rgba(255,255,255,.04)}
+.sthc text{font-family:var(--font);font-size:12px;font-weight:600;fill:var(--ink-3)}
+.sthc.l1 rect{fill:rgba(0,231,179,.16)} .sthc.l2 rect{fill:rgba(0,231,179,.28)} .sthc.l3 rect{fill:rgba(0,231,179,.45)} .sthc.l4 rect{fill:rgba(0,231,179,.68)} .sthc.l5 rect{fill:rgba(52,249,178,.94)}
+.sthc.l1 text,.sthc.l2 text,.sthc.l3 text{fill:var(--ink)}
+.sthc.l4 text,.sthc.l5 text{fill:#06162C}
+.sthc.lf rect{fill:none;stroke:var(--line);stroke-dasharray:3 3}
+.sthc.lf text{opacity:.55}
+.sthc.sel rect{stroke:#fff;stroke-width:2}
+.stgoalkey{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:var(--t-12);color:var(--ink-3)}
+.stgoalkey i{width:18px;border-top:1px dashed var(--ink-3)}
+.stlegend{display:flex;align-items:center;justify-content:flex-end;gap:4px;margin-top:10px;font-size:var(--t-12);color:var(--ink-3)}
+.stlegend i{width:12px;height:12px;border-radius:3px;background:rgba(255,255,255,.04)}
+.stlegend i.l1{background:rgba(0,231,179,.16)} .stlegend i.l2{background:rgba(0,231,179,.28)} .stlegend i.l3{background:rgba(0,231,179,.45)} .stlegend i.l4{background:rgba(0,231,179,.68)} .stlegend i.l5{background:rgba(52,249,178,.94)}
+.stlegend i:first-of-type{margin-left:4px} .stlegend i:last-of-type{margin-right:4px}
+.stempty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:16px;text-align:center}
+.stempty p{color:var(--ink-2);font-size:var(--t-16);font-weight:500;max-width:240px}
+.stempty .pillbtn{background:var(--surface)}
+#stNotes .notes{margin-top:12px}
+.stfoot{font-size:13px;color:var(--ink-3);margin:14px 4px 0;line-height:1.45}
+.sttable{margin-top:12px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);box-shadow:var(--sh-1)}
+.sttable summary{min-height:48px;display:flex;align-items:center;padding:0 16px;font-size:var(--t-14);font-weight:600;color:var(--ink-2);cursor:pointer;list-style:none}
+.sttable summary::-webkit-details-marker{display:none}
+.sttable summary:after{content:"";margin-left:auto;width:8px;height:8px;border-right:1.75px solid var(--ink-3);border-bottom:1.75px solid var(--ink-3);transform:rotate(45deg) translateY(-2px);transition:transform var(--fast) var(--ease)}
+.sttable[open] summary:after{transform:rotate(225deg) translateY(-2px)}
+.sttable table{width:100%;border-collapse:collapse;font-size:var(--t-14)}
+.sttable th,.sttable td{padding:9px 16px;border-top:1px solid var(--line);text-align:left}
+.sttable th{font-size:var(--t-12);font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.sttable td:last-child,.sttable th:last-child{text-align:right}
+.stchart.anim .stbar{animation:stGrow 250ms var(--ease) both}
+.stchart.anim .stline{stroke-dasharray:1;animation:stDraw 250ms var(--ease) both}
+.stchart.anim .starea,.stchart.anim .sthc{animation:stFade 250ms var(--ease) both}
+@keyframes stGrow{from{transform:scaleY(0)}}
+@keyframes stDraw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+@keyframes stFade{from{opacity:0}}
 </style>
 </head>
 <body>
@@ -539,9 +685,9 @@ html.rm-on *,html.rm-on *:before,html.rm-on *:after{transition:none !important;a
       <div class="sub" id="streakSub"></div>
     </div>
     <div class="boxes">
-      <div class="box"><b id="t1">0h</b><small>today</small></div>
-      <div class="box"><b id="t2">0</b><small>hrs this week</small></div>
-      <div class="box"><b id="t3">0</b><small>hrs this month</small></div>
+      <button class="box" type="button" data-stats="day"><b id="t1">0h</b><small>today</small></button>
+      <button class="box" type="button" data-stats="week"><b id="t2">0</b><small>hrs this week</small></button>
+      <button class="box" type="button" data-stats="month"><b id="t3">0</b><small>hrs this month</small></button>
     </div>
     <div class="goals card" id="goals">
       <div class="goal"><div class="gl"><span>Daily goal</span><b id="gDay"></b></div><div class="bar"><i id="gDayBar" style="width:0%"></i></div></div>
@@ -649,6 +795,7 @@ html.rm-on *,html.rm-on *:before,html.rm-on *:after{transition:none !important;a
   <div class="sgh">Display</div>
   <div class="sgroup">
     <div class="srow static stack"><span class="sl">Show time as</span><div class="seg sseg" data-set="timeFormat" role="group" aria-label="Show time as"><button data-v="hm">1 h 30 m</button><button data-v="dec">1.5 h</button></div></div>
+    <div class="srow static stack"><span class="sl">Default chart style</span><div class="seg sseg" data-set="chartStyle" role="group" aria-label="Default chart style"><button data-v="bars">Bars</button><button data-v="line">Line</button><button data-v="area">Area</button><button data-v="heat">Calendar</button></div></div>
     <div class="srow static stack"><span class="sl">Bookshelf view</span><div class="seg sseg" data-set="shelfView" role="group" aria-label="Bookshelf view"><button data-v="grid">Grid</button><button data-v="list">List</button></div></div>
     <div class="srow static stack"><span class="sl">Bookshelf shows</span><div class="seg sseg" data-set="shelfFilter" role="group" aria-label="Bookshelf shows"><button data-v="month">Month</button><button data-v="year">Year</button><button data-v="all">All</button></div></div>
     <div class="srow static stack"><span class="sl">Reduce motion</span><div class="seg sseg" data-set="reduceMotion" role="group" aria-label="Reduce motion"><button data-v="system">Auto</button><button data-v="on">On</button><button data-v="off">Off</button></div></div>
@@ -685,9 +832,32 @@ html.rm-on *,html.rm-on *:before,html.rm-on *:after{transition:none !important;a
   <div class="card prose" id="helpBody"></div>
 </section>
 
+<!-- STATS: listening history by day, week, month and year -->
+<section class="screen" id="s-stats">
+  <div class="hdr"><button class="backbtn" data-nav-back aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m15 5-7 7 7 7"/></svg>Back</button><div class="title">Stats</div></div>
+  <div class="seg stabs" id="stTabs" role="tablist" aria-label="Time range"><button type="button" role="tab" data-tab="day">Day</button><button type="button" role="tab" data-tab="week">Week</button><button type="button" role="tab" data-tab="month">Month</button><button type="button" role="tab" data-tab="year">Year</button></div>
+  <div class="strange" id="stNav">
+    <button class="stnav" id="stPrev" type="button" aria-label="Earlier"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m15 5-7 7 7 7"/></svg></button>
+    <div class="strlabel" id="stRange" aria-live="polite"></div>
+    <button class="stnav" id="stNext" type="button" aria-label="Later"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 5 7 7-7 7"/></svg></button>
+    <button class="sttoday" id="stToday" type="button">Today</button>
+  </div>
+  <div class="stsum" id="stSum"></div>
+  <div class="card stcard">
+    <div class="stcardhead"><span class="sthint" id="stHint"></span><button class="ststyle" id="stStyleBtn" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Chart style"></button><div class="stmenu" id="stStyleMenu" role="menu" hidden></div></div>
+    <div class="stchart" id="stChart" tabindex="0"><div id="stSvg"></div><div class="sttip" id="stTip" role="status" hidden></div></div>
+    <div class="stgoalkey" id="stGoalKey" hidden></div>
+    <div class="stlegend" id="stLegend" hidden>Less<i></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i><i class="l5"></i>More</div>
+  </div>
+  <div id="stNotes"></div>
+  <p class="stfoot">Imported past hours count toward your lifetime total but aren't shown here.</p>
+  <details class="sttable" id="stTableWrap"><summary>See all values</summary><div id="stTable"></div></details>
+</section>
+
 <!-- BADGES -->
 <section class="screen" id="s-badges">
-  <div class="hdr"><button class="backbtn" data-nav-back aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m15 5-7 7 7 7"/></svg>Back</button><div class="title">Achievements</div><div class="tag" id="wallCount">10 of 27 earned</div></div>
+  <div class="hdr"><button class="backbtn" data-nav-back aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m15 5-7 7 7 7"/></svg>Back</button><div class="title">Achievements</div></div>
+  <div class="wallstats"><div class="sttile"><small>Medals earned</small><b id="wsMedals">0</b><span id="wsMedalsOf"></span></div><div class="sttile"><small>Total levels reached</small><b id="wsLevels">0</b><span id="wsLevelsOf"></span></div></div>
   <div class="field wallsearch"><input id="wallSearch" type="search" placeholder="Search medals" aria-label="Search medals" autocomplete="off"></div>
   <div class="filters"><button class="on" data-f="all">All</button><button data-f="earned">Earned</button><button data-f="locked">Not yet</button></div>
   <div id="walls"></div>
@@ -765,10 +935,11 @@ html.rm-on *,html.rm-on *:before,html.rm-on *:after{transition:none !important;a
 <div class="earned" id="earned" role="dialog" aria-modal="true">
   <div class="ebox">
     <h3 id="eTitle"></h3>
-    <div class="medal" id="eMedal"></div>
+    <div class="emedal" id="eMedal"></div>
     <div class="name" id="eName"></div>
     <div class="desc" id="eDesc"></div>
     <div class="prog" id="eProg"></div>
+    <ol class="ltl" id="eLevels" aria-label="Every level"></ol>
     <div class="btns" id="eBtns">
       <button class="btn primary" id="eShare"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 5l7 7-7 7"/><path d="M21 12H9a6 6 0 0 0-6 6v1"/></svg>Share</button>
       <button class="btn secondary" id="eSave"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>Save image</button>
@@ -834,13 +1005,26 @@ html.rm-on *,html.rm-on *:before,html.rm-on *:after{transition:none !important;a
     cake:`<svg viewBox="0 0 24 24" ${sw1}><path d="M4 21h16M5 21v-7a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v7M5 16c1.5 1 3 1 4.5 0s3-1 4.5 0 3 1 5 0M12 12V8M12 3.5c1 1.2 1 2.4 0 3-1-.6-1-1.8 0-3z"/></svg>`,
     scale:`<svg viewBox="0 0 24 24" ${sw1}><path d="M12 4v16M8 20h8M5 7h14M5 7l-2.5 6a3 3 0 0 0 5 0zM19 7l-2.5 6a3 3 0 0 0 5 0z"/></svg>`,
     download:`<svg viewBox="0 0 24 24" ${sw1}><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19.5h14"/></svg>`,
-    share:`<svg viewBox="0 0 24 24" ${sw1}><path d="M12 15V4M8 7.5 12 4l4 3.5"/><path d="M6 11H5v9h14v-9h-1"/></svg>`
+    share:`<svg viewBox="0 0 24 24" ${sw1}><path d="M12 15V4M8 7.5 12 4l4 3.5"/><path d="M6 11H5v9h14v-9h-1"/></svg>`,
+    phones:`<svg viewBox="0 0 24 24" ${sw1}><path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="3.5" y="14" width="4" height="6.5" rx="1.5"/><rect x="16.5" y="14" width="4" height="6.5" rx="1.5"/></svg>`,
+    waves:`<svg viewBox="0 0 24 24" ${sw1}><path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2"/></svg>`,
+    speaker:`<svg viewBox="0 0 24 24" ${sw1}><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg>`,
+    trophy:`<svg viewBox="0 0 24 24" ${sw1}><path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M9 20h6M10 17h4v3h-4z"/></svg>`,
+    bookmark:`<svg viewBox="0 0 24 24" ${sw1}><path d="M7 3.5h10v17l-5-4-5 4z"/></svg>`,
+    tome:`<svg viewBox="0 0 24 24" ${sw1}><path d="M5 5.5A1.5 1.5 0 0 1 6.5 4h12v13h-12A1.5 1.5 0 0 0 5 18.5z"/><path d="M5 18.5A1.5 1.5 0 0 0 6.5 20h12v-3M9 4v13"/></svg>`,
+    layers:`<svg viewBox="0 0 24 24" ${sw1}><path d="m12 4 8.5 4.5L12 13 3.5 8.5z"/><path d="m3.5 12.5 8.5 4.5 8.5-4.5M3.5 16.5 12 21l8.5-4.5"/></svg>`,
+    shelf:`<svg viewBox="0 0 24 24" ${sw1}><path d="M5 4v16M9.5 4v16M14 5.5l3.8 14.5M3 20h18"/></svg>`,
+    finger:`<svg viewBox="0 0 24 24" ${sw1}><path d="M12 11v3a6 6 0 0 1-1.5 4M8.5 9.5A4 4 0 0 1 16 11v2a10 10 0 0 1-.8 4M6 15.5c.4-1.4.5-2.6.5-4.5a5.5 5.5 0 0 1 9.2-4M18.5 9.5c.3.8.5 1.6.5 2.5v1"/></svg>`,
+    play:`<svg viewBox="0 0 24 24" ${sw1}><circle cx="12" cy="12" r="8.5"/><path d="M10 8.5v7l5.5-3.5z"/></svg>`,
+    sparkle:`<svg viewBox="0 0 24 24" ${sw1}><path d="M12 3.5 13.8 10.2 20.5 12l-6.7 1.8L12 20.5l-1.8-6.7L3.5 12l6.7-1.8z"/></svg>`,
+    ffwd:`<svg viewBox="0 0 24 24" ${sw1}><path d="M4 6.5v11l7-5.5zM12.5 6.5v11l7-5.5z"/></svg>`,
+    halfmoon:`<svg viewBox="0 0 24 24" ${sw1}><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></svg>`
   };
   /* ---- state: everything the app shows comes from here. A new account starts at zero. ---- */
   const KEY="earmark.state.v1";
   const APP_VERSION="0.9.0 (beta)";
   const FEEDBACK_EMAIL="orionsmaxfield@gmail.com";   // "Send feedback" opens a new email to this address
-  const SETTINGS_DEFAULT={email:"",dailyGoalMin:30,weeklyGoalH:5,showGoals:true,streakMinMin:5,weekStart:"mon",timeFormat:"hm",reduceMotion:"system"};
+  const SETTINGS_DEFAULT={email:"",dailyGoalMin:30,weeklyGoalH:5,showGoals:true,streakMinMin:5,weekStart:"mon",timeFormat:"hm",reduceMotion:"system",chartStyle:"bars"};
   const fresh=()=>({v:1,onboarded:false,user:{name:""},total:0,todayH:0,weekH:0,monthH:0,lastMonthH:0,yearH:0,
     bestDayH:0,streak:0,bestStreak:0,lastLog:null,owl:false,byWeekday:[0,0,0,0,0,0,0],weekdayDays:[0,0,0,0,0,0,0],
     notes:[],books:[],past:[],keys:{day:"",week:"",month:"",year:""},
@@ -849,6 +1033,8 @@ html.rm-on *,html.rm-on *:before,html.rm-on *:after{transition:none !important;a
     // every logged listening session: {id, at (ISO time), d (local day), m (minutes), note}
     sessions:[],legacy:{days:[],bestStreak:0,bestDayH:0,owl:false,earlyBird:false,comeback:false},carry:{},migratedSessions:false,
     shares:0,yearReviewViewed:false,wallOpen:{},
+    // medal families: {id: {lv: best level reached, at: [ISO date each level was earned]}}
+    medals:{},medalsV:0,
     settings:{...SETTINGS_DEFAULT}});
   /* TODO: set this to the public launch date (e.g. "2027-03-01"). Accounts created before it are
      Founding Listeners; while it is null, every account is (we are still in early testing). */
@@ -902,289 +1088,6 @@ html.rm-on *,html.rm-on *:before,html.rm-on *:after{transition:none !important;a
       return x.replace(/[a-z]/,c=>c.toUpperCase()).replace(/-([a-z])/g,(m,c)=>"-"+c.toUpperCase());
     }).join(" ");
   }
-  const G={year:"This year",rank:"Lifetime rank",time:"Time milestones",streak:"Streaks",consist:"Consistency",daily:"Daily feats",volume:"Weekly & monthly",feat:"Feats",tod:"Time of day",calendar:"Calendar",
-    books:"Books finished",length:"Book length",speed:"Speed",series:"Series & authors",stretch:"Genres",mastery:"Genre mastery",variety:"Variety",habits:"Logging habits",anniv:"Anniversaries",share:"Sharing",special:"Special",secret:"Secret"};
-  /* medal catalogue — earned/progress are computed from state in recomputeMedals(); nothing is pre-earned */
-  const YEAR_TIERS=[["bronze",100],["silver",250],["gold",500],["platinum",750],["diamond",1000]];
-  const M=[
-    {id:"y26",tier:"bronze",ic:"<span>26</span>",name:"Bronze year",sub:"",desc:"",earned:false,group:"year"},
-    {id:"b",tier:"bronze",ic:"<span>25</span>",name:"Bronze",sub:"25 hours",desc:"Your first 25 hours.",earned:false,group:"rank",thr:25},
-    {id:"s",tier:"silver",ic:"<span>100</span>",name:"Silver",sub:"100 hours",desc:"100 lifetime hours.",earned:false,group:"rank",thr:100},
-    {id:"g",tier:"gold",ic:"<span>250</span>",name:"Gold",sub:"250 hours",desc:"250 lifetime hours.",earned:false,group:"rank",thr:250},
-    {id:"p",tier:"platinum",ic:"<span>500</span>",name:"Platinum",sub:"500 hours",desc:"500 lifetime hours.",earned:false,group:"rank",thr:500},
-    {id:"d",tier:"diamond",ic:"<span>1k</span>",name:"Diamond",sub:"1,000 hours",desc:"1,000 lifetime hours.",earned:false,group:"rank",thr:1000},
-    {id:"ob",tier:"obsidian",ic:"<span>2.5k</span>",name:"Obsidian",sub:"2,500 hours",desc:"2,500 lifetime hours. Uncharted territory.",earned:false,group:"rank",thr:2500},
-    {id:"met",tier:"obsidian",ic:"<span>5k</span>",name:"Meteorite",sub:"5,000 hours",desc:"5,000 lifetime hours.",earned:false,group:"rank",thr:5000},
-    {id:"ir",tier:"obsidian",ic:"<span>10k</span>",name:"Iridium",sub:"10,000 hours",desc:"10,000 lifetime hours.",earned:false,group:"rank",thr:10000},
-    {id:"os",tier:"obsidian",ic:"<span>25k</span>",name:"Osmium",sub:"25,000 hours",desc:"25,000 lifetime hours.",earned:false,group:"rank",thr:25000},
-    {id:"cel",tier:"rainbow",ic:I.star,name:"Celestial",sub:"50,000 hours",desc:"50,000 lifetime hours.",earned:false,group:"rank",thr:50000},
-    {id:"s3",tier:"bronze",ic:I.flame,name:"Three days",sub:"3-day streak",desc:"Three days in a row.",earned:false,group:"streak",thr:3},
-    {id:"wk",tier:"silver",ic:I.flame,name:"One week",sub:"7-day streak",desc:"Seven days in a row.",earned:false,group:"streak",thr:7},
-    {id:"s30",tier:"gold",ic:I.flame,name:"One month",sub:"30-day streak",desc:"Thirty days in a row.",earned:false,group:"streak",thr:30},
-    {id:"s100",tier:"platinum",ic:I.flame,name:"Hundred",sub:"100-day streak",desc:"One hundred days in a row.",earned:false,group:"streak",thr:100},
-    {id:"s365",tier:"diamond",ic:I.cal,name:"Full year",sub:"365-day streak",desc:"A full year without missing a day.",earned:false,group:"streak",thr:365},
-    {id:"door",tier:"diamond",ic:I.stack,name:"Doorstopper",sub:"A 40-hour book",desc:"Finished a book over 40 hours long.",earned:false,group:"feat"},
-    {id:"ser",tier:"bronze",ic:I.book,name:"Series slayer",sub:"Finish a series",desc:"Finished every book in a series.",earned:false,group:"feat"},
-    {id:"mar",tier:"gold",ic:I.bolt,name:"Marathon",sub:"8 hours in a day",desc:"Eight hours of listening in one day.",earned:false,group:"feat"},
-    {id:"spr",tier:"silver",ic:I.bolt,name:"Sprint",sub:"A book in 48 hours",desc:"Start to finish in two days.",earned:false,group:"feat"},
-    {id:"owl",tier:"silver",ic:I.moon,name:"Night owl",sub:"Log after midnight",desc:"A session logged between midnight and 4 a.m.",earned:false,group:"feat"},
-    /* genre-stretch medals */
-    {id:"ya",tier:"bronze",ic:I.leaf,name:"Young adult",sub:"Finish one",desc:"Tried a young-adult title.",earned:false,group:"stretch"},
-    {id:"sch",tier:"gold",ic:I.cap,name:"Scholar",sub:"25 hrs of learning",desc:"Twenty-five hours of educational or nonfiction listening.",earned:false,group:"stretch"},
-    {id:"cla",tier:"gold",ic:I.column,name:"Classical",sub:"25 hrs of classics",desc:"Twenty-five hours of classic literature.",earned:false,group:"stretch"},
-    {id:"bio",tier:"silver",ic:I.person,name:"Biography",sub:"Finish one",desc:"A life told from start to finish.",earned:false,group:"stretch"},
-    {id:"tr",tier:"silver",ic:I.globe,name:"In translation",sub:"Finish one",desc:"A book written in another language.",earned:false,group:"stretch"},
-    {id:"wwk",tier:"gold",ic:I.mountain,name:"Worldwalker",sub:"25 hrs of fantasy",desc:"Twenty-five hours of fantasy.",earned:false,group:"stretch"},
-    {id:"stf",tier:"gold",ic:I.planet,name:"Starfarer",sub:"25 hrs of science fiction",desc:"Twenty-five hours of science fiction.",earned:false,group:"stretch"},
-    {id:"det",tier:"gold",ic:I.search,name:"Detective",sub:"25 hrs of mystery",desc:"Twenty-five hours of mysteries and thrillers.",earned:false,group:"stretch"},
-    {id:"ttv",tier:"gold",ic:I.hourglass,name:"Time Traveler",sub:"25 hrs of history",desc:"Twenty-five hours of history.",earned:false,group:"stretch"},
-    {id:"ghop",tier:"silver",ic:I.shuffle,name:"Genre Hopper",sub:"5 genres in a month",desc:"Finished books in five different genres in one month.",earned:false,group:"stretch"},
-    {id:"omni",tier:"rainbow",ic:I.star,name:"Omnivore",sub:"6 genres",desc:"Sampled across six different genres.",earned:false,group:"stretch",lockedLook:true},
-    /* books finished */
-    {id:"bk1",tier:"bronze",ic:"<span>1</span>",name:"First Book",sub:"1 book",desc:"Your first finished book on the shelf.",earned:false,group:"books"},
-    {id:"bk10",tier:"silver",ic:"<span>10</span>",name:"Bookworm",sub:"10 books",desc:"Ten books finished.",earned:false,group:"books"},
-    {id:"bk25",tier:"gold",ic:"<span>25</span>",name:"Shelf Builder",sub:"25 books",desc:"Twenty-five books finished.",earned:false,group:"books"},
-    {id:"bk50",tier:"platinum",ic:"<span>50</span>",name:"Library",sub:"50 books",desc:"Fifty books finished.",earned:false,group:"books"},
-    {id:"bk100",tier:"diamond",ic:"<span>100</span>",name:"Centurion",sub:"100 books",desc:"One hundred books finished.",earned:false,group:"books"},
-    {id:"bk250",tier:"obsidian",ic:"<span>250</span>",name:"Archivist",sub:"250 books",desc:"Two hundred and fifty books finished.",earned:false,group:"books"},
-    /* time milestones — all hours, imported included */
-    {id:"tw",tier:"silver",ic:"<span>7d</span>",name:"A Week of Listening",sub:"168 hours",desc:"168 hours: a full week of listening, imported hours included.",earned:false,group:"time"},
-    {id:"tm",tier:"gold",ic:"<span>30d</span>",name:"A Month of Listening",sub:"720 hours",desc:"720 hours: a full month of listening, imported hours included.",earned:false,group:"time"},
-    {id:"ty",tier:"diamond",ic:"<span>1y</span>",name:"A Year of Listening",sub:"8,760 hours",desc:"8,760 hours: a full year of listening, imported hours included.",earned:false,group:"time"},
-    /* consistency — live, dated listening only */
-    {id:"pw",tier:"gold",ic:I.week,name:"Perfect Week",sub:"All 7 days of a week",desc:"Listened every day of a calendar week.",earned:false,group:"consist"},
-    {id:"pm",tier:"platinum",ic:I.cal,name:"Perfect Month",sub:"Every day of a month",desc:"Listened every day of a calendar month.",earned:false,group:"consist"},
-    {id:"ww",tier:"silver",ic:I.weekend,name:"Weekend Warrior",sub:"4 full weekends",desc:"Listened on both Saturday and Sunday, four weekends.",earned:false,group:"consist"},
-    {id:"cb",tier:"bronze",ic:I.repeat,name:"Comeback",sub:"Back after a week away",desc:"Welcome back. You picked it up again after a week or more away.",earned:false,group:"consist"},
-    /* session feats — live */
-    {id:"eb",tier:"silver",ic:I.sun,name:"Early Bird",sub:"Log before 7 a.m.",desc:"A session logged before 7 in the morning.",earned:false,group:"feat"},
-    {id:"hmar",tier:"silver",ic:I.bolt,name:"Half Marathon",sub:"4 hours in a day",desc:"Four hours of listening in one day.",earned:false,group:"feat"},
-    {id:"bng",tier:"gold",ic:I.pair,name:"Binge",sub:"3 books in 7 days",desc:"Finished three books within seven days.",earned:false,group:"feat"},
-    /* series and authors */
-    {id:"tri",tier:"bronze",ic:"<span>III</span>",name:"Trilogy",sub:"3 books in one series",desc:"Three books from the same series.",earned:false,group:"series"},
-    {id:"saga",tier:"gold",ic:"<span>X</span>",name:"Saga",sub:"10 books in one series",desc:"Ten books from the same series.",earned:false,group:"series"},
-    {id:"aul",tier:"silver",ic:I.feather,name:"Author Loyalist",sub:"5 books by one author",desc:"Five books by the same author.",earned:false,group:"series"},
-    {id:"exp",tier:"silver",ic:I.compass,name:"Explorer",sub:"10 different authors",desc:"Books by ten different authors.",earned:false,group:"series"},
-    {id:"wan",tier:"gold",ic:I.map,name:"Wanderer",sub:"25 different authors",desc:"Books by twenty-five different authors.",earned:false,group:"series"},
-    /* special */
-    {id:"fl",tier:"obsidian",ic:I.flag,name:"Founding Listener",sub:"Here before launch",desc:"One of the first listeners, here before Earmark's public launch. This one can't be earned later.",earned:false,group:"special"},
-    {id:"nt",tier:"bronze",ic:I.note,name:"Note Taker",sub:"10 daily notes",desc:"Ten notes written alongside your listening.",earned:false,group:"special"},
-  ];
-  /* 100 more — (live) ones count only logged, dated listening; secret ones stay hidden until earned */
-  const B=(id,tier,ic,name,sub,desc,group,x={})=>Object.assign({id,tier,ic,name,sub,desc,earned:false,group},x), T=t=>`<span>${t}</span>`;
-  M.push(
-    B("s14","silver",I.flame,"Fortnight","14-day streak","Fourteen days in a row.","streak",{thr:14}),
-    B("s21","silver",I.flame,"Habit Formed","21-day streak","Twenty-one days in a row. Officially a habit.","streak",{thr:21}),
-    B("s50","gold",I.flame,"Steadfast","50-day streak","Fifty days in a row.","streak",{thr:50}),
-    B("s60","gold",I.flame,"Two Months Strong","60-day streak","Sixty days in a row.","streak",{thr:60}),
-    B("s200","platinum",I.flame,"Unbroken","200-day streak","Two hundred days in a row.","streak",{thr:200}),
-    B("s500","diamond",I.flame,"Evergreen","500-day streak","Five hundred days in a row.","streak",{thr:500}),
-    B("s730","diamond",I.cal,"Two Years Strong","730-day streak","Two full years without missing a day.","streak",{thr:730}),
-    B("s1000","rainbow",I.star,"Thousand Days","1,000-day streak","One thousand days in a row.","streak",{thr:1000}),
-    B("dWarm","bronze",T("1h"),"Warm Up","1 hour in a day","An hour of listening in one day.","daily"),
-    B("dDouble","bronze",T("2h"),"Double Feature","2 hours in a day","Two hours of listening in one day.","daily"),
-    B("dDeep","gold",T("6h"),"Deep Dive","6 hours in a day","Six hours of listening in one day.","daily"),
-    B("dShift","platinum",T("10h"),"Full Shift","10 hours in a day","Ten hours of listening in one day.","daily"),
-    B("dDawn","diamond",T("12h"),"Dawn to Dusk","12 hours in a day","Twelve hours of listening in one day.","daily"),
-    B("dHour","silver",I.repeat,"Hour a Day","1+ hour daily for a week","At least an hour every day, seven days in a row.","daily"),
-    B("dSteady","gold",I.repeat,"Steady Habit","2+ hours daily for a week","At least two hours every day, seven days in a row.","daily"),
-    B("dIron","diamond",I.bolt,"Iron Ears","8+ hours on 5 days in a week","Eight hours or more on five days of the same week.","daily"),
-    B("vW20","silver",T("20h"),"Big Week","20 hours in a week","Twenty hours of listening in one week.","volume"),
-    B("vW40","gold",T("40h"),"Huge Week","40 hours in a week","Forty hours of listening in one week.","volume"),
-    B("vW60","diamond",T("60h"),"Legendary Week","60 hours in a week","Sixty hours of listening in one week.","volume"),
-    B("vM50","silver",T("50h"),"Big Month","50 hours in a month","Fifty hours of listening in one month.","volume"),
-    B("vM100","gold",T("100h"),"Huge Month","100 hours in a month","One hundred hours of listening in one month.","volume"),
-    B("vM200","diamond",T("200h"),"Legendary Month","200 hours in a month","Two hundred hours of listening in one month.","volume"),
-    B("vPBW","silver",I.up,"Personal Best Week","Beat your best week","A week that topped every week before it.","volume"),
-    B("vPBM","gold",I.up,"Personal Best Month","Beat your best month","A month that topped every month before it.","volume"),
-    B("bk5","bronze",T("5"),"Handful","5 books","Five books finished.","books"),
-    B("bk500","obsidian",T("500"),"Grand Library","500 books","Five hundred books finished.","books"),
-    B("bk1000","rainbow",T("1k"),"Legend of the Stacks","1,000 books","One thousand books finished.","books"),
-    B("bkSeason","silver",I.cal,"Season Reader","A book a month for 3 months","A finished book every month, three months in a row.","books"),
-    B("bk12","gold",I.cal,"Twelve for Twelve","A book every month of a year","A finished book in every month of one calendar year.","books"),
-    B("bkY50","platinum",I.stack,"Fifty in a Year","50 books in a year","Fifty books finished in one calendar year.","books"),
-    B("bkY100","diamond",I.stack,"Hundred in a Year","100 books in a year","One hundred books finished in one calendar year.","books"),
-    B("lnShort","bronze",T("&lt;2h"),"Short Story","A book under 2 hours","Finished a book shorter than two hours.","length"),
-    B("lnNov","bronze",I.book,"Novella","A 2–5 hour book","Finished a book between two and five hours long.","length"),
-    B("lnStack","silver",I.pair,"Short Stack","5 books under 5 hours","Five books, each under five hours.","length"),
-    B("lnLong","silver",T("20h"),"Long Haul","A 20+ hour book","Finished a book of twenty hours or more.","length"),
-    B("lnEpic","gold",T("40h"),"Epic","A 40+ hour book","Finished a book of forty hours or more.","length"),
-    B("lnColossus","platinum",T("60h"),"Colossus","A 60+ hour book","Finished a book of sixty hours or more.","length"),
-    B("lnTome","diamond",I.stack,"Tome Collector","10 books of 20+ hours","Ten books of twenty hours or more.","length"),
-    B("spHat","gold",T("3"),"Hat Trick","3 books in 3 days","Finished three books within three days.","speed"),
-    B("spStack","platinum",T("5"),"Stack Attack","5 books in a week","Finished five books within seven days.","speed"),
-    B("spTen","diamond",T("10"),"Ten in a Month","10 books in a month","Finished ten books in one calendar month.","speed"),
-    B("tdSun","silver",I.sun,"Sunrise Listener","Log between 4 and 5 a.m.","A session logged before five in the morning.","tod"),
-    B("tdMid","silver",I.moon,"Midnight Oil","Log after midnight","A session logged after midnight.","tod"),
-    B("tdLunch","bronze",T("12"),"Lunch Break","11 a.m.–1 p.m. on 5 days","Sessions logged over lunch on five different days.","tod"),
-    B("tdGold","bronze",I.sunset,"Golden Hour","6–8 p.m. on 5 days","Sessions logged in the early evening on five different days.","tod"),
-    B("tdClock","gold",I.clock,"Around the Clock","Morning, afternoon and night","Sessions logged in the morning, afternoon and night within one week.","tod"),
-    B("caNY","silver",I.star,"New Year's Listener","Listen on January 1","Started the year with a story.","calendar"),
-    B("caXmas","silver",I.gift,"Holiday Listener","Listen on December 25","Listened on Christmas Day.","calendar"),
-    B("caLeap","gold",T("29"),"Leap Day","Listen on February 29","Listened on the rarest day of the calendar.","calendar"),
-    B("caSpring","silver",I.flower,"Spring Bloom","50 hours March–May","Fifty hours of listening in one spring.","calendar"),
-    B("caSummer","silver",I.sun,"Summer Reading","50 hours June–August","Fifty hours of listening in one summer.","calendar"),
-    B("caFall","silver",I.leaf,"Fall Harvest","50 hours September–November","Fifty hours of listening in one autumn.","calendar"),
-    B("caWinter","silver",I.snow,"Winter Hibernation","50 hours December–February","Fifty hours of listening in one winter.","calendar"),
-    B("caFour","diamond",I.globe,"Four Seasons","All four seasons in a year","Every seasonal medal in the same year.","calendar"),
-    B("an1","bronze",I.cake,"One Year with Earmark","1 year","A full year since you joined.","anniv"),
-    B("an2","silver",I.cake,"Two Years","2 years","Two years with Earmark.","anniv"),
-    B("an3","gold",I.cake,"Three Years","3 years","Three years with Earmark.","anniv"),
-    B("an5","platinum",I.cake,"Five Years","5 years","Five years with Earmark.","anniv"),
-    B("an10","diamond",I.cake,"Ten Years","10 years","Ten years with Earmark.","anniv"),
-    B("gRom","gold",I.heart,"Heartstrings","25 hrs of romance","Twenty-five hours of romance.","stretch"),
-    B("gHor","gold",I.ghost,"Brave Soul","25 hrs of horror","Twenty-five hours of horror.","stretch"),
-    B("gMem","gold",I.pen,"Life Stories","25 hrs of memoir","Twenty-five hours of memoir.","stretch"),
-    B("gSelf","gold",I.sprout,"Growth Mindset","25 hrs of self-help","Twenty-five hours of self-help.","stretch"),
-    B("gBiz","gold",I.briefcase,"Boardroom","25 hrs of business","Twenty-five hours of business.","stretch"),
-    B("gSci","gold",I.flask,"Curious Mind","25 hrs of science","Twenty-five hours of science.","stretch"),
-    B("gRel","gold",I.candle,"Seeker","25 hrs of religion & spirituality","Twenty-five hours of religion and spirituality.","stretch"),
-    B("gHum","gold",I.smile,"Laugh Track","25 hrs of humor","Twenty-five hours of humor.","stretch"),
-    B("gTc","gold",I.search,"Case Closed","25 hrs of true crime","Twenty-five hours of true crime.","stretch"),
-    B("gWest","gold",I.cactus,"Trailblazer","25 hrs of westerns","Twenty-five hours of westerns.","stretch"),
-    B("gCast","gold",I.mic,"Full Cast","25 hrs of full-cast audio","Twenty-five hours of full-cast or dramatized audio.","stretch"),
-    B("gKids","gold",I.balloon,"Storytime","25 hrs of children's books","Twenty-five hours of children's books.","stretch"),
-    B("gPhil","gold",I.bulb,"Big Questions","25 hrs of philosophy","Twenty-five hours of philosophy.","stretch"),
-    B("gPsy","gold",I.head,"Mind Reader","25 hrs of psychology","Twenty-five hours of psychology.","stretch"),
-    B("mFan","platinum",I.mountain,"Realm Keeper","100 hrs of fantasy","One hundred hours of fantasy.","mastery"),
-    B("mSci","platinum",I.planet,"Star Captain","100 hrs of science fiction","One hundred hours of science fiction.","mastery"),
-    B("mMys","platinum",I.search,"Master Sleuth","100 hrs of mystery & thriller","One hundred hours of mysteries and thrillers.","mastery"),
-    B("mNon","platinum",I.cap,"Professor","100 hrs of nonfiction","One hundred hours of nonfiction of any kind.","mastery"),
-    B("vaSampler","gold",T("10"),"Sampler","10 different genres","Books from ten different genres.","variety"),
-    B("vaSpectrum","rainbow",I.globe,"Full Spectrum","Every genre","A book from every genre in the list.","variety",{lockedLook:true}),
-    B("vaBalanced","silver",I.scale,"Balanced Diet","Fiction and nonfiction in a month","Finished fiction and nonfiction in the same month.","variety"),
-    B("vaNew","gold",I.person,"New Voices","5 new authors in a month","Five authors you hadn't read before, in one month.","variety"),
-    B("vaPalate","bronze",I.shuffle,"Palate Cleanser","3 genres in a row","Three books in a row, each from a different genre.","variety"),
-    B("srBox","silver",T("V"),"Box Set","5 books in one series","Five books from the same series.","series"),
-    B("srSuper","gold",T("10"),"Superfan","10 books by one author","Ten books by the same author.","series"),
-    B("srDevotee","diamond",T("25"),"Devotee","25 books by one author","Twenty-five books by the same author.","series"),
-    B("srCollector","gold",I.stack,"Series Collector","Books from 10 series","Books from ten different series.","series"),
-    B("srSampler","silver",T("#1"),"Series Sampler","The first book of 5 series","The first book of five different series.","series"),
-    B("lgFirst","bronze",I.clock,"First Log","Log your first session","Logged your first listening session.","habits"),
-    B("lgImport","bronze",I.download,"Importer","Add your past hours","Added your past listening hours.","habits"),
-    B("lgStocker","silver",I.book,"Shelf Stocker","Add 10 past books","Added ten books from before Earmark.","habits"),
-    B("lgJournal","gold",I.note,"Journaler","50 daily notes","Fifty notes written alongside your listening.","habits"),
-    B("lgChron","platinum",I.note,"Chronicler","200 daily notes","Two hundred notes written alongside your listening.","habits"),
-    B("lgDetail","silver",I.feather,"Detail Oriented","25 books with author and genre","Twenty-five books with both author and genre filled in.","habits"),
-    B("shFirst","bronze",I.share,"First Share","Share a medal or stat","Shared your first medal or stat.","share"),
-    B("shTen","gold",I.share,"Storyteller","Share 10 times","Shared ten times.","share"),
-    B("shWrap","gold",I.cal,"That's a Wrap","View your Year in Review","Looked back on your year in listening.","share",{soon:true}),
-    B("xAnswer","gold",T("42"),"The Answer","Logged exactly 42 minutes","A session of exactly 42 minutes. Don't panic.","secret",{secret:true}),
-    B("xTime","gold",T("60"),"Right on Time","Logged exactly 60 minutes","A session of exactly one hour.","secret",{secret:true}),
-    B("xBookends","gold",I.pair,"Bookends","First and last day of a month","Finished books on the first and last day of the same month.","secret",{secret:true}),
-    B("xNightDay","gold",I.moon,"Night and Day","Before 7 a.m. and after 10 p.m.","Logged before 7 a.m. and after 10 p.m. on the same day.","secret",{secret:true})
-  );
-  M.filter(m=>m.soon).forEach(m=>m.sub="Coming soon");
-  const BY=Object.fromEntries(M.map(m=>[m.id,m]));
-  const byId=id=>BY[id];
-  const hiddenSecret=m=>m.secret&&!m.earned;
-  function medalHTML(m,cls=""){
-    if(hiddenSecret(m)) return `<div class="medalwrap locked secret ${cls}" data-id="${m.id}"><div class="medal m-locked"><span>?</span></div><b>Secret</b><small>Keep listening to discover this one</small></div>`;
-    const locked=!m.earned;
-    const tier=locked&&!m.lockedLook?"locked":m.tier;
-    return `<div class="medalwrap ${locked?"locked":""} ${cls}" data-id="${m.id}"><div class="medal m-${tier}">${m.ic}</div><b>${m.name}</b><small>${m.sub}</small></div>`;
-  }
-  /* closest + random */
-  function pct(m){ return m.prog?m.prog[0]/m.prog[1]:0 }
-  function nextCard(el,label,m){
-    const p=m.prog?Math.round(pct(m)*100):0;
-    el.dataset.id=m.id;
-    el.innerHTML=`<div class="lbl">${label}</div><div class="medal m-locked">${m.ic}</div><b>${m.name}</b><small>${m.prog?m.prog[2]:m.sub}</small>${m.prog?`<div class="bar"><i style="width:${p}%"></i></div>`:""}`;
-  }
-  let rnd=null;
-  function renderNext(){
-    const lockedWithProg=M.filter(m=>!m.earned&&!m.secret&&!m.soon&&m.prog&&m.prog[1]>0);
-    const closest=lockedWithProg.sort((a,b)=>pct(b)-pct(a))[0];
-    if(closest) nextCard($("#closest"),"Closest to unlocking",closest);
-    // something new: any badge you can go after directly, not the long hour and streak ladders
-    const pool=M.filter(m=>!m.earned&&m!==closest&&!m.secret&&!m.soon&&!["year","rank","time","streak","anniv"].includes(m.group)&&!["fl","ser"].includes(m.id));
-    if((!rnd||rnd.earned)&&pool.length) rnd=pool[Math.floor(Math.random()*pool.length)];
-    if(rnd) nextCard($("#random"),"Try something new",rnd);
-  }
-
-  /* wall */
-  let wallFilter="all", wallQuery="";
-  const matchesQuery=(m,q)=>!q||(hiddenSecret(m)?("secret ?").includes(q):[m.name,m.sub,m.desc,G[m.group]].join(" ").toLowerCase().includes(q));
-  function renderWall(){
-    const q=wallQuery.trim().toLowerCase(), filtering=!!q||wallFilter!=="all";
-    const html=Object.keys(G).map(g=>{
-      let all=M.filter(m=>m.group===g); if(g==="streak") all=all.slice().sort((a,b)=>a.thr-b.thr);
-      const e=all.filter(m=>m.earned).length;
-      const vis=all.filter(m=>(wallFilter==="earned"?m.earned:wallFilter==="locked"?!m.earned:true)&&matchesQuery(m,q));
-      if(!vis.length&&filtering) return "";
-      const open=q?true:(g in ST.wallOpen?ST.wallOpen[g]:e>0);
-      return `<section class="wgroup${open?" open":""}" data-g="${g}"><button class="wallhead" type="button" aria-expanded="${open}"><h2>${G[g]}</h2><small>${e} / ${all.length}</small><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button><div class="wall">${vis.map(m=>medalHTML(m)).join("")}</div></section>`;
-    }).join("");
-    $("#walls").innerHTML=html||`<p class="wallempty">No medals match.</p>`;
-  }
-  const applyFilter=renderWall;
-  $("#walls").addEventListener("click",e=>{
-    const h=e.target.closest(".wallhead"); if(!h) return;
-    const sec=h.parentElement, open=!sec.classList.contains("open");
-    sec.classList.toggle("open",open); h.setAttribute("aria-expanded",open); ST.wallOpen[sec.dataset.g]=open; save();
-  });
-  $("#wallSearch").addEventListener("input",e=>{ wallQuery=e.target.value; renderWall(); });
-  function renderMedals(){
-    const strip=[...M.filter(m=>m.earned).slice(-5)];
-    for(const m of M) if(strip.length<5&&!m.earned&&!m.secret&&!m.soon&&m.prog) strip.push(m);
-    $("#homeMedals").innerHTML=strip.map(m=>medalHTML(m)).join("");
-    const earnedCount=M.filter(m=>m.earned).length;
-    $("#wallCount").textContent=`${earnedCount} of ${M.length} earned`;
-    $("#seeAllMedals").textContent=`See all ${M.length}`;
-    renderWall();
-    renderNext();
-  }
-  $$(".filters button").forEach(b=>b.onclick=()=>{
-    $$(".filters button").forEach(x=>x.classList.remove("on")); b.classList.add("on");
-    wallFilter=b.dataset.f; applyFilter();
-  });
-
-  /* detail overlay */
-  let shownMedal=null;
-  function showMedal(m,justEarned){
-    shownMedal=m;
-    if(hiddenSecret(m)){
-      $("#eTitle").textContent="Secret medal"; $("#eMedal").className="medal m-locked"; $("#eMedal").innerHTML="<span>?</span>";
-      $("#eName").textContent="Secret"; $("#eDesc").textContent="Keep listening to discover this one."; $("#eProg").innerHTML=""; $("#eBtns").style.display="none";
-      $("#earned").classList.add("open"); return;
-    }
-    const t=m.earned?m.tier:"locked";
-    $("#eTitle").innerHTML= justEarned?`Congratulations.<br>You earned ${/^[aeiou]/.test(m.tier)?"an":"a"} ${m.tier} medal.` : (m.earned?"Earned":"Not yet earned");
-    $("#eMedal").className=`medal m-${t}`; $("#eMedal").innerHTML=m.ic;
-    $("#eName").textContent=m.name; $("#eDesc").textContent=(m.desc||m.sub)+(m.soon&&!m.earned?" Coming soon.":"");
-    $("#eProg").innerHTML=m.prog?`${m.prog[2]}<div class="bar" style="margin-top:8px"><i style="width:${Math.round(pct(m)*100)}%"></i></div>`:"";
-    $("#eBtns").style.display=m.earned?"block":"none";
-    $("#earned").classList.add("open");
-  }
-  document.addEventListener("click",e=>{
-    const w=e.target.closest(".medalwrap, .nextup .card"); if(!w) return;
-    const m=M.find(x=>x.id===w.dataset.id); if(m) showMedal(m,false);
-  });
-  $("#eClose").onclick=()=>$("#earned").classList.remove("open");
-  $("#earned").addEventListener("click",e=>{ if(e.target.id==="earned") $("#earned").classList.remove("open"); });
-  document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ $("#earned").classList.remove("open"); closePanel(); } });
-  $("#eSave").onclick=async()=>{
-    if(!shownMedal) return;
-    try{ downloadFile(await cardFile(shownMedal)); toast("Card saved"); countShare(); }
-    catch(e){ toast("Couldn't make the card"); }
-  };
-  $("#eShare").onclick=async()=>{
-    if(!shownMedal) return;
-    try{
-      const f=await cardFile(shownMedal);
-      if(navigator.canShare&&navigator.canShare({files:[f]})) await navigator.share({files:[f],title:`${shownMedal.name} — Earmark`});
-      else { downloadFile(f); toast("Sharing isn't available here, so the card was saved"); }
-      countShare();
-    }catch(e){ if(e.name!=="AbortError") toast("Couldn't share the card"); }
-  };
-  $("#shareStats").onclick=()=>toast("Sharing your stats card (prototype)");
-  function countShare(){ ST.shares++; save(); recomputeMedals(); const m=pendingEarned.shift(); pendingEarned.length=0; if(m) setTimeout(()=>toast(`New medal: ${m.name}`),900); }
-
-  /* streak medal + today's notes */
-  function renderNotes(){ $("#notes").innerHTML=`<div class="lbl">Today</div>`+(ST.notes.length?ST.notes.map(n=>`<div>${esc(n.t)}<span>${n.h!=null?hm(n.h):esc(n.m||"")}</span></div>`).join(""):`<div class="none">Nothing logged yet</div>`); }
-
-  /* bookshelf */
-  const C={red:"#2A3A52",teal:"#17485A",gold:"#1D4F55",green:"#1F4A4A",plum:"#2F3D5C",rust:"#22466B",navy:"#1B3556",moss:"#24425A",wine:"#2B3550",slate:"#33445C"};   // navy, teal and slate tones
   /* genre options for the manual pick; keys are what each book's `genre` field holds.
      TODO: once titles come from the book database, `genre` is filled automatically from its metadata. */
   const GENRES=[["fantasy","Fantasy"],["scifi","Science fiction"],["litfic","Literary fiction"],["mystery","Mystery & thriller"],["romance","Romance"],
@@ -1192,8 +1095,251 @@ html.rm-on *,html.rm-on *:before,html.rm-on *:after{transition:none !important;a
     ["nonfiction","Nonfiction"],["history","History"],["biography","Biography"],["memoir","Memoir"],["selfhelp","Self-help"],["business","Business"],
     ["science","Science"],["psychology","Psychology"],["philosophy","Philosophy"],["religion","Religion & spirituality"],["truecrime","True crime"],
     ["translation","In translation"],["fullcast","Full cast / dramatized"]];
+  const GENRE_KEYS=new Set(GENRES.map(g=>g[0]));
   const FICTION=new Set(["fantasy","scifi","litfic","mystery","romance","horror","western","ya","children","classic"]);
   const NONFICTION=new Set(["nonfiction","history","biography","memoir","selfhelp","business","science","psychology","philosophy","religion","truecrime"]);
+
+  /* ---- medals: each one is a family that evolves up the same ten-step colour ladder ----
+     Levels are kept in ST.medals and never go down: a medal shows the best ever reached.
+     (live) families count only dated, logged listening, never imported backlog hours. */
+  const TIERS=["bronze","silver","gold","platinum","diamond","obsidian","meteorite","iridium","osmium","celestial"];
+  const cap=t=>t[0].toUpperCase()+t.slice(1);
+  const CATS={core:"Core",volume:"Listening volume",consist:"Consistency",speed:"Speed",length:"Book length",series:"Series & authors",
+    genre:"Genres",variety:"Variety",journey:"Journey",start:"Getting started",days:"Special days",special:"Special",secret:"Secret"};
+  const T=t=>`<span>${t}</span>`, plural=(n,a,b)=>`${n.toLocaleString()} ${n===1?a:b}`;
+  const UNITS={day:["day","days"],book:["book","books"],ses:["session","sessions"],wk:["perfect week","perfect weeks"],mo:["perfect month","perfect months"],
+    wkend:["weekend","weekends"],season:["season","seasons"],series:["series","series"],author:["author","authors"],genre:["genre","genres"],
+    month:["month","months"],note:["note","notes"],share:["share","shares"],time:["time","times"]};
+  // "12 more days", "3h 20m more"
+  const moreOf=(u,n)=>{ if(u==="h") return `${hm(n)} more`; const k=Math.max(1,Math.ceil(n-1e-9)); return `${k.toLocaleString()} more ${k===1?UNITS[u][0]:UNITS[u][1]}`; };
+  const MEDALS=[];
+  // a family: each level is [threshold, requirement, level name (defaults to its colour)]
+  const fam=(id,cat,ic,name,desc,v,u,levels,x={})=>MEDALS.push(Object.assign({id,cat,ic,name,desc,v,u,levels:levels.map(([t,req,nm])=>({t,req,nm})),lv:0,val:0},x));
+  const ladder=(ts,req,names)=>ts.map((t,i)=>[t,req(t),names&&names[i]]);
+  // a single medal: earned once, keeps its own colour
+  const one=(id,cat,tier,ic,name,sub,desc,ok,x={})=>MEDALS.push(Object.assign({id,cat,tier,ic,name,sub,desc,ok,single:true,lv:0},x));
+
+  // core
+  fam("rank","core",I.phones,"Rank","Lifetime hours listened, imported hours included.","total","h",ladder([25,100,250,500,1000,2500,5000,10000,25000,50000],t=>plural(t,"hour","hours")));
+  fam("streak","core",I.flame,"Day Streak","Days in a row with listening logged. Your best streak counts, so a broken streak never costs a level.","bestStreak","day",ladder([3,7,30,100,365,500,730,1000],t=>`${t.toLocaleString()} days in a row`),{live:true,cur:"streak"});
+  fam("books","core",I.book,"Books Finished","Books on your shelf, from any time.","books","book",ladder([1,5,10,25,50,100,250,500,1000],t=>plural(t,"book","books")));
+  fam("bookYear","core",I.stack,"Books in a Year","Books finished in one calendar year.","bookYear","book",ladder([12,25,50,100],t=>`${t} books in a year`));
+  fam("monthly","core",I.bookmark,"Monthly Reader","A finished book every month, months in a row.","monthRun","month",ladder([3,6,12,24],t=>`A book a month for ${t} months`));
+  // listening volume (live)
+  fam("bigDay","volume",I.bolt,"Big Day","Hours of listening in one day.","bestDay","h",ladder([1,2,4,6,8,10,12],t=>`${t} hour${t>1?"s":""} in a day`,["Warm Up","Double Feature","Half Marathon","Deep Dive","Marathon","Full Shift","Dawn to Dusk"]),{live:true});
+  fam("bigWeek","volume",I.waves,"Big Week","Hours of listening in one week.","bestWeek","h",ladder([10,20,40,60],t=>`${t} hours in a week`),{live:true});
+  fam("bigMonth","volume",I.speaker,"Big Month","Hours of listening in one month.","bestMonth","h",ladder([25,50,100,200],t=>`${t} hours in a month`),{live:true});
+  fam("habit","volume",I.repeat,"Daily Habit","An hour or more of listening every day, days in a row.","run60","day",ladder([7,30,100],t=>`1+ hour a day for ${t} days`),{live:true});
+  fam("pb","volume",I.trophy,"Personal Best","Times you've beaten your best week or your best month.","pbs","time",ladder([1,5,10,25],t=>t===1?"Beat your best week or month":`Beat your best ${t} times`),{live:true});
+  // consistency (live)
+  fam("pweek","consist",I.week,"Perfect Week","Weeks with listening on all seven days.","pweeks","wk",ladder([1,4,12,26,52],t=>plural(t,"perfect week","perfect weeks")),{live:true});
+  fam("pmonth","consist",I.cal,"Perfect Month","Months with listening on every single day.","pmonths","mo",ladder([1,3,6,12],t=>plural(t,"perfect month","perfect months")),{live:true});
+  fam("weekend","consist",I.weekend,"Weekend Warrior","Weekends with listening on both Saturday and Sunday.","weekends","wkend",ladder([4,12,26,52],t=>`${t} full weekends`),{live:true});
+  fam("early","consist",I.sun,"Early Bird","Sessions logged before 7 a.m.","early","ses",ladder([1,10,50,100],t=>t===1?"A session before 7 a.m.":`${t} sessions before 7 a.m.`),{live:true});
+  fam("owl","consist",I.moon,"Night Owl","Sessions logged after 10 p.m.","owl","ses",ladder([1,10,50,100],t=>t===1?"A session after 10 p.m.":`${t} sessions after 10 p.m.`),{live:true});
+  fam("seasons","consist",I.flower,"Seasons","Seasons of the same year with 50 hours of listening each.","seasons","season",ladder([1,2,3,4],t=>t===1?"50 hours in one season":`50 hours in ${t} seasons of a year`,["One Season","Two Seasons","Three Seasons","Four Seasons"]),{live:true});
+  // speed (live): each level is its own feat
+  fam("binge","speed",I.ffwd,"Binge","Finishing books fast.","binge",null,[[1,"A book within 48 hours"],[2,"3 books in 7 days"],[3,"5 books in 7 days"],[4,"10 books in 30 days"]],{live:true,direct:true});
+  // book length
+  fam("door","length",I.tome,"Doorstopper","The longest book you've finished.","longest","h",ladder([20,30,40,60],t=>`A ${t}-hour book`,["Long Haul","Doorstopper","Epic","Colossus"]));
+  fam("quick","length",I.clock,"Quick Listen","Books under five hours.","quick","book",ladder([1,5,10,25],t=>t===1?"A book under 5 hours":`${t} books under 5 hours`));
+  // series and authors
+  fam("slayer","series",I.layers,"Series Slayer","Books in one series.","topSeries","book",ladder([3,5,10,20],t=>`${t} books in one series`));
+  fam("collector","series",I.map,"Series Collector","Different series you've started.","nSeries","series",ladder([3,5,10,25],t=>`${t} different series`));
+  fam("loyal","series",I.feather,"Author Loyalist","Books by one author.","topAuthor","book",ladder([5,10,25,50],t=>`${t} books by one author`));
+  fam("explorer","series",I.compass,"Explorer","Different authors on your shelf.","nAuthors","author",ladder([10,25,50,100,250],t=>`${t} different authors`));
+  // genres: hours from the lengths of the books on the shelf
+  [["wwk","Worldwalker",["fantasy"],I.mountain,"fantasy"],["stf","Starfarer",["scifi"],I.planet,"science fiction"],["det","Detective",["mystery"],I.search,"mystery & thriller"],
+   ["sch","Scholar",["nonfiction"],I.cap,"nonfiction"],["cla","Classical",["classic"],I.column,"classics"],["ya","Young Adult",["ya"],I.leaf,"young adult"],
+   ["life","Life Stories",["biography","memoir"],I.pen,"biography & memoir"],["ttv","Time Traveler",["history"],I.hourglass,"history"],["rom","Heartstrings",["romance"],I.heart,"romance"],
+   ["hor","Brave Soul",["horror"],I.ghost,"horror"],["self","Growth Mindset",["selfhelp"],I.sprout,"self-help"],["biz","Boardroom",["business"],I.briefcase,"business"],
+   ["sci","Curious Mind",["science"],I.flask,"science"],["rel","Seeker",["religion"],I.candle,"religion & spirituality"],["hum","Laugh Track",["humor"],I.smile,"humor"],
+   ["tc","Case Closed",["truecrime"],I.finger,"true crime"],["west","Trailblazer",["western"],I.cactus,"westerns"],["kids","Storytime",["children"],I.balloon,"children's books"],
+   ["phil","Big Questions",["philosophy"],I.bulb,"philosophy"],["psy","Mind Reader",["psychology"],I.head,"psychology"],["tr","In Translation",["translation"],I.globe,"books in translation"],
+   ["cast","Full Cast",["fullcast"],I.mic,"full-cast audio"]
+  ].forEach(([id,name,genres,ic,label])=>fam(id,"genre",ic,name,`Hours of ${label}, from the lengths of the books on your shelf.`,"g_"+id,"h",ladder([10,25,50,100,250],t=>`${t} hours of ${label}`),{genres}));
+  // variety
+  fam("gexp","variety",I.shuffle,"Genre Explorer","Different genres on your shelf.","nGenres","genre",[[3,"3 genres"],[5,"5 genres"],[10,"10 genres"],[GENRES.length,"Every genre","Omnivore"]]);
+  fam("balanced","variety",I.scale,"Balanced Diet","Months where you finished both fiction and nonfiction.","balanced","month",ladder([1,6,12],t=>t===1?"Fiction and nonfiction in one month":`${t} balanced months`));
+  // journey
+  fam("anniv","journey",I.cake,"Anniversary","Years with Earmark.","years","year",ladder([1,2,3,5,10],t=>t===1?"1 year with Earmark":`${t} years with Earmark`));
+  fam("notes","journey",I.note,"Note Taker","Daily notes written alongside your listening.","notes","note",ladder([10,50,200,500],t=>`${t} notes`));
+  fam("sharer","journey",I.share,"Sharer","Times you've shared a medal or your stats.","shares","share",ladder([1,10,50],t=>t===1?"Share once":`Share ${t} times`),{soon:true});
+  // single medals
+  one("firstLog","start","bronze",I.play,"First Log","Log your first session","Logged your first listening session.","firstLog");
+  one("importer","start","bronze",I.download,"Importer","Add your past hours","Added your listening hours from the past.","importer");
+  one("stocker","start","silver",I.shelf,"Shelf Stocker","Add 10 past books","Added ten books from before Earmark.","stocker",{v:"undated",goal:10});
+  one("newYear","days","silver",I.star,"New Year's Listener","Listen on January 1","Started the year with a story.","newYear",{live:true});
+  one("holiday","days","silver",I.gift,"Holiday Listener","Listen on December 25","Listened on Christmas Day.","holiday",{live:true});
+  one("leap","days","gold",T("29"),"Leap Day","Listen on February 29","Listened on the rarest day of the calendar.","leap",{live:true});
+  one("comeback","special","bronze",I.sunset,"Comeback","Back after a week away","Welcome back. You picked up listening again after a week or more away.","comeback",{live:true});
+  one("fl","special","obsidian",I.flag,"Founding Listener","Here before launch","One of the first listeners, here before Earmark's public launch. This one can't be earned later.","founding");
+  one("wrap","special","gold",I.sparkle,"That's a Wrap","View your Year in Review","Looked back on your year in listening.","wrap",{soon:true});
+  one("answer","secret","gold",T("42"),"The Answer","Logged exactly 42 minutes","A session of exactly 42 minutes. Don't panic.","answer",{secret:true,live:true});
+  one("onTime","secret","gold",T("60"),"Right on Time","Logged exactly 60 minutes","A session of exactly one hour.","onTime",{secret:true,live:true});
+  one("bookends","secret","gold",I.pair,"Bookends","First and last day of a month","Finished books on the first and last day of the same month.","bookends",{secret:true});
+  one("nightDay","secret","gold",I.halfmoon,"Night and Day","Before 7 a.m. and after 10 p.m.","Logged before 7 a.m. and after 10 p.m. on the same day.","nightDay",{secret:true,live:true});
+  const BY=Object.fromEntries(MEDALS.map(m=>[m.id,m]));
+  const byId=id=>BY[id];
+
+  const nLv=m=>m.single?1:m.levels.length;
+  const tierAt=(m,lv)=>m.single?m.tier:TIERS[lv-1];
+  const lvName=(m,lv)=>m.single?m.name:(m.levels[lv-1].nm||cap(TIERS[lv-1]));
+  const hiddenSecret=m=>m.secret&&!m.lv;
+  const atOf=(m,lv)=>(ST.medals[m.id]&&ST.medals[m.id].at[lv-1])||"";
+  const fmtDay=iso=>iso?new Date(iso).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"}):"";
+  // the ring gets finer as the medal climbs: a plain ring, an inner rim, a double rim, gems, then a shimmer
+  const ringCls=(m,lv)=>!lv?"":m.single?"r2":["r1","r2","r3","r3","r3 gems","r3 gems shim"][Math.min(lv,6)-1];
+  // the "Mastered" laurel wreath for the final level of any family
+  const LAUREL=(()=>{
+    const leaf=(a,s)=>{ const x=(50+43*Math.cos(a)).toFixed(1), y=(50+43*Math.sin(a)).toFixed(1), deg=(a*180/Math.PI+90+s*30).toFixed(0);
+      return `<ellipse cx="${x}" cy="${y}" rx="5.4" ry="2.2" transform="rotate(${deg} ${x} ${y})"/>`; };
+    let p=""; for(let i=0;i<7;i++){ const t=i/6; p+=leaf(Math.PI*(.62+t*.6),-1)+leaf(Math.PI*(.38-t*.6),1); }
+    return `<i class="laurel" aria-hidden="true"><svg viewBox="0 0 100 100" fill="currentColor" style="position:static;width:100%;height:100%">${p}</svg></i>`;
+  })();
+  function face(m,lv,cls=""){
+    const t=lv?tierAt(m,lv):"locked", ring=ringCls(m,lv), mastered=lv&&!m.single&&lv===m.levels.length;
+    return `<div class="medal m-${t} ${ring}${mastered?" mastered":""} ${cls}">${mastered?LAUREL:""}${m.ic}${ring.includes("gems")?'<i class="gem"></i>':""}</div>`;
+  }
+  const dots=m=>`<span class="lvdots m-${m.lv?tierAt(m,m.lv):"locked"}" role="img" aria-label="Level ${m.lv} of ${m.levels.length}">${m.levels.map((_,i)=>`<i${i<m.lv?' class="on"':""}></i>`).join("")}</span>`;
+  function medalHTML(m,cls=""){
+    if(hiddenSecret(m)) return `<div class="medalwrap locked secret ${cls}" data-id="${m.id}"><div class="medal m-locked"><span>?</span></div><b>Secret</b><small>Keep listening to discover this one</small></div>`;
+    const sub=m.soon&&!m.lv?"Coming soon":m.single?m.sub:m.lv?(m.lv===m.levels.length?`${lvName(m,m.lv)} · Mastered`:lvName(m,m.lv)):m.levels[0].req;
+    return `<div class="medalwrap ${m.lv?"":"locked"} ${cls}" data-id="${m.id}">${face(m,m.lv)}${m.single?"":dots(m)}<b>${m.name}</b><small>${sub}</small></div>`;
+  }
+  // progress to the next level: {p: 0–1 or null, label: "12 more days to Gold"}
+  function nextInfo(m){
+    if(m.soon||hiddenSecret(m)) return null;
+    if(m.single){ if(m.lv||!m.goal) return null; const v=m.val||0; return {p:Math.min(1,v/m.goal),label:`${v} of ${m.goal}`}; }
+    if(m.lv>=m.levels.length) return null;
+    const nx=m.levels[m.lv], to=lvName(m,m.lv+1);
+    if(m.direct) return {p:null,label:`Next: ${nx.req}`};
+    if(m.id==="anniv"){ const due=new Date(ST.createdAt); due.setFullYear(due.getFullYear()+nx.t); const left=Math.max(1,Math.ceil((due-Date.now())/864e5)); return {p:Math.min(1,m.val/nx.t),label:`${plural(left,"day","days")} to ${to}`}; }
+    const v=m.cur?m.curVal:m.val;
+    return {p:Math.max(0,Math.min(1,v/nx.t)),label:`${moreOf(m.u,nx.t-v)} to ${to}`};
+  }
+  /* closest + something new: both point at the next level of a family */
+  function nextCard(el,label,m){
+    const nx=nextInfo(m), k=m.single?1:Math.min(m.lv+1,nLv(m));
+    el.dataset.id=m.id;
+    el.innerHTML=`<div class="lbl">${label}</div>${face(m,k,"ghost")}<b>${m.name}</b><small>${m.single?m.sub:`${lvName(m,k)} · ${m.levels[k-1].req}`}</small>${nx&&nx.p!=null?`<div class="bar"><i style="width:${Math.round(nx.p*100)}%"></i></div>`:""}`;
+  }
+  let rnd=null;
+  function renderNext(){
+    const open=MEDALS.filter(m=>!m.secret&&!m.soon&&m.id!=="anniv"&&(m.single?(!m.lv&&m.goal):m.lv<m.levels.length));
+    const ranked=open.map(m=>[m,nextInfo(m)]).filter(([,n])=>n&&n.p>0&&n.p<1).sort((a,b)=>b[1].p-a[1].p);
+    const closest=ranked.length?ranked[0][0]:BY.streak.lv<BY.streak.levels.length?BY.streak:null;
+    if(closest) nextCard($("#closest"),"Closest to unlocking",closest);
+    // something new: a medal not started yet, not the long rank or streak ladders
+    const pool=MEDALS.filter(m=>!m.lv&&m!==closest&&!m.secret&&!m.soon&&!["rank","streak","anniv","fl"].includes(m.id));
+    if((!rnd||rnd.lv)&&pool.length) rnd=pool[Math.floor(Math.random()*pool.length)];
+    if(rnd) nextCard($("#random"),"Try something new",rnd);
+  }
+
+  /* achievements: collapsible categories, search, and All / Earned / Not yet */
+  let wallFilter="all", wallQuery="";
+  const searchText=m=>hiddenSecret(m)?"secret ?":[m.name,m.sub||"",m.desc,CATS[m.cat],...(m.levels||[]).flatMap(L=>[L.req,L.nm||""])].join(" ").toLowerCase();
+  function renderWall(){
+    const q=wallQuery.trim().toLowerCase(), filtering=!!q||wallFilter!=="all";
+    const html=Object.keys(CATS).map(c=>{
+      const all=MEDALS.filter(m=>m.cat===c), e=all.filter(m=>m.lv).length;
+      const vis=all.filter(m=>(wallFilter==="earned"?m.lv>0:wallFilter==="locked"?!m.lv:true)&&(!q||searchText(m).includes(q)));
+      if(!vis.length&&filtering) return "";
+      const open=q?true:(c in ST.wallOpen?ST.wallOpen[c]:e>0);
+      return `<section class="wgroup${open?" open":""}" data-g="${c}"><button class="wallhead" type="button" aria-expanded="${open}"><h2>${CATS[c]}</h2><small>${e} / ${all.length}</small><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button><div class="wall">${vis.map(m=>medalHTML(m)).join("")}</div></section>`;
+    }).join("");
+    $("#walls").innerHTML=html||`<p class="wallempty">No medals match.</p>`;
+  }
+  $("#walls").addEventListener("click",e=>{
+    const h=e.target.closest(".wallhead"); if(!h) return;
+    const sec=h.parentElement, open=!sec.classList.contains("open");
+    sec.classList.toggle("open",open); h.setAttribute("aria-expanded",open); ST.wallOpen[sec.dataset.g]=open; save();
+  });
+  $("#wallSearch").addEventListener("input",e=>{ wallQuery=e.target.value; renderWall(); });
+  function renderMedals(){
+    // home strip: the most recent level-ups first, then families still to start
+    const got=MEDALS.filter(m=>m.lv).sort((a,b)=>atOf(b,b.lv).localeCompare(atOf(a,a.lv))||b.lv-a.lv), strip=got.slice(0,5);
+    for(const m of MEDALS) if(strip.length<5&&!m.lv&&!m.single&&!m.soon) strip.push(m);
+    $("#homeMedals").innerHTML=strip.map(m=>medalHTML(m)).join("");
+    $("#wsMedals").textContent=got.length; $("#wsMedalsOf").textContent=`of ${MEDALS.length}`;
+    $("#wsLevels").textContent=MEDALS.reduce((t,m)=>t+m.lv,0); $("#wsLevelsOf").textContent=`of ${MEDALS.reduce((t,m)=>t+nLv(m),0)}`;
+    $("#seeAllMedals").textContent=`See all ${MEDALS.length}`;
+    renderWall();
+    renderNext();
+  }
+  $$(".filters button").forEach(b=>b.onclick=()=>{
+    $$(".filters button").forEach(x=>x.classList.remove("on")); b.classList.add("on");
+    wallFilter=b.dataset.f; renderWall();
+  });
+
+  /* detail + level-up overlay */
+  let shownMedal=null, shownLv=0, shownEv=null, evoT=[];
+  const reducedMotion=()=>{ const h=document.documentElement; return h.classList.contains("rm-on")||(!h.classList.contains("rm-off")&&matchMedia("(prefers-reduced-motion: reduce)").matches); };
+  function showMedal(m,ev){
+    evoT.forEach(clearTimeout); evoT=[];
+    shownMedal=m; shownEv=ev||null;
+    const n=nLv(m), lv=ev?ev.to:m.lv; shownLv=lv;
+    $("#eProg").innerHTML=""; $("#eLevels").innerHTML="";
+    if(hiddenSecret(m)){
+      $("#eTitle").textContent="Secret medal"; $("#eMedal").innerHTML=`<div class="medal m-locked"><span>?</span></div>`;
+      $("#eName").textContent="Secret"; $("#eDesc").textContent="Keep listening to discover this one.";
+    } else if(ev){
+      // the celebration: "Day Streak evolved to Gold", the old medal turning into the new one
+      $("#eTitle").textContent=m.single?"New medal":ev.from?`${m.name} evolved to ${lvName(m,lv)}`:`New medal: ${m.name}`;
+      $("#eName").textContent=m.single?m.name:lvName(m,lv);
+      $("#eDesc").textContent=m.single?m.desc:`${m.levels[lv-1].req} · Level ${lv} of ${n}${lv===n?" · Mastered":""}`;
+      if(ev.from&&!reducedMotion()){
+        $("#eMedal").innerHTML=face(m,ev.from);
+        evoT.push(setTimeout(()=>{ const f=$("#eMedal .medal"); if(f) f.classList.add("fade"); },380));
+        evoT.push(setTimeout(()=>{ $("#eMedal").innerHTML=face(m,lv,"evolve"); },720));
+      } else $("#eMedal").innerHTML=face(m,lv);
+    } else {
+      $("#eTitle").textContent=!lv?(m.soon?"Coming soon":"Not yet earned"):m.single?`Earned ${fmtDay(atOf(m,1))}`:lv===n?`${lvName(m,lv)} · Mastered`:`${lvName(m,lv)} · Level ${lv} of ${n}`;
+      $("#eMedal").innerHTML=face(m,lv);
+      $("#eName").textContent=m.name;
+      $("#eDesc").textContent=m.desc+(m.soon&&!lv?" Coming soon.":"");
+      const nx=nextInfo(m);
+      if(nx) $("#eProg").innerHTML=`${esc(nx.label)}${nx.p!=null?`<div class="bar" style="margin-top:8px"><i style="width:${Math.round(nx.p*100)}%"></i></div>`:""}`;
+      // every level: earned ones with their date, future ones as calm outlines with the requirement
+      if(!m.single) $("#eLevels").innerHTML=m.levels.map((L,i)=>{ const k=i+1, got=k<=lv;
+        return `<li class="${got?"done":"todo"}${k===lv?" cur":""}">${got?face(m,k,"mini"):face(m,0,"mini outline")}<span class="lt"><b>${lvName(m,k)}</b><small>${L.req}</small></span><span class="ld">${got?fmtDay(atOf(m,k)):`Level ${k}`}</span></li>`; }).join("");
+    }
+    $("#eBtns").style.display=lv&&!hiddenSecret(m)?"block":"none";
+    $("#earned").classList.add("open"); $("#earned .ebox").scrollTop=0;
+  }
+  function closeEarned(){ evoT.forEach(clearTimeout); evoT=[]; $("#earned").classList.remove("open"); }
+  document.addEventListener("click",e=>{
+    const w=e.target.closest(".medalwrap, .nextup .card"); if(!w) return;
+    const m=BY[w.dataset.id]; if(m) showMedal(m);
+  });
+  $("#eClose").onclick=closeEarned;
+  $("#earned").addEventListener("click",e=>{ if(e.target.id==="earned") closeEarned(); });
+  document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ closeEarned(); closePanel(); } });
+  // share cards wear the level's colour
+  const cardView=(m,lv)=>({id:m.id,tier:tierAt(m,lv),ic:m.ic,label:shownEv&&shownEv.from&&!m.single?"MEDAL EVOLVED":"MEDAL EARNED",
+    big:m.single?m.name:lvName(m,lv),sub:m.single?m.sub:`${m.name} · ${m.levels[lv-1].req}`});
+  $("#eSave").onclick=async()=>{
+    if(!shownMedal||!shownLv) return;
+    try{ downloadFile(await cardFile(cardView(shownMedal,shownLv))); toast("Card saved"); countShare(); }
+    catch(e){ toast("Couldn't make the card"); }
+  };
+  $("#eShare").onclick=async()=>{
+    if(!shownMedal||!shownLv) return;
+    try{
+      const v=cardView(shownMedal,shownLv), f=await cardFile(v);
+      if(navigator.canShare&&navigator.canShare({files:[f]})) await navigator.share({files:[f],title:`${shownMedal.name} — Earmark`});
+      else { downloadFile(f); toast("Sharing isn't available here, so the card was saved"); }
+      countShare();
+    }catch(e){ if(e.name!=="AbortError") toast("Couldn't share the card"); }
+  };
+  $("#shareStats").onclick=()=>toast("Sharing your stats card (prototype)");
+  function countShare(){ ST.shares++; save(); }
+
+  /* streak medal + today's notes */
+  function renderNotes(){ $("#notes").innerHTML=`<div class="lbl">Today</div>`+(ST.notes.length?ST.notes.map(n=>`<div>${esc(n.t)}<span>${n.h!=null?hm(n.h):esc(n.m||"")}</span></div>`).join(""):`<div class="none">Nothing logged yet</div>`); }
+
+  /* bookshelf */
+  const C={red:"#2A3A52",teal:"#17485A",gold:"#1D4F55",green:"#1F4A4A",plum:"#2F3D5C",rust:"#22466B",navy:"#1B3556",moss:"#24425A",wine:"#2B3550",slate:"#33445C"};   // navy, teal and slate tones
   $$("select.genre").forEach(sel=>sel.innerHTML=`<option value="">Genre (optional)</option>`+GENRES.map(([k,l])=>`<option value="${k}">${l}</option>`).join(""));
   const LIB=ST.books;   // the shelf is the saved library; a new account starts empty
   // shelf period by date finished; undated (backlog) books only appear under All
@@ -1333,24 +1479,20 @@ html.rm-on *,html.rm-on *:before,html.rm-on *:after{transition:none !important;a
   const sheetEntry=wireEntry({title:"#sheetTitle",author:"#sheetAuthor",hours:"#sheetHours",genre:"#sheetGenre",btn:"#sheetAddBtn",list:"#sheetAddedList",dated:true});
   $("#addDone").onclick=()=>{ back(); showPendingEarned(); };
 
-  /* derive(): today / week / month / year, streaks and the live-badge stats, all from the session log
-     (plus the floor carried over from before the log existed). Called after any change. */
-  let D={listen:new Set(),run60:0,run120:0,iron:0,bestWeekH:0,bestMonthH:0,pbWeek:false,pbMonth:false,season:{},fourSeasons:false,sunrise:false,midnight:false,lunchDays:0,goldenDays:0,clock:false,nightDay:false};
+  /* derive(): today / week / month / year, streaks, the medal counts and the chart data, all from the
+     session log (plus the floor carried over from before the log existed). Called after any change. */
+  let D={};
   function derive(){
     const minQ=Math.max(1,parseInt(ST.settings.streakMinMin,10)||5), L=ST.legacy;
-    const dayMin={}, lunch=new Set(), golden=new Set(), parts={}, dayAmPm={};
-    let owl=!!L.owl, early=!!L.earlyBird, sunrise=false, midnight=false;
+    const dayMin={}, dayAmPm={}, notesByDay={};
+    let owl=!!L.owl, early=!!L.earlyBird, owlN=L.owl?1:0, earlyN=L.earlyBird?1:0;
     for(const x of ST.sessions){
       dayMin[x.d]=(dayMin[x.d]||0)+x.m;
       const h=new Date(x.at).getHours();
-      if(h<4){ owl=true; midnight=true; }
-      if(h===4) sunrise=true;
-      if(h>=4&&h<7) early=true;
-      if(h>=11&&h<13) lunch.add(x.d);
-      if(h>=18&&h<20) golden.add(x.d);
-      const part=h>=5&&h<12?"m":h>=12&&h<17?"a":(h>=20||h<5)?"n":"";
-      if(part){ const wk=weekKeyOf(parseDay(x.d)); (parts[wk]=parts[wk]||new Set()).add(part); }
+      if(h>=22||h<4){ owl=true; owlN++; }      // night owl: after 10 p.m.
+      if(h>=4&&h<7){ early=true; earlyN++; }   // early bird: before 7 a.m.
       const ap=dayAmPm[x.d]=dayAmPm[x.d]||{}; if(h<7) ap.am=1; if(h>=22) ap.pm=1;
+      if(x.note) (notesByDay[x.d]=notesByDay[x.d]||[]).push({t:x.note,m:x.m});
     }
     const listen=new Set([...Object.keys(dayMin),...L.days]);
     const qual=new Set([...Object.keys(dayMin).filter(d=>dayMin[d]>=minQ),...L.days]);   // days that count toward a streak
@@ -1376,166 +1518,90 @@ html.rm-on *,html.rm-on *:before,html.rm-on *:after{transition:none !important;a
     ST.byWeekday=byWd; ST.weekdayDays=wdDays;
     const sortedListen=[...listen].sort(); ST.logDays=sortedListen; ST.lastLog=sortedListen[sortedListen.length-1]||null;
     ST.owl=owl; ST.earlyBird=early; ST.comeback=!!L.comeback||sortedListen.some((d,i)=>i>0&&daysBetween(sortedListen[i-1],d)>=8);
-    const pb=map=>{ let best=0, beat=false; Object.keys(map).sort().forEach((key,i)=>{ const v=map[key]; if(i>0&&best>0&&v>best) beat=true; best=Math.max(best,v); }); return beat; };
-    const ironWk={}; Object.entries(dayMin).forEach(([d,m])=>{ if(m>=480){ const wk=weekKeyOf(parseDay(d)); ironWk[wk]=(ironWk[wk]||0)+1; } });
-    const seasonBest={}; ["spring","summer","fall","winter"].forEach(sn=>seasonBest[sn]=Math.max(0,...Object.entries(seasonH).filter(([key])=>key.startsWith(sn)).map(([,v])=>v)));
+    // consistency: perfect weeks and months, full weekends
+    const wkC={}, moC={}; let weekends=0;
+    listen.forEach(d=>{ const wk=weekKeyOf(parseDay(d)), mk=d.slice(0,7); wkC[wk]=(wkC[wk]||0)+1; moC[mk]=(moC[mk]||0)+1; });
+    listen.forEach(d=>{ const s=parseDay(d); if(s.getDay()===6){ s.setDate(s.getDate()+1); if(listen.has(dayKey(s))) weekends++; } });
+    // personal bests: each week or month that topped every one before it
+    const beats=map=>{ let best=0,n=0; Object.keys(map).sort().forEach(key=>{ const v=map[key]; if(best>0&&v>best) n++; best=Math.max(best,v); }); return n; };
     const years=new Set(Object.keys(seasonH).map(key=>key.replace(/\D/g,"")));
-    D={listen,
-      run60:runOf(new Set(Object.keys(dayMin).filter(d=>dayMin[d]>=60))), run120:runOf(new Set(Object.keys(dayMin).filter(d=>dayMin[d]>=120))),
-      iron:Math.max(0,...Object.values(ironWk)),
-      bestWeekH:Math.max(0,...Object.values(weekMin))/60, bestMonthH:Math.max(0,...Object.values(monthMin))/60,
-      pbWeek:pb(weekMin), pbMonth:pb(monthMin),
-      season:seasonBest, fourSeasons:[...years].some(y=>["spring","summer","fall","winter"].every(sn=>(seasonH[sn+y]||0)>=50)),
-      sunrise, midnight, lunchDays:lunch.size, goldenDays:golden.size,
-      clock:Object.values(parts).some(p=>p.size===3), nightDay:Object.values(dayAmPm).some(a=>a.am&&a.pm)};
+    // chart data: logged listening, plus finished books with hours on the day they were finished
+    const cDay={}, cWeek={}, cMonth={}, cYear={};
+    Object.entries(dayMin).forEach(([d,m])=>{ cDay[d]=m/60; });
+    LIB.forEach(b=>{ if(b.finished&&b.h>0) cDay[b.finished]=(cDay[b.finished]||0)+b.h; });
+    Object.entries(cDay).forEach(([d,h])=>{ const wk=weekKeyOf(parseDay(d)), mk=d.slice(0,7), y=d.slice(0,4); cWeek[wk]=(cWeek[wk]||0)+h; cMonth[mk]=(cMonth[mk]||0)+h; cYear[y]=(cYear[y]||0)+h; });
+    const cKeys=Object.keys(cDay).filter(d=>cDay[d]>0).sort();
+    D={listen,dayMin,notesByDay,cDay,cWeek,cMonth,cYear,cFirst:cKeys[0]||null,cDays:cKeys.length,
+      run60:runOf(new Set(Object.keys(dayMin).filter(d=>dayMin[d]>=60))),
+      bestWeekH:Math.max(0,...Object.values(weekMin))/60, bestMonthH:Math.max(0,...Object.values(monthMin))/60, pbs:beats(weekMin)+beats(monthMin),
+      pweeks:Object.values(wkC).filter(n=>n>=7).length,
+      pmonths:Object.entries(moC).filter(([mk,n])=>{ const [y,m]=mk.split("-").map(Number); return n>=new Date(y,m,0).getDate(); }).length,
+      weekends, early:earlyN, owlN,
+      seasons:Math.max(0,...[...years].map(y=>["spring","summer","fall","winter"].filter(sn=>(seasonH[sn+y]||0)>=50).length)),
+      nightDay:Object.values(dayAmPm).some(a=>a.am&&a.pm)};
   }
 
-  /* genre-stretch medals, computed from each book's genre */
-  const OMNI_GOAL=6, pendingEarned=[];
+  /* every number the medal families need, from the library, the session log and derive() */
+  const pendingEarned=[];
   const fmtN=h=>Number.isInteger(h)?h:+h.toFixed(1);
-  const hoursIn=g=>LIB.filter(b=>b.genre===g).reduce((s,b)=>s+(b.h||0),0);
-  const firstIn=g=>{ const b=LIB.find(b=>b.genre===g); return b?b.t:null; };
-  function recomputeMedals(quiet){
-    const was=Object.fromEntries(M.map(m=>[m.id,m.earned]));
-    // lifetime rank: thresholds on the total; the top earned rank shows progress to the next one
-    const ranks=M.filter(m=>m.group==="rank");
-    ranks.forEach(m=>{ m.earned=ST.total>=m.thr; m.prog=m.earned?null:[ST.total,m.thr,`${fmtN(Math.max(0,m.thr-ST.total)).toLocaleString()} hours to go`]; });
-    const top=ranks.filter(m=>m.earned).pop(), nextR=ranks.find(m=>!m.earned);
-    if(top&&nextR) top.prog=[ST.total,nextR.thr,`${nextR.name} at ${nextR.thr.toLocaleString()} hours`];
-    // this year
-    const y=byId("y26"), yr=ST.keys.year||String(new Date().getFullYear()), yh=ST.yearH;
-    const reached=YEAR_TIERS.filter(([,h])=>yh>=h), nextY=YEAR_TIERS.find(([,h])=>yh<h);
-    const cap=t=>t[0].toUpperCase()+t.slice(1);
-    y.earned=reached.length>0; y.tier=(reached.length?reached[reached.length-1]:YEAR_TIERS[0])[0];
-    y.ic=`<span>${yr.slice(2)}</span>`; y.name=`${cap(y.tier)} year`; y.sub=`${yr} · ${fmtN(yh)} hrs`; y.desc=`${fmtN(yh)} hours in ${yr} so far.`;
-    y.prog=nextY?[yh,nextY[1],`${cap(nextY[0])} year at ${nextY[1]} hours`]:null;
-    // streaks: earned on the best streak ever reached
-    M.filter(m=>m.group==="streak").forEach(m=>{ m.earned=ST.bestStreak>=m.thr; m.prog=m.earned?null:[ST.streak,m.thr,ST.streak?`${m.thr-ST.streak} days to go`:""]; });
-    // feats
-    const big=LIB.find(b=>(b.h||0)>=40); const door=byId("door"); door.earned=!!big; door.sub=big?`${esc(big.t)}`:"A 40-hour book";
-    const mar=byId("mar"); mar.earned=ST.bestDayH>=8; mar.prog=mar.earned?null:[ST.bestDayH,8,ST.bestDayH?`Best day so far: ${hm(ST.bestDayH)}`:""];
-    byId("owl").earned=!!ST.owl;
-    const hoursRule=(id,g,goal,emptyHint)=>{
-      const m=byId(id), h=hoursIn(g), first=firstIn(g);
-      m.earned=h>=goal;
-      m.prog=m.earned?null:[h,goal,`${fmtN(h)} of ${goal} hours · ${first?esc(first)+" counted":emptyHint}`];
-    };
-    const oneRule=(id,g)=>{ const m=byId(id), first=firstIn(g); m.earned=!!first; m.sub=first?esc(first):"Finish one"; };
-    hoursRule("sch","nonfiction",25,"try a history or a how-to");
-    hoursRule("cla","classic",25,"try Austen, Dumas, Tolstoy");
-    oneRule("ya","ya"); oneRule("bio","biography"); oneRule("tr","translation");
-    hoursRule("wwk","fantasy",25,"try an epic fantasy");
-    hoursRule("stf","scifi",25,"try a space opera");
-    hoursRule("det","mystery",25,"try a classic whodunit");
-    hoursRule("ttv","history",25,"try a narrative history");
-    const reach=(id,v,goal,label)=>{ const m=byId(id); m.earned=v>=goal; m.prog=m.earned?null:[v,goal,label]; };
+  function medalStats(){
     const maxOf=o=>Math.max(0,...Object.values(o));
-    // genre hopper: dated books, five genres inside one calendar month
-    const gm={}; LIB.forEach(b=>{ if(b.finished&&b.genre){ (gm[b.finished.slice(0,7)]=gm[b.finished.slice(0,7)]||new Set()).add(b.genre); } });
-    const hop=Math.max(0,...Object.values(gm).map(x=>x.size)); reach("ghop",hop,5,`${hop} of 5 genres in one month`);
-    // books finished
-    const nb=LIB.length; [["bk1",1],["bk10",10],["bk25",25],["bk50",50],["bk100",100],["bk250",250]].forEach(([id,g])=>reach(id,nb,g,`${nb} of ${g} books`));
-    // time milestones count every hour, imported included
-    [["tw",168],["tm",720],["ty",8760]].forEach(([id,g])=>reach(id,ST.total,g,`${fmtN(ST.total).toLocaleString()} of ${g.toLocaleString()} hours`));
-    // consistency — only live, dated listening days
-    const days=new Set(ST.logDays), wkC={}, moC={};
-    days.forEach(k=>{ const wk=weekKeyOf(parseDay(k)); wkC[wk]=(wkC[wk]||0)+1; moC[k.slice(0,7)]=(moC[k.slice(0,7)]||0)+1; });
-    const bestWk=maxOf(wkC); reach("pw",bestWk,7,bestWk?`Best week so far: ${bestWk} of 7 days`:"");
-    let mFull=false, mBest=[0,30,""];
-    Object.entries(moC).forEach(([mk,c])=>{ const [yy,mm]=mk.split("-").map(Number), dim=new Date(yy,mm,0).getDate(); if(c>=dim) mFull=true; if(c/dim>mBest[0]/mBest[1]) mBest=[c,dim,`${c} of ${dim} days in ${new Date(yy,mm-1,1).toLocaleDateString(undefined,{month:"long"})}`]; });
-    const pmM=byId("pm"); pmM.earned=mFull; pmM.prog=mFull?null:mBest;
-    let wkends=0; days.forEach(k=>{ const d=parseDay(k); if(d.getDay()===6){ d.setDate(d.getDate()+1); if(days.has(dayKey(d))) wkends++; } });
-    reach("ww",wkends,4,`${wkends} of 4 weekends`);
-    byId("cb").earned=!!ST.comeback;
-    // session feats — live
-    byId("eb").earned=!!ST.earlyBird;
-    reach("hmar",ST.bestDayH,4,ST.bestDayH?`Best day so far: ${hm(ST.bestDayH)}`:"");
-    const fin=LIB.filter(b=>b.finished).map(tsOf).sort((a,b)=>a-b);
-    let run=0; for(let i=0;i<fin.length;i++){ let j=i; while(j+1<fin.length&&fin[j+1]-fin[i]<=6*864e5) j++; run=Math.max(run,j-i+1); }
-    reach("bng",run,3,`${run} of 3 books within a week`);
-    // series and authors
     const norm=v=>(v||"").trim().toLowerCase(), tally=key=>{ const t={}; LIB.forEach(b=>{ const v=norm(b[key]); if(v) t[v]=(t[v]||0)+1; }); return t; };
-    const ser=tally("series"), aut=tally("author"), topS=maxOf(ser), topA=maxOf(aut), nA=Object.keys(aut).length;
-    reach("tri",topS,3,`${topS} of 3 in one series`); reach("saga",topS,10,`${topS} of 10 in one series`);
-    reach("aul",topA,5,`${topA} of 5 by one author`); reach("exp",nA,10,`${nA} of 10 authors`); reach("wan",nA,25,`${nA} of 25 authors`);
-    // ---------- the 100 added badges ----------
-    const flag=(id,ok)=>{ const m=byId(id); m.earned=!!ok; m.prog=null; };
-    const bd=ST.bestDayH, bdL=bd?`Best day so far: ${hm(bd)}`:"";
-    [["dWarm",1],["dDouble",2],["dDeep",6],["dShift",10],["dDawn",12]].forEach(([id,g])=>reach(id,bd,g,bdL));
-    reach("dHour",D.run60,7,`${D.run60} of 7 days in a row`); reach("dSteady",D.run120,7,`${D.run120} of 7 days in a row`);
-    reach("dIron",D.iron,5,`${D.iron} of 5 days in one week`);
-    const bwk=D.bestWeekH, bmo=D.bestMonthH;
-    [["vW20",20],["vW40",40],["vW60",60]].forEach(([id,g])=>reach(id,bwk,g,bwk?`Best week so far: ${hm(bwk)}`:""));
-    [["vM50",50],["vM100",100],["vM200",200]].forEach(([id,g])=>reach(id,bmo,g,bmo?`Best month so far: ${hm(bmo)}`:""));
-    flag("vPBW",D.pbWeek); flag("vPBM",D.pbMonth);
-    [["bk5",5],["bk500",500],["bk1000",1000]].forEach(([id,g])=>reach(id,nb,g,`${nb} of ${g} books`));
-    // dated books: months, years, speed
-    const dated=LIB.filter(b=>b.finished), byMonth={}, byYear={}, monthsByYear={};
-    dated.forEach(b=>{ const mk=b.finished.slice(0,7), y=b.finished.slice(0,4); byMonth[mk]=(byMonth[mk]||0)+1; byYear[y]=(byYear[y]||0)+1; (monthsByYear[y]=monthsByYear[y]||new Set()).add(mk); });
-    const mks=Object.keys(byMonth).sort(); let mRun=0, cur=0, prevMk=null;
-    mks.forEach(mk=>{ cur=prevMk&&prevMonthKey(mk)===prevMk?cur+1:1; mRun=Math.max(mRun,cur); prevMk=mk; });
-    reach("bkSeason",mRun,3,`${mRun} of 3 months in a row`);
-    const bestYrMonths=Math.max(0,...Object.values(monthsByYear).map(x=>x.size)); reach("bk12",bestYrMonths,12,`${bestYrMonths} of 12 months in one year`);
-    const bestYr=maxOf(byYear); reach("bkY50",bestYr,50,`${bestYr} of 50 in one year`); reach("bkY100",bestYr,100,`${bestYr} of 100 in one year`);
-    const within=span=>{ let best=0; for(let i=0;i<fin.length;i++){ let j=i; while(j+1<fin.length&&fin[j+1]-fin[i]<=span*864e5) j++; best=Math.max(best,j-i+1); } return best; };
-    const w3=within(2), w7=within(6); reach("spHat",w3,3,`${w3} of 3 books within 3 days`); reach("spStack",w7,5,`${w7} of 5 books within a week`);
-    const bestMo=maxOf(byMonth); reach("spTen",bestMo,10,`${bestMo} of 10 in one month`);
-    // book length
-    const hs=LIB.map(b=>b.h||0), cnt20=hs.filter(h=>h>=20).length, cntShort=hs.filter(h=>h>0&&h<5).length;
-    flag("lnShort",hs.some(h=>h>0&&h<2)); flag("lnNov",hs.some(h=>h>=2&&h<=5)); reach("lnStack",cntShort,5,`${cntShort} of 5 short books`);
-    flag("lnLong",cnt20>0); flag("lnEpic",hs.some(h=>h>=40)); flag("lnColossus",hs.some(h=>h>=60)); reach("lnTome",cnt20,10,`${cnt20} of 10 books of 20+ hours`);
-    // time of day (when the session is logged)
-    flag("tdSun",D.sunrise); flag("tdMid",D.midnight); flag("tdClock",D.clock);
-    reach("tdLunch",D.lunchDays,5,`${D.lunchDays} of 5 days`); reach("tdGold",D.goldenDays,5,`${D.goldenDays} of 5 days`);
-    // calendar
-    const lis=[...D.listen]; flag("caNY",lis.some(d=>d.endsWith("-01-01"))); flag("caXmas",lis.some(d=>d.endsWith("-12-25"))); flag("caLeap",lis.some(d=>d.endsWith("-02-29")));
-    [["caSpring","spring"],["caSummer","summer"],["caFall","fall"],["caWinter","winter"]].forEach(([id,sn])=>{ const v=D.season[sn]; reach(id,v,50,v?`Best ${sn==="fall"?"autumn":sn} so far: ${hm(v)}`:""); });
-    flag("caFour",D.fourSeasons);
-    // anniversaries
-    const joined=new Date(ST.createdAt), now=Date.now();
-    [["an1",1],["an2",2],["an3",3],["an5",5],["an10",10]].forEach(([id,y])=>{ const due=new Date(joined); due.setFullYear(due.getFullYear()+y); const total=(due-joined)/864e5, left=Math.ceil((due-now)/864e5); const m=byId(id); m.earned=left<=0; m.prog=m.earned?null:[Math.max(0,(now-joined)/864e5),total,`${left.toLocaleString()} day${left===1?"":"s"} to go`]; });
-    // genres (25 h) and mastery (100 h)
-    [["gRom","romance"],["gHor","horror"],["gMem","memoir"],["gSelf","selfhelp"],["gBiz","business"],["gSci","science"],["gRel","religion"],["gHum","humor"],["gTc","truecrime"],["gWest","western"],["gCast","fullcast"],["gKids","children"],["gPhil","philosophy"],["gPsy","psychology"]].forEach(([id,g])=>hoursRule(id,g,25,"add one to your shelf"));
-    hoursRule("mFan","fantasy",100,"try an epic fantasy"); hoursRule("mSci","scifi",100,"try a space opera"); hoursRule("mMys","mystery",100,"try a classic whodunit");
-    const nonH=LIB.filter(b=>NONFICTION.has(b.genre)).reduce((t,b)=>t+(b.h||0),0); reach("mNon",nonH,100,`${fmtN(nonH)} of 100 hours`);
-    // variety
-    const gs=new Set(LIB.map(b=>b.genre).filter(Boolean)); reach("vaSampler",gs.size,10,`${gs.size} of 10 genres`);
-    const allG=GENRES.filter(([k])=>gs.has(k)).length; reach("vaSpectrum",allG,GENRES.length,`${allG} of ${GENRES.length} genres`);
-    const kinds={}; dated.forEach(b=>{ const mk=b.finished.slice(0,7), k=kinds[mk]=kinds[mk]||{f:0,n:0}; if(FICTION.has(b.genre)) k.f++; if(NONFICTION.has(b.genre)) k.n++; });
-    flag("vaBalanced",Object.values(kinds).some(k=>k.f&&k.n));
-    const knownBefore=new Set(LIB.filter(b=>!b.finished&&b.author).map(b=>norm(b.author))), firstSeen={};
-    dated.slice().sort((a,b)=>a.finished.localeCompare(b.finished)).forEach(b=>{ const a=norm(b.author); if(a&&!knownBefore.has(a)&&!(a in firstSeen)) firstSeen[a]=b.finished.slice(0,7); });
-    const newPer={}; Object.values(firstSeen).forEach(mk=>newPer[mk]=(newPer[mk]||0)+1); const nv=maxOf(newPer); reach("vaNew",nv,5,`Best month: ${nv} of 5 new authors`);
-    const seq=dated.filter(b=>b.genre).sort((a,b)=>a.finished.localeCompare(b.finished)||(a.added||"").localeCompare(b.added||""));
-    flag("vaPalate",seq.some((b,i)=>i>=2&&new Set([seq[i-2].genre,seq[i-1].genre,b.genre]).size===3));
-    // series and authors
-    const nSer=Object.keys(ser).length, firsts=new Set(LIB.filter(b=>b.series&&b.num===1).map(b=>norm(b.series))).size;
-    reach("srBox",topS,5,`${topS} of 5 in one series`); reach("srSuper",topA,10,`${topA} of 10 by one author`); reach("srDevotee",topA,25,`${topA} of 25 by one author`);
-    reach("srCollector",nSer,10,`${nSer} of 10 series`); reach("srSampler",firsts,5,`${firsts} of 5 first books`);
-    // logging habits
-    flag("lgFirst",ST.sessions.length>0||ST.legacy.days.length>0); flag("lgImport",ST.past.length>0);
-    const undated=LIB.filter(b=>!b.finished).length, detailed=LIB.filter(b=>b.author&&b.genre).length;
-    reach("lgStocker",undated,10,`${undated} of 10 past books`); reach("lgJournal",ST.notesWritten,50,`${ST.notesWritten} of 50 notes`); reach("lgChron",ST.notesWritten,200,`${ST.notesWritten} of 200 notes`);
-    reach("lgDetail",detailed,25,`${detailed} of 25 books`);
-    // sharing (medal cards); Year in Review is not built yet
-    reach("shFirst",ST.shares,1,"Share a medal card"); reach("shTen",ST.shares,10,`${ST.shares} of 10 shares`); flag("shWrap",ST.yearReviewViewed);
-    // secret
-    flag("xAnswer",ST.sessions.some(x=>x.m===42)); flag("xTime",ST.sessions.some(x=>x.m===60)); flag("xNightDay",D.nightDay);
-    const firstLast={}; dated.forEach(b=>{ const [y,mo,d]=b.finished.split("-").map(Number), dim=new Date(y,mo,0).getDate(), mk=b.finished.slice(0,7), f=firstLast[mk]=firstLast[mk]||{}; if(d===1) f.a=1; if(d===dim) f.z=1; });
-    flag("xBookends",Object.values(firstLast).some(f=>f.a&&f.z));
-    // special
-    byId("fl").earned=!PUBLIC_LAUNCH||ST.createdAt<PUBLIC_LAUNCH;
-    reach("nt",ST.notesWritten,10,`${ST.notesWritten} of 10 notes`);
-    const omni=byId("omni"), n=new Set(LIB.map(b=>b.genre).filter(Boolean)).size;
-    omni.earned=n>=OMNI_GOAL; omni.prog=omni.earned?null:[n,OMNI_GOAL,`${n} of ${OMNI_GOAL} genres so far`];
-    if(!quiet) M.filter(m=>m.earned&&!was[m.id]).forEach(m=>pendingEarned.push(m));   // newly earned → shown on Done
+    const dated=LIB.filter(b=>b.finished), byYear={}, byMonth={}, kinds={}, firstLast={};
+    dated.forEach(b=>{
+      const f=b.finished, y=f.slice(0,4), mk=f.slice(0,7), d=+f.slice(8,10);
+      byYear[y]=(byYear[y]||0)+1; byMonth[mk]=(byMonth[mk]||0)+1;
+      const kd=kinds[mk]=kinds[mk]||{f:0,n:0}; if(FICTION.has(b.genre)) kd.f++; if(NONFICTION.has(b.genre)) kd.n++;
+      const fl=firstLast[mk]=firstLast[mk]||{}; if(d===1) fl.a=1; if(d===new Date(+y,+f.slice(5,7),0).getDate()) fl.z=1;
+    });
+    let monthRun=0, run=0, prev=null;
+    Object.keys(byMonth).sort().forEach(mk=>{ run=prev&&prevMonthKey(mk)===prev?run+1:1; monthRun=Math.max(monthRun,run); prev=mk; });
+    // binge: books finished close together, or a whole book's length logged across its last two days
+    const fin=dated.map(tsOf).sort((a,b)=>a-b);
+    const within=span=>{ let best=0; for(let i=0,j=0;i<fin.length;i++){ while(fin[i]-fin[j]>span*864e5) j++; best=Math.max(best,i-j+1); } return best; };
+    const w7=within(6), w30=within(29);
+    const fast=dated.some(b=>{ if(!(b.h>0)) return false; const d=parseDay(b.finished); d.setDate(d.getDate()-1); return ((D.dayMin[b.finished]||0)+(D.dayMin[dayKey(d)]||0))/60>=b.h-1e-9; });
+    const ser=tally("series"), aut=tally("author"), undated=LIB.filter(b=>!b.finished).length, days=[...D.listen];
+    const S={total:ST.total,bestStreak:ST.bestStreak,streak:ST.streak,books:LIB.length,bookYear:maxOf(byYear),monthRun,
+      bestDay:ST.bestDayH,bestWeek:D.bestWeekH,bestMonth:D.bestMonthH,run60:D.run60,pbs:D.pbs,
+      pweeks:D.pweeks,pmonths:D.pmonths,weekends:D.weekends,early:D.early,owl:D.owlN,seasons:D.seasons,
+      binge:w30>=10?4:w7>=5?3:w7>=3?2:fast?1:0,
+      longest:Math.max(0,...LIB.map(b=>b.h||0)),quick:LIB.filter(b=>b.h>0&&b.h<5).length,
+      topSeries:maxOf(ser),nSeries:Object.keys(ser).length,topAuthor:maxOf(aut),nAuthors:Object.keys(aut).length,
+      nGenres:new Set(LIB.map(b=>b.genre).filter(g=>GENRE_KEYS.has(g))).size,balanced:Object.values(kinds).filter(x=>x.f&&x.n).length,
+      years:(Date.now()-new Date(ST.createdAt))/(365.2425*864e5),notes:ST.notesWritten,shares:ST.shares,
+      firstLog:ST.sessions.length>0||ST.legacy.days.length>0,importer:ST.past.length>0,undated,stocker:undated>=10,
+      newYear:days.some(d=>d.endsWith("-01-01")),holiday:days.some(d=>d.endsWith("-12-25")),leap:days.some(d=>d.endsWith("-02-29")),
+      comeback:!!ST.comeback,founding:!PUBLIC_LAUNCH||ST.createdAt<PUBLIC_LAUNCH,wrap:!!ST.yearReviewViewed,
+      answer:ST.sessions.some(x=>x.m===42),onTime:ST.sessions.some(x=>x.m===60),bookends:Object.values(firstLast).some(f=>f.a&&f.z),nightDay:D.nightDay};
+    MEDALS.forEach(m=>{ if(m.genres) S[m.v]=LIB.filter(b=>m.genres.includes(b.genre)).reduce((t,b)=>t+(b.h||0),0); });
+    return S;
+  }
+  /* levels only ever go up: the stored level is the best ever reached, with the date of each level */
+  function recomputeMedals(quiet){
+    const S=medalStats(), now=new Date().toISOString(); let changed=false;
+    for(const m of MEDALS){
+      let lv;
+      if(m.single){ lv=S[m.ok]?1:0; if(m.v) m.val=S[m.v]||0; }
+      else if(m.direct) lv=S[m.v]||0;
+      else { m.val=S[m.v]||0; if(m.cur) m.curVal=S[m.cur]||0; lv=m.levels.filter(L=>m.val>=L.t-1e-9).length; }
+      if(m.soon) lv=0;
+      const rec=ST.medals[m.id]||(ST.medals[m.id]={lv:0,at:[]});
+      if(lv>rec.lv){
+        const from=rec.lv; for(let i=from;i<lv;i++) rec.at[i]=rec.at[i]||now;
+        rec.lv=lv; changed=true;
+        if(!quiet){ const ev=pendingEarned.find(e=>e.m===m); if(ev) ev.to=lv; else pendingEarned.push({m,from,to:lv}); }   // shown on Done
+      }
+      m.lv=rec.lv;
+    }
+    if(changed) save();
     renderMedals();
   }
   function showPendingEarned(){
-    const m=pendingEarned.shift(), more=pendingEarned.length; pendingEarned.length=0;
-    if(!m) return;
-    showMedal(m,true);
-    if(more) toast(`And ${more} more medal${more>1?"s":""} earned`);
+    const e=pendingEarned.shift(), more=pendingEarned.length; pendingEarned.length=0;
+    if(!e) return;
+    showMedal(e.m,e);
+    if(more) toast(`And ${more} more medal${more>1?"s":""} leveled up`);
   }
 
   /* nav */
@@ -1545,7 +1611,7 @@ html.rm-on *,html.rm-on *:before,html.rm-on *:after{transition:none !important;a
   let current="s-home", hist=[];
   function show(id,anim){
     current=id;
-    $("#earned").classList.remove("open");
+    closeEarned();
     $$(".screen").forEach(s=>{ s.classList.toggle("active",s.id===id); s.style.transform=""; });
     const tab=TABS.has(id)?id:([...hist].reverse().find(x=>TABS.has(x))||"s-home");
     $$(".nav button[data-go]").forEach(b=>b.classList.toggle("on",b.dataset.go===tab));
@@ -1553,6 +1619,7 @@ html.rm-on *,html.rm-on *:before,html.rm-on *:after{transition:none !important;a
     if(id==="s-shelf") renderShelfAll();
     if(id==="s-settings") renderSettings();
     if(id==="s-help") renderHelp();
+    if(id==="s-stats") renderStats(true);
     const el=$("#"+id); el.classList.remove("in-fwd","in-back");
     if(anim){ void el.offsetWidth; el.classList.add(anim); el.addEventListener("animationend",()=>el.classList.remove(anim),{once:true}); }
     window.scrollTo({top:0});
@@ -1633,7 +1700,7 @@ html.rm-on *,html.rm-on *:before,html.rm-on *:after{transition:none !important;a
   const scrimFade=p=>{ scrim.style.opacity=p==null?"":String(1-p); };
   [sheet,$("#bookSheet")].forEach(p=>dragDismiss(p,{scroller:p.querySelector(".inner"),onClose:closePanel,fade:scrimFade}));
   const ebox=$("#earned .ebox");
-  dragDismiss($("#earned"),{mover:ebox,threshold:120,onClose:()=>$("#earned").classList.remove("open"),fade:p=>{ ebox.style.opacity=p==null?"":String(1-p*.9); }});
+  dragDismiss($("#earned"),{mover:ebox,scroller:ebox,threshold:120,onClose:closeEarned,fade:p=>{ ebox.style.opacity=p==null?"":String(1-p*.9); }});
   function showMenu(){ $("#menu").style.display="block"; $$(".form").forEach(f=>f.classList.remove("show")); }
   $("#n-plus").onclick=openSheet; scrim.onclick=closePanel;
   $$(".opt").forEach(o=>o.onclick=()=>{ $("#menu").style.display="none"; $("#"+o.dataset.form).classList.add("show"); });
@@ -1654,19 +1721,18 @@ html.rm-on *,html.rm-on *:before,html.rm-on *:after{transition:none !important;a
     $("#t1").textContent=ST.todayH?hm(ST.todayH):"0h"; $("#t2").textContent=fmtN(ST.weekH); $("#t3").textContent=fmtN(ST.monthH);
     // streak: the badge colour follows the streak tier the current streak has reached
     $("#streakNum").textContent=ST.streak;
-    const streaks=M.filter(m=>m.group==="streak").sort((a,b)=>a.thr-b.thr), nxt=streaks.find(m=>ST.streak<m.thr);
-    const n=ST.streak, tier=n>=365?"diamond":n>=100?"platinum":n>=30?"gold":n>=7?"silver":n>=3?"bronze":"locked";   // bronze 3–6 · silver 7–29 · gold 30–99 · platinum 100–364 · diamond 365+
-    const sCur=tier==="locked"?null:{tier}, cap=t=>t[0].toUpperCase()+t.slice(1);
-    $("#streakMedal").className=`medal streakbadge m-${tier}`;
-    $("#streakMedal").setAttribute("aria-label",`${ST.streak}-day streak${sCur?`, ${sCur.tier} tier`:""}`);
-    $("#streakSub").textContent=sCur&&nxt?`${cap(sCur.tier)} streak · next medal in ${nxt.thr-ST.streak} day${nxt.thr-ST.streak===1?"":"s"}`:nxt?`${cap(nxt.tier)} streak at ${nxt.thr} days`:"Every streak medal earned";
-    const GLOW={bronze:"212,164,122",silver:"226,229,234",gold:"233,211,155",platinum:"222,233,236",diamond:"205,227,238"}, gl=$(".hero .glow");
+    // bronze at 3 days, silver at 7, gold at 30, platinum at 100, diamond at 365, and on up the ladder
+    const sf=BY.streak, lvNow=sf.levels.filter(L=>ST.streak>=L.t).length, tier=lvNow?TIERS[lvNow-1]:"locked", nxt=sf.levels[lvNow], left=nxt?nxt.t-ST.streak:0;
+    $("#streakMedal").className=`medal streakbadge m-${tier} ${ringCls(sf,lvNow)}`;
+    $("#streakMedal").setAttribute("aria-label",`${ST.streak}-day streak${lvNow?`, ${tier} level`:""}`);
+    $("#streakSub").textContent=lvNow&&nxt?`${cap(tier)} streak · ${cap(TIERS[lvNow])} in ${left} day${left===1?"":"s"}`:nxt?`${cap(TIERS[0])} streak at ${nxt.t} days`:"The highest streak level there is";
+    const GLOW={bronze:"212,164,122",silver:"226,229,234",gold:"233,211,155",platinum:"222,233,236",diamond:"205,227,238",obsidian:"207,195,230",meteorite:"220,198,174",iridium:"242,214,222",osmium:"203,216,247",celestial:"233,211,155"}, gl=$(".hero .glow");
     const rgb=GLOW[tier]||"169,182,201", a=GLOW[tier]?.16:.05;   // unlit: only a faint cool glow
     gl.style.setProperty("--hg",`rgba(${rgb},${a})`); gl.style.setProperty("--hg2",`rgba(${rgb},${a/3})`);
-    const ranks=M.filter(m=>m.group==="rank"), cur=ranks.filter(m=>ST.total>=m.thr).pop(), next=ranks.find(m=>ST.total<m.thr);
-    $("#rankName").textContent=cur?cur.name:"No rank yet";
-    $("#rankNext").textContent=next?`${next.name} at ${next.thr.toLocaleString()} hours`:"Every rank earned";
-    const lo=cur?cur.thr:0, hi=next?next.thr:lo||1;
+    const rl=BY.rank.levels, rk=rl.filter(L=>ST.total>=L.t).length, cur=rl[rk-1], next=rl[rk];
+    $("#rankName").textContent=cur?cap(TIERS[rk-1]):"No rank yet";
+    $("#rankNext").textContent=next?`${cap(TIERS[rk])} at ${next.t.toLocaleString()} hours`:"Every rank earned";
+    const lo=cur?cur.t:0, hi=next?next.t:lo||1;
     $("#rankBar").style.width=`${next?Math.min(100,Math.round((ST.total-lo)/(hi-lo)*100)):100}%`;
     $("#rankTicks").innerHTML=next?`<span>${lo.toLocaleString()}</span><span>${fmtN(Math.max(0,hi-ST.total)).toLocaleString()} hours to go</span><span>${hi.toLocaleString()}</span>`:`<span>${lo.toLocaleString()}</span><span>Legend</span><span></span>`;
   }
@@ -1715,17 +1781,17 @@ html.rm-on *,html.rm-on *:before,html.rm-on *:after{transition:none !important;a
     ()=>!LIB.length&&{ic:I.book,b:"Your shelf is waiting",s:"Add a book you've finished and it goes straight on the shelf."},
     /* lines that need some history */
     ()=>ST.monthH>ST.lastMonthH&&ST.lastMonthH>0&&{ic:I.up,b:"You're listening more than last month",s:`Already up ${hm(ST.monthH-ST.lastMonthH)} this month.`},
-    ()=>{ if(ST.streak<2) return null; const next=[3,7,30,100,365].find(n=>n>ST.streak);
+    ()=>{ if(ST.streak<2) return null; const next=BY.streak.levels.map(L=>L.t).find(n=>n>ST.streak);
           return {ic:I.flame,b:`${ST.streak}-day streak — keep it going`,s:next?`${next-ST.streak} more day${next-ST.streak===1?"":"s"} to a ${next}-day streak.`:"A full year of listening. Remarkable."}; },
-    ()=>{ const next=M.find(m=>m.group==="rank"&&!m.earned); if(!next||ST.total===0) return null;
-          const have=M.filter(m=>m.group==="rank"&&m.earned).pop(), left=Math.max(0,Math.ceil(next.thr-ST.total));
-          return {ic:I.star,b:`You're ${left.toLocaleString()} hours from ${next.name}`,s:`${have?have.name+" now. ":""}${next.name} at ${next.thr.toLocaleString()} hours.`}; },
+    ()=>{ const rl=BY.rank.levels, k=rl.filter(L=>ST.total>=L.t).length, next=rl[k]; if(!next||ST.total===0) return null;
+          const left=Math.max(0,Math.ceil(next.t-ST.total)), name=cap(TIERS[k]);
+          return {ic:I.star,b:`You're ${left.toLocaleString()} hours from ${name}`,s:`${k?cap(TIERS[k-1])+" now. ":""}${name} at ${next.t.toLocaleString()} hours.`}; },
     ()=>{ const w=ST.byWeekday.map((h,i)=>ST.weekdayDays[i]?h/ST.weekdayDays[i]:0), i=w.indexOf(Math.max(...w)); if(!(w[i]>0)||ST.weekdayDays.reduce((a,b)=>a+b,0)<7) return null;
           return {ic:I.cal,b:`${DAYS[i]}s are your biggest listening day`,s:`About ${hm(w[i])} on a typical ${DAYS[i]}.`}; },
     ()=>{ const b=LIB.filter(x=>bucket(x)==="month"); if(!b.length) return null;
           return {ic:I.book,b:`${b.length} book${b.length>1?"s":""} finished this month`,s:esc(b.slice(0,3).map(x=>x.t).join(", "))+(b.length>3?"…":"")}; },
-    ()=>{ const y=byId("y26"); return ST.yearH>0&&{ic:I.cal,b:`${fmtN(ST.yearH).toLocaleString()} hours this year`,s:y&&y.prog?y.prog[2]+".":"A year to be proud of."}; },
-    ()=>{ const n=new Set(LIB.map(b=>b.genre).filter(Boolean)).size; return n>=3&&{ic:I.globe,b:`${n} genres on your shelf`,s:`Range counts toward Omnivore (${OMNI_GOAL} genres).`}; },
+    ()=>ST.yearH>0&&{ic:I.cal,b:`${fmtN(ST.yearH).toLocaleString()} hours this year`,s:"Tap Today, This week or This month above to see your trends."},
+    ()=>{ const g=BY.gexp, n=new Set(LIB.map(b=>b.genre).filter(Boolean)).size, nx=g.levels[g.lv]; return n>=3&&{ic:I.globe,b:`${n} genres on your shelf`,s:nx?`Genre Explorer reaches ${lvName(g,g.lv+1)} at ${nx.req.toLowerCase()}.`:"Every genre sampled. Omnivore."}; },
     ()=>ST.todayH>0&&{ic:I.bolt,b:`${hm(ST.todayH)} in today already`,s:"Every minute counts toward your streak."}
   ];
   function renderInsights(){
@@ -1736,10 +1802,244 @@ html.rm-on *,html.rm-on *:before,html.rm-on *:after{transition:none !important;a
     el.innerHTML=show.map(c=>`<div class="card up"><div class="ic">${c.ic}</div><div><b>${c.b}</b><small>${c.s}</small></div></div>`).join("");
   }
 
+  /* ---- stats: listening history as hand-built SVG charts ----
+     Only dated listening appears: logged sessions, plus finished books with hours on the day they
+     were finished. Imported past hours have no date, so they are never charted. */
+  const SV={tab:"day",off:0,sel:null,geo:null,R:null};
+  const STYLES=[["bars","Bars"],["line","Line"],["area","Smooth area"],["heat","Calendar","Day view only"]];
+  const STYLE_IC={bars:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 20v-8M10 20V5M15 20v-6M20 20V9"/></svg>`,
+    line:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m3 17 5-6 4 3 5-7 4 4"/></svg>`,
+    area:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 18c3-7 5-9 8-6s5 2 10-6"/><path d="M3 21h18" opacity=".5"/></svg>`,
+    heat:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg>`};
+  const chartStyle=()=>{ const s=STYLES.some(x=>x[0]===ST.settings.chartStyle)?ST.settings.chartStyle:"bars"; return s==="heat"&&SV.tab!=="day"?"bars":s; };
+  const fmtD=(d,o)=>d.toLocaleDateString(undefined,o);
+  const longDay=d=>fmtD(d,{weekday:"short",month:"short",day:"numeric"});
+  const spanLabel=(a,b)=>a.getFullYear()===b.getFullYear()?`${fmtD(a,{month:"short",day:"numeric"})} – ${fmtD(b,{month:"short",day:"numeric",year:"numeric"})}`:`${fmtD(a,{month:"short",day:"numeric",year:"numeric"})} – ${fmtD(b,{month:"short",day:"numeric",year:"numeric"})}`;
+  const addDays=(d,n)=>{ const x=new Date(d); x.setDate(x.getDate()+n); return x; };
+  const sumDays=(start,n)=>{ let t=0; for(let i=0;i<n;i++) t+=D.cDay[dayKey(addDays(start,i))]||0; return t; };
+  const monthKey=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}`;
+  // the bars, days or cells in view, and what they are compared with
+  function statRange(){
+    const tab=SV.tab, style=chartStyle(), today=new Date(); today.setHours(0,0,0,0);
+    const first=D.cFirst?parseDay(D.cFirst):today, units=[];
+    let prev=0, than="", label="";
+    if(tab==="day"&&style==="heat"){
+      const m0=new Date(today.getFullYear(),today.getMonth()-SV.off,1), dim=new Date(m0.getFullYear(),m0.getMonth()+1,0).getDate();
+      for(let i=1;i<=dim;i++){ const d=new Date(m0.getFullYear(),m0.getMonth(),i), k=dayKey(d); units.push({k,d,v:D.cDay[k]||0,future:d>today,short:String(i),long:longDay(d)}); }
+      const pm=new Date(m0.getFullYear(),m0.getMonth()-1,1); prev=sumDays(pm,new Date(m0.getFullYear(),m0.getMonth(),0).getDate());
+      than=`than ${fmtD(pm,{month:"long"})}`; label=fmtD(m0,{month:"long",year:"numeric"});
+    } else if(tab==="day"){
+      const end=addDays(today,-SV.off*14), st=addDays(end,-13);
+      for(let i=0;i<14;i++){ const d=addDays(st,i), k=dayKey(d); units.push({k,d,v:D.cDay[k]||0,short:String(d.getDate()),long:longDay(d)}); }
+      prev=sumDays(addDays(st,-14),14); than="than the 14 days before"; label=spanLabel(st,end);
+    } else if(tab==="week"){
+      const st=addDays(parseDay(weekKeyOf(today)),-(SV.off*12+11)*7);
+      for(let i=0;i<12;i++){ const d=addDays(st,i*7), k=dayKey(d); units.push({k,d,v:D.cWeek[k]||0,short:fmtD(d,{month:"short",day:"numeric"}),long:`Week of ${fmtD(d,{month:"short",day:"numeric"})}`}); }
+      for(let i=1;i<=12;i++) prev+=D.cWeek[dayKey(addDays(st,-i*7))]||0;
+      than="than the 12 weeks before"; label=spanLabel(st,addDays(st,83));
+    } else if(tab==="month"){
+      for(let i=11;i>=0;i--){ const d=new Date(today.getFullYear(),today.getMonth()-SV.off*12-i,1), k=monthKey(d); units.push({k,d,v:D.cMonth[k]||0,short:fmtD(d,{month:"short"}),long:fmtD(d,{month:"long",year:"numeric"})}); }
+      for(let i=1;i<=12;i++) prev+=D.cMonth[monthKey(new Date(units[0].d.getFullYear(),units[0].d.getMonth()-i,1))]||0;
+      than="than the 12 months before"; label=`${fmtD(units[0].d,{month:"short",year:"numeric"})} – ${fmtD(units[11].d,{month:"short",year:"numeric"})}`;
+    } else {
+      const y1=today.getFullYear(), y0=Math.min(y1,first.getFullYear());
+      for(let y=y0;y<=y1;y++) units.push({k:String(y),d:new Date(y,0,1),v:D.cYear[y]||0,short:String(y),long:String(y)});
+      label=y0===y1?String(y1):`${y0} – ${y1}`; prev=D.cYear[y1-1]||0; than=`this year than ${y1-1}`;
+    }
+    return {tab,style,units,prev,than,label,canPrev:tab!=="year"&&units[0].d>first,canNext:tab!=="year"&&SV.off>0};
+  }
+  const NICE=[.5,1,2,3,4,5,6,8,10,12,15,20,25,30,40,50,60,80,100,120,150,200,250,300,400,500,600,800,1000,1500,2000,3000,5000];
+  const niceMax=v=>NICE.find(n=>n>=v*1.05)||Math.ceil(v/1000)*1000;
+  const tick=h=>h===0?"0":h<1?`${Math.round(h*60)}m`:`${fmtN(h)}h`;
+  // a monotone curve through the points, so the smooth area never dips below zero
+  function smoothPath(p){
+    const n=p.length, f=v=>v.toFixed(1);
+    if(n<3) return "M"+p.map(q=>q.map(f).join(",")).join("L");
+    const dx=[], m=[], t=[];
+    for(let i=0;i<n-1;i++){ dx[i]=p[i+1][0]-p[i][0]; m[i]=(p[i+1][1]-p[i][1])/dx[i]; }
+    t[0]=m[0]; t[n-1]=m[n-2];
+    for(let i=1;i<n-1;i++) t[i]=m[i-1]*m[i]<=0?0:(m[i-1]+m[i])/2;
+    for(let i=0;i<n-1;i++){ if(m[i]===0){ t[i]=t[i+1]=0; continue; } const a=t[i]/m[i], b=t[i+1]/m[i], s=a*a+b*b; if(s>9){ const q=3/Math.sqrt(s); t[i]=q*a*m[i]; t[i+1]=q*b*m[i]; } }
+    let d=`M${f(p[0][0])},${f(p[0][1])}`;
+    for(let i=0;i<n-1;i++){ const h=dx[i]/3; d+=`C${f(p[i][0]+h)},${f(p[i][1]+t[i]*h)} ${f(p[i+1][0]-h)},${f(p[i+1][1]-t[i+1]*h)} ${f(p[i+1][0])},${f(p[i+1][1])}`; }
+    return d;
+  }
+  function renderStats(anim){
+    $$("#stTabs button").forEach(b=>{ const on=b.dataset.tab===SV.tab; b.classList.toggle("on",on); b.setAttribute("aria-selected",on); });
+    const R=SV.R=statRange(), empty=D.cDays<2, style=R.style;
+    $("#stStyleBtn").innerHTML=STYLE_IC[style]; $("#stStyleBtn").setAttribute("aria-label",`Chart style: ${STYLES.find(s=>s[0]===style)[1]}`);
+    $("#stNav").hidden=empty; if(empty) $("#stGoalKey").hidden=true; $("#stSum").hidden=empty; $("#stTableWrap").hidden=empty; $("#stLegend").hidden=empty||style!=="heat";
+    $("#stHint").textContent=empty?"":style==="heat"?"Tap a day · swipe for other months":R.tab==="year"?"Tap a bar for details":"Tap or drag for details · swipe to go back in time";
+    $("#stRange").textContent=R.label; $("#stPrev").disabled=!R.canPrev; $("#stNext").disabled=!R.canNext;
+    $("#stToday").classList.toggle("off",SV.off===0); $("#stToday").disabled=SV.off===0;
+    if(empty){
+      // calm placeholder until there is something to show
+      const hs=[.3,.5,.42,.68,.36,.58,.8,.46,.55,.32,.64,.5,.74,.4], W=Math.max(260,Math.round($("#stChart").clientWidth||340)), slot=(W-4)/14;
+      $("#stSvg").innerHTML=`<svg viewBox="0 0 ${W} 200" width="${W}" height="200" aria-hidden="true">${hs.map((h,i)=>`<rect class="stghost" x="${(2+slot*i+slot*.2).toFixed(1)}" y="${(180-150*h).toFixed(1)}" width="${(slot*.6).toFixed(1)}" height="${(150*h).toFixed(1)}" rx="4"/>`).join("")}</svg>
+        <div class="stempty"><p>Log a few days of listening to see your trends.</p><button class="pillbtn" id="stLog" type="button">${I.clock}Log listening</button></div>`;
+      $("#stTip").hidden=true; $("#stNotes").innerHTML=""; SV.geo=null; return;
+    }
+    renderStatSummary(R);
+    renderChart(anim);
+    $("#stTable").innerHTML=`<table><thead><tr><th scope="col">${{day:"Day",week:"Week",month:"Month",year:"Year"}[R.tab]}</th><th scope="col">Listening</th></tr></thead><tbody>${R.units.filter(u=>!u.future).reverse().map(u=>`<tr><td>${u.long}</td><td>${u.v?hm(u.v):"—"}</td></tr>`).join("")}</tbody></table>`;
+  }
+  function renderStatSummary(R){
+    const live=R.units.filter(u=>!u.future), tot=live.reduce((t,u)=>t+u.v,0), unit=R.style==="heat"?"day":R.tab;
+    const best=live.reduce((b,u)=>u.v>(b?b.v:0)?u:b,null);
+    const cur=R.tab==="year"?R.units[R.units.length-1].v:tot, diff=cur-R.prev;
+    const AVG={day:"Daily average",week:"Weekly average",month:"Monthly average",year:"Yearly average"}, BEST={day:"Best day",week:"Best week",month:"Best month",year:"Best year"};
+    let trend;
+    if(cur===0&&R.prev===0) trend=`<div class="sttile"><small>Trend</small><b>—</b><span>Nothing to compare yet</span></div>`;
+    else if(Math.abs(diff)<1/60) trend=`<div class="sttile"><small>Trend</small><b>About the same</b><span>${R.than.replace(/^than/,"as")}</span></div>`;
+    else if(diff>0) trend=`<div class="sttile t-up"><small>Trend</small><b>${I.up}${hm(diff)} more</b><span>${R.than}</span></div>`;
+    else trend=`<div class="sttile t-down"><small>Trend</small><b>${hm(-diff)} less</b><span>${R.than}</span></div>`;   // calm grey, never alarming
+    $("#stSum").innerHTML=`<div class="sttile"><small>Total</small><b>${hm(tot)}</b><span>${R.label}</span></div>`
+      +`<div class="sttile"><small>${AVG[unit]}</small><b>${hm(live.length?tot/live.length:0)}</b><span>over ${plural(live.length,unit,unit+"s")}</span></div>`
+      +`<div class="sttile"><small>${BEST[unit]}</small><b>${best?hm(best.v):"—"}</b><span>${best?best.long:"Nothing logged"}</span></div>`+trend;
+  }
+  function renderChart(anim){
+    const R=SV.R, wrap=$("#stChart"), W=Math.max(260,Math.round(wrap.clientWidth||340));
+    wrap.classList.toggle("anim",!!anim);
+    if(R.style==="heat"){ $("#stGoalKey").hidden=true; renderHeat(R,W); renderStatNotes(); return; }
+    const n=R.units.length, H=230, pt=52, pb=24, pr=34, pl=2, base=H-pb, plotH=base-pt, plotW=W-pl-pr, slot=plotW/n;
+    const goal=R.tab==="day"?(+ST.settings.dailyGoalMin||0)/60:R.tab==="week"?(+ST.settings.weeklyGoalH||0):0;
+    const vals=R.units.map(u=>u.v), mx=niceMax(Math.max(...vals,goal));
+    const y=v=>base-plotH*Math.min(1,v/mx), cx=i=>pl+slot*i+slot/2, f=v=>v.toFixed(1);
+    const bestI=vals.reduce((b,v,i)=>v>(b<0?0:vals[b])?i:b,-1), sel=SV.sel, style=R.style;
+    let g="";
+    [0,mx/2,mx].forEach(t=>{ const yy=f(y(t)); g+=`<line class="stgrid" x1="${pl}" x2="${f(pl+plotW)}" y1="${yy}" y2="${yy}"/><text class="sttick" x="${W}" y="${f(y(t)+4)}" text-anchor="end">${tick(t)}</text>`; });
+    if(goal>0) g+=`<line class="stgoal" x1="${pl}" x2="${f(pl+plotW)}" y1="${f(y(goal))}" y2="${f(y(goal))}"/>`;
+    if(sel!=null) g+=`<line class="stguide" x1="${f(cx(sel))}" x2="${f(cx(sel))}" y1="${pt-6}" y2="${base}"/>`;
+    if(style==="bars"){
+      const bw=Math.min(24,slot*.62);
+      R.units.forEach((u,i)=>{
+        const x=cx(i)-bw/2;
+        if(u.v<=0){ g+=`<rect class="stzero" x="${f(x)}" y="${base-2}" width="${f(bw)}" height="2" rx="1"/>`; return; }
+        const top=y(u.v), r=Math.min(4,bw/2,base-top);
+        g+=`<path class="stbar${i===bestI?" best":""}${i===sel?" sel":""}" style="animation-delay:${i*10}ms" d="M${f(x)},${base}V${f(top+r)}Q${f(x)},${f(top)} ${f(x+r)},${f(top)}H${f(x+bw-r)}Q${f(x+bw)},${f(top)} ${f(x+bw)},${f(top+r)}V${base}Z"/>`;
+      });
+    } else {
+      const pts=R.units.map((u,i)=>[cx(i),y(u.v)]), d=style==="area"?smoothPath(pts):"M"+pts.map(p=>p.map(f).join(",")).join("L");
+      if(style==="area") g+=`<path class="starea" d="${d}L${f(pts[n-1][0])},${base}L${f(pts[0][0])},${base}Z"/>`;
+      g+=`<path class="stline" pathLength="1" d="${d}"/>`;
+      if(n===1) g+=`<circle class="stdot" cx="${f(pts[0][0])}" cy="${f(pts[0][1])}" r="4"/>`;
+      if(bestI>=0) g+=`<circle class="stdot best" cx="${f(pts[bestI][0])}" cy="${f(pts[bestI][1])}" r="4.5"/>`;
+      if(sel!=null) g+=`<circle class="stdot sel" cx="${f(pts[sel][0])}" cy="${f(pts[sel][1])}" r="5.5"/>`;
+    }
+    // the best one is labelled with its value; everything else is in the tip and the table
+    if(bestI>=0&&sel==null) g+=`<text class="stbest" x="${f(cx(bestI))}" y="${f(y(vals[bestI])-(style==="bars"?8:12))}" text-anchor="middle">${hm(vals[bestI])}</text>`;
+    const every=R.tab==="week"?3:slot<22?2:1;
+    R.units.forEach((u,i)=>{ if(i%every) return; g+=`<text class="stx${i===sel?" on":""}" x="${f(cx(i))}" y="${H-6}" text-anchor="middle">${u.short}</text>`; });
+    const aria=`${R.label}: ${R.units.map(u=>`${u.long} ${u.v?hm(u.v):"none"}`).join(", ")}`;
+    $("#stSvg").innerHTML=`<svg class="${sel!=null?"has-sel":""}" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${esc(aria)}"><defs>
+      <linearGradient id="stBestG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#34F9B2"/><stop offset="1" stop-color="#00C0CA"/></linearGradient>
+      <linearGradient id="stAreaG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#00E7B3" stop-opacity=".26"/><stop offset="1" stop-color="#00E7B3" stop-opacity="0"/></linearGradient></defs>${g}</svg>`;
+    SV.geo={kind:"xy",pl,slot,n,W,H};
+    $("#stGoalKey").hidden=!(goal>0); if(goal>0) $("#stGoalKey").innerHTML=`<i></i>${R.tab==="day"?"Daily":"Weekly"} goal · ${hm(goal)}`;
+    if(sel!=null) placeTip(R.units[sel],cx(sel),0,null); else $("#stTip").hidden=true;
+    renderStatNotes();
+  }
+  // Day view as a month calendar: brighter teal for more listening
+  function renderHeat(R,W){
+    const ws=ST.settings.weekStart==="sun"?0:1, gap=6, cell=Math.min(44,Math.floor((W-gap*6)/7)), ox=Math.round((W-(cell*7+gap*6))/2), hh=22;
+    const lead=(R.units[0].d.getDay()-ws+7)%7, rows=Math.ceil((lead+R.units.length)/7), H=hh+rows*(cell+gap)-gap;
+    const mx=Math.max(0,...R.units.map(u=>u.v)), sel=SV.sel;
+    let g="";
+    for(let c=0;c<7;c++) g+=`<text class="sthd" x="${ox+c*(cell+gap)+cell/2}" y="13" text-anchor="middle">${fmtD(new Date(2023,0,1+(ws+c)%7),{weekday:"narrow"})}</text>`;   // Jan 1 2023 was a Sunday
+    R.units.forEach((u,i)=>{
+      const p=lead+i, x=ox+(p%7)*(cell+gap), y=hh+Math.floor(p/7)*(cell+gap), lvl=u.future?"f":u.v<=0?0:Math.min(5,Math.ceil(u.v/mx*5));
+      g+=`<g class="sthc l${lvl}${i===sel?" sel":""}" style="animation-delay:${i*6}ms"><rect x="${x}" y="${y}" width="${cell}" height="${cell}" rx="6"/><text x="${x+cell/2}" y="${y+cell/2+4}" text-anchor="middle">${u.short}</text></g>`;
+    });
+    const aria=`${R.label}: ${R.units.filter(u=>!u.future).map(u=>`${u.long} ${u.v?hm(u.v):"none"}`).join(", ")}`;
+    $("#stSvg").innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${esc(aria)}">${g}</svg>`;
+    SV.geo={kind:"heat",ox,hh,cell,gap,lead,n:R.units.length,W,H};
+    if(sel!=null){ const p=lead+sel, x=ox+(p%7)*(cell+gap)+cell/2, y=hh+Math.floor(p/7)*(cell+gap); placeTip(R.units[sel],x,y,y+cell); }
+    else $("#stTip").hidden=true;
+  }
+  // the small label: exact amount and date; above a calendar cell, or in the band above the bars
+  function placeTip(u,x,top,bottom){
+    const tip=$("#stTip");
+    tip.innerHTML=`<b>${u.future?"Not yet":u.v?hm(u.v):"0m"}</b><small>${u.long}</small>`; tip.hidden=false;
+    const w=tip.offsetWidth, h=tip.offsetHeight, W=SV.geo.W;
+    let t=bottom==null?top:top-h-6; if(t<0&&bottom!=null) t=bottom+6;
+    tip.style.left=`${Math.max(0,Math.min(W-w,x-w/2))}px`; tip.style.top=`${t}px`;
+  }
+  // notes logged on the selected day
+  function renderStatNotes(){
+    const R=SV.R, u=SV.sel!=null&&R&&R.tab==="day"?R.units[SV.sel]:null, list=u&&D.notesByDay[u.k];
+    $("#stNotes").innerHTML=list?`<div class="notes"><div class="lbl">Notes · ${u.long}</div>${list.map(n=>`<div>${esc(n.t)}<span>${hm(n.m/60)}</span></div>`).join("")}</div>`:"";
+  }
+  function selectAt(clientX,clientY){
+    const G=SV.geo, svg=$("#stSvg svg"); if(!G||!svg) return;
+    const r=svg.getBoundingClientRect(), x=(clientX-r.left)*G.W/r.width, y=(clientY-r.top)*G.H/r.height;
+    let i;
+    if(G.kind==="heat"){ const c=Math.floor((x-G.ox)/(G.cell+G.gap)), row=Math.floor((y-G.hh)/(G.cell+G.gap)); if(c<0||c>6||row<0) return; i=row*7+c-G.lead; if(i<0||i>=G.n) return; }
+    else i=Math.max(0,Math.min(G.n-1,Math.floor((x-G.pl)/G.slot)));
+    if(i!==SV.sel){ SV.sel=i; renderChart(false); }
+  }
+  function page(dir){   // +1 = further back in time, -1 = towards today
+    const R=SV.R; if(!R||(dir>0&&!R.canPrev)||(dir<0&&!R.canNext)) return;
+    SV.off+=dir; SV.sel=null; renderStats(true);
+  }
+  // touch: tap a bar, hold and drag to scrub, swipe sideways to move through time
+  let stT=null, stNoClick=false;
+  const stEl=$("#stChart");
+  stEl.addEventListener("touchstart",e=>{
+    if(e.touches.length!==1||!SV.geo) return; const t=e.touches[0]; if(t.clientX<=28) return;   // the left edge is the back swipe
+    stT={x:t.clientX,y:t.clientY,mode:null,dx:0};
+    stT.timer=setTimeout(()=>{ if(stT&&!stT.mode){ stT.mode="scrub"; selectAt(stT.x,stT.y); } },170);
+  },{passive:true});
+  stEl.addEventListener("touchmove",e=>{
+    if(!stT) return; const t=e.touches[0], dx=t.clientX-stT.x, dy=t.clientY-stT.y;
+    if(!stT.mode){
+      if(Math.abs(dx)>10&&Math.abs(dx)>Math.abs(dy)){ stT.mode="pan"; clearTimeout(stT.timer); }
+      else if(Math.abs(dy)>10){ clearTimeout(stT.timer); stT=null; return; }   // vertical: let the page scroll
+      else return;
+    }
+    if(e.cancelable) e.preventDefault();
+    if(stT.mode==="pan"){ stT.dx=dx; const s=$("#stSvg svg"); if(s) s.style.transform=`translateX(${dx*.35}px)`; }
+    else selectAt(t.clientX,t.clientY);
+  },{passive:false});
+  const stEnd=()=>{
+    if(!stT) return; const s=stT; stT=null; clearTimeout(s.timer);
+    if(s.mode){ stNoClick=true; setTimeout(()=>{ stNoClick=false; },350); }
+    if(s.mode==="pan"){ const sv=$("#stSvg svg"); if(sv) sv.style.transform=""; if(Math.abs(s.dx)>48) page(s.dx>0?1:-1); }
+  };
+  stEl.addEventListener("touchend",stEnd); stEl.addEventListener("touchcancel",stEnd);
+  stEl.addEventListener("click",e=>{
+    if(e.target.closest("#stLog")){ openSheet(); $("#menu").style.display="none"; $("#f-live").classList.add("show"); return; }
+    if(!stNoClick) selectAt(e.clientX,e.clientY);
+  });
+  stEl.addEventListener("keydown",e=>{
+    if(!SV.geo||!["ArrowLeft","ArrowRight"].includes(e.key)) return; e.preventDefault();
+    const n=SV.geo.n, step=e.key==="ArrowRight"?1:-1, last=SV.R.units.filter(u=>!u.future).length-1;
+    SV.sel=SV.sel==null?last:Math.max(0,Math.min(n-1,SV.sel+step)); renderChart(false);
+  });
+  $$("#stTabs button").forEach(b=>b.onclick=()=>{ SV.tab=b.dataset.tab; SV.off=0; SV.sel=null; renderStats(true); });
+  $("#stPrev").onclick=()=>page(1); $("#stNext").onclick=()=>page(-1);
+  $("#stToday").onclick=()=>{ SV.off=0; SV.sel=null; renderStats(true); };
+  // chart style: remembered, and the same choice as Settings > Display > Default chart style
+  function renderStyleMenu(){
+    const cur=ST.settings.chartStyle;
+    $("#stStyleMenu").innerHTML=STYLES.map(([k,l,note])=>{ const dis=k==="heat"&&SV.tab!=="day", on=cur===k;
+      return `<button type="button" role="menuitemradio" aria-checked="${on}" data-style="${k}" class="${on?"on":""}"${dis?" disabled":""}>${STYLE_IC[k]}<span>${l}</span>${dis?`<small>${note}</small>`:""}</button>`; }).join("");
+  }
+  $("#stStyleBtn").onclick=e=>{ e.stopPropagation(); const m=$("#stStyleMenu"), open=m.hidden; if(open) renderStyleMenu(); m.hidden=!open; $("#stStyleBtn").setAttribute("aria-expanded",open); };
+  $("#stStyleMenu").addEventListener("click",e=>{
+    const b=e.target.closest("[data-style]"); if(!b||b.disabled) return;
+    ST.settings.chartStyle=b.dataset.style; save(); SV.off=0; SV.sel=null;
+    $("#stStyleMenu").hidden=true; $("#stStyleBtn").setAttribute("aria-expanded","false"); renderStats(true);
+  });
+  document.addEventListener("click",e=>{ if(!e.target.closest("#stStyleMenu,#stStyleBtn")){ $("#stStyleMenu").hidden=true; $("#stStyleBtn").setAttribute("aria-expanded","false"); } });
+  // the three boxes on Home open Stats on the matching tab
+  document.addEventListener("click",e=>{ const b=e.target.closest("[data-stats]"); if(!b) return; SV.tab=b.dataset.stats; SV.off=0; SV.sel=null; go("s-stats"); });
+  addEventListener("resize",()=>{ if(current==="s-stats") renderStats(false); });
+
   /* share cards — a tall 1080×1920 PNG for a medal: navy background, the medal glowing in the
      centre, the big stat, the listener's name, and the Earmark line, all dressed in the tier's colour */
   const TIER={bronze:["#D4A47A","#7E5230"],silver:["#E2E5EA","#848B94"],gold:["#E9D39B","#95763A"],platinum:["#DEE9EC","#7A9AA3"],
-    diamond:["#CDE3EE","#5A8CA8"],obsidian:["#CFC3E6","#594B78"],rainbow:["#E9D39B","#8B7CA8"],locked:["#6E7F99","#1B2A42"]};
+    diamond:["#CDE3EE","#5A8CA8"],obsidian:["#CFC3E6","#594B78"],meteorite:["#DCC6AE","#57473A"],iridium:["#F2D6DE","#7D5562"],
+    osmium:["#CBD8F7","#465A8C"],celestial:["#E9D39B","#8B7CA8"],locked:["#6E7F99","#1B2A42"]};
   const rgba=(hex,a)=>{ const n=parseInt(hex.slice(1),16); return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`; };
   function iconImage(ic,color){
     return new Promise(res=>{
@@ -1748,11 +2048,12 @@ html.rm-on *,html.rm-on *:before,html.rm-on *:after{transition:none !important;a
       img.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg);
     });
   }
+  // m: {id, tier, ic, label, big, sub} — see cardView()
   async function renderCard(m){
     const W=1080,H=1920,cx=W/2,cy=790,R=230, F="'Plus Jakarta Sans',-apple-system,'Segoe UI',Roboto,sans-serif";
     if(document.fonts&&document.fonts.load){ try{ await Promise.all([800,700,600,500].map(w=>document.fonts.load(`${w} 48px ${F}`))); }catch(e){} }
     const c=document.createElement("canvas"); c.width=W; c.height=H; const x=c.getContext("2d");
-    const tier=m.earned?m.tier:"locked", [hi,lo]=TIER[tier]||TIER.gold;
+    const tier=m.tier, [hi,lo]=TIER[tier]||TIER.gold;
     // navy base, the same as the app background
     const bg=x.createLinearGradient(0,0,0,H); bg.addColorStop(0,"#0B203E"); bg.addColorStop(.45,"#081A34"); bg.addColorStop(1,"#06162C");
     x.fillStyle=bg; x.fillRect(0,0,W,H);
@@ -1764,7 +2065,7 @@ html.rm-on *,html.rm-on *:before,html.rm-on *:after{transition:none !important;a
     x.fillStyle=g; x.fillRect(0,0,W,H);
     // medal: metallic ring, matte centre, thin inner ring, icon
     x.save(); x.shadowColor="rgba(0,0,0,.55)"; x.shadowBlur=40; x.shadowOffsetY=16;
-    if(tier==="rainbow"&&x.createConicGradient){ const cg=x.createConicGradient(200*Math.PI/180,cx,cy); [["#c96a6a",0],["#d4a84b",.2],["#8fbf7a",.4],["#6aa6c9",.6],["#9a86c9",.8],["#c96a6a",1]].forEach(([col,st])=>cg.addColorStop(st,col)); x.fillStyle=cg; }
+    if(tier==="celestial"&&x.createConicGradient){ const cg=x.createConicGradient(200*Math.PI/180,cx,cy); [["#c96a6a",0],["#d4a84b",.2],["#8fbf7a",.4],["#6aa6c9",.6],["#9a86c9",.8],["#c96a6a",1]].forEach(([col,st])=>cg.addColorStop(st,col)); x.fillStyle=cg; }
     else { const rg=x.createLinearGradient(cx-R,cy-R,cx+R,cy+R); rg.addColorStop(0,hi); rg.addColorStop(.55,lo); rg.addColorStop(1,hi); x.fillStyle=rg; }
     x.beginPath(); x.arc(cx,cy,R+16,0,Math.PI*2); x.fill(); x.restore();
     const mg=x.createRadialGradient(cx,cy-R*.3,0,cx,cy,R); mg.addColorStop(0,"#15305A"); mg.addColorStop(1,"#0A1A31");
@@ -1776,9 +2077,9 @@ html.rm-on *,html.rm-on *:before,html.rm-on *:after{transition:none !important;a
     // words
     x.textBaseline="alphabetic";
     if("letterSpacing" in x) x.letterSpacing="4px";
-    x.fillStyle="#8090A8"; x.font=`700 32px ${F}`; x.fillText("MEDAL EARNED",cx,400);
+    x.fillStyle="#8090A8"; x.font=`700 32px ${F}`; x.fillText(m.label,cx,400);
     if("letterSpacing" in x) x.letterSpacing="0px";
-    const big=m.group==="rank"?m.sub:m.name, sub=m.group==="rank"?`${m.name} rank`:m.sub;
+    const big=m.big, sub=m.sub;
     let size=124; x.font=`800 ${size}px ${F}`; while(x.measureText(big).width>W-180&&size>60){ size-=6; x.font=`800 ${size}px ${F}`; }
     x.fillStyle="#FFFFFF"; x.fillText(big,cx,cy+R+236);
     x.fillStyle="#A9B6C9"; x.font=`600 52px ${F}`; x.fillText(sub,cx,cy+R+320);
@@ -1801,7 +2102,14 @@ html.rm-on *,html.rm-on *:before,html.rm-on *:after{transition:none !important;a
   }
 
   derive(); save(); applyMotion(); renderHero(); renderGoals(); renderNotes(); renderShelfAll();
+  const firstFamilies=!ST.medalsV;
   recomputeMedals(true);   // initial pass: settle every medal from saved state without announcing
+  if(firstFamilies){
+    // the old "finish one" genre medals become level 1 of their family, so nothing earned is lost
+    const stamp=new Date().toISOString();
+    [["ya",["ya"]],["life",["biography"]],["tr",["translation"]]].forEach(([id,gs])=>{ const r=ST.medals[id]; if(!r.lv&&LIB.some(b=>gs.includes(b.genre))){ r.lv=1; r.at[0]=stamp; BY[id].lv=1; } });
+    ST.medalsV=2; save(); renderMedals();
+  }
   renderInsights();
 
   /* onboarding — first visit only (no saved data). Name → past hours → books → done. */
@@ -1816,7 +2124,7 @@ html.rm-on *,html.rm-on *:before,html.rm-on *:after{transition:none !important;a
     $("#obNext2").onclick=$("#obSkip2").onclick=()=>obGo(3);
     $("#obFinish").onclick=()=>{ ST.onboarded=true; save(); ob.classList.remove("open"); go("s-home",{tab:true});
       // welcome with the Founding Listener medal while early testing lasts
-      const fl=byId("fl"); if(fl.earned&&!pendingEarned.includes(fl)) pendingEarned.unshift(fl);
+      const fl=BY.fl; if(fl.lv&&!pendingEarned.some(e=>e.m===fl)) pendingEarned.unshift({m:fl,from:0,to:1});
       showPendingEarned(); };
   }
   /* alerts — an iPhone-style two-button dialog */
@@ -1837,7 +2145,7 @@ html.rm-on *,html.rm-on *:before,html.rm-on *:after{transition:none !important;a
   }
 
   /* settings: every change saves and updates the app straight away */
-  function refreshAll(){ derive(); save(); applyMotion(); renderHero(); renderGoals(); renderNotes(); renderShelf(shelfMode); renderShelfAll(); recomputeMedals(true); renderInsights(); }
+  function refreshAll(){ derive(); save(); applyMotion(); renderHero(); renderGoals(); renderNotes(); renderShelf(shelfMode); renderShelfAll(); recomputeMedals(true); renderInsights(); if(current==="s-stats") renderStats(false); }
   function applyMotion(){ const r=ST.settings.reduceMotion, h=document.documentElement; h.classList.toggle("rm-on",r==="on"); h.classList.toggle("rm-off",r==="off"); }
   function renderSettings(){
     const S=ST.settings;
@@ -1845,7 +2153,7 @@ html.rm-on *,html.rm-on *:before,html.rm-on *:after{transition:none !important;a
     $("#setDaily").value=S.dailyGoalMin; $("#setWeekly").value=S.weeklyGoalH; $("#setMinMin").value=S.streakMinMin;
     const sw=$("#setShowGoals"); sw.classList.toggle("on",!!S.showGoals); sw.setAttribute("aria-checked",!!S.showGoals);
     $$(".sseg").forEach(seg=>{ const k=seg.dataset.set, v=k in S?S[k]:ST[k]; seg.querySelectorAll("button").forEach(b=>{ b.classList.toggle("on",b.dataset.v===v); b.setAttribute("aria-pressed",b.dataset.v===v); }); });
-    $("#setVersion").textContent=APP_VERSION; $("#setFounding").hidden=!byId("fl").earned;
+    $("#setVersion").textContent=APP_VERSION; $("#setFounding").hidden=!BY.fl.lv;
     $("#setFeedback").href=`mailto:${FEEDBACK_EMAIL}?subject=${encodeURIComponent("Earmark feedback")}&body=${encodeURIComponent(`\n\n—\nEarmark ${APP_VERSION}`)}`;
   }
   $("#setName").addEventListener("input",e=>{ ST.user.name=e.target.value; save(); });
@@ -1869,7 +2177,7 @@ html.rm-on *,html.rm-on *:before,html.rm-on *:after{transition:none !important;a
   $("#setImport").onclick=()=>{ openSheet(); $("#menu").style.display="none"; $("#f-past").classList.add("show"); };
   $("#setExport").onclick=()=>{
     const data={app:"Earmark",version:APP_VERSION,exportedAt:new Date().toISOString(),user:ST.user,settings:ST.settings,totalHours:ST.total,
-      books:ST.books,sessions:ST.sessions,pastHours:ST.past,earned:M.filter(m=>m.earned).map(m=>({id:m.id,name:m.name}))};
+      books:ST.books,sessions:ST.sessions,pastHours:ST.past,medals:MEDALS.filter(m=>m.lv).map(m=>({id:m.id,name:m.name,level:m.lv,of:nLv(m),levelName:lvName(m,m.lv)}))};
     downloadFile(new File([JSON.stringify(data,null,2)],`earmark-data-${dayKey(new Date())}.json`,{type:"application/json"}));
     toast("Your data was downloaded");
   };
@@ -1878,13 +2186,17 @@ html.rm-on *,html.rm-on *:before,html.rm-on *:after{transition:none !important;a
     $("#helpBody").innerHTML=`<h3>Streaks</h3>
       <p>A day counts toward your streak when you log at least ${n} minute${n==1?"":"s"} of listening that day. You can change the minimum in Settings.</p>
       <p>Log something every day to keep the streak going. If a day passes with nothing logged, the next session starts a new streak. Your best streak is kept forever.</p>
-      <p>The streak medal changes colour as it grows: bronze from 3 days, silver from 7, gold from 30, platinum from 100 and diamond from 365.</p>
+      <p>The streak medal changes colour as it grows: bronze from 3 days, silver from 7, gold from 30, platinum from 100, diamond from 365, then obsidian, meteorite and iridium.</p>
       <h3>Hours</h3>
       <p><b>Listening you log</b> with the + button is dated. It counts toward everything: your totals, rank, streaks, goals and every medal.</p>
       <p><b>Hours from the past</b>, imported from apps like Audible or Libby, count toward your lifetime total, rank and time milestones, but never toward streaks or live medals.</p>
       <p><b>Book hours</b> are the length you give a book on your shelf. They add to your lifetime total. Books without a date finished are backlog: they count toward totals and book medals, never toward streaks.</p>
       <h3>Medals</h3>
-      <p>Medals marked live only count listening you've logged on a date. Secret medals stay hidden until you find them.</p>`;
+      <p>Each medal levels up through the same colours: bronze, silver, gold, platinum, diamond, obsidian, meteorite, iridium, osmium and celestial. Gold means the same thing on every medal. The final level of each medal earns a laurel wreath.</p>
+      <p>Levels never go down. A medal shows the best you've ever reached, so a broken streak keeps its level.</p>
+      <p>Listening medals only count listening you've logged on a date. Secret medals stay hidden until you find them.</p>
+      <h3>Stats</h3>
+      <p>Tap Today, This week or This month on Home to see your listening history. Charts show logged listening, plus finished books with hours on the day you finished them. Imported past hours have no date, so they count toward your total but aren't charted.</p>`;
   }
 
   /* splash: fades in with the page, holds briefly, fades out; removed either way */
