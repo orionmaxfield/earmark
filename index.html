@@ -387,7 +387,6 @@ body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 input,textarea,select{-webkit-user-select:text;user-select:text}
 .screen{padding-left:max(var(--gutter),env(safe-area-inset-left,0px));padding-right:max(var(--gutter),env(safe-area-inset-right,0px))}
 .nav{padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
-.toast{top:calc(env(safe-area-inset-top,0px) + 12px)}
 .ob{padding-top:calc(32px + env(safe-area-inset-top,0px));padding-bottom:calc(40px + env(safe-area-inset-bottom,0px))}
 .earned{padding:calc(24px + env(safe-area-inset-top,0px)) 24px calc(24px + env(safe-area-inset-bottom,0px))}
 .sheet .inner{max-height:calc(100dvh - env(safe-area-inset-top,0px) - 12px)}
@@ -741,7 +740,6 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
 .timerbar .tstop{margin-left:4px;padding:4px 12px;border-radius:var(--r-pill);background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:var(--t-12)}
 @keyframes tpulse{50%{opacity:.35}}
 body.timing .phone{padding-top:50px}
-body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
 .fincover .cover{width:120px;height:176px;margin:28px auto 22px;padding:12px 10px;cursor:default}
 .fincover .cover b{font-size:14px}
 .fincover .cover .hrs{display:none}
@@ -777,6 +775,14 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
 .pend .nt small{display:block;color:var(--ink-2);font-size:var(--t-12);margin-top:2px}
 .pend .lact{min-height:36px;padding:0 12px}
 #menu .pend{margin:8px 0 4px;background:var(--surface);border:1px solid var(--line-2);border-radius:var(--r-md)}
+
+/* 0.10.1: one-line shelf controls; toasts away from screen titles */
+.bkstat button,.addas .seg button,.shelftabs button{padding:0 6px;white-space:nowrap;font-size:13px}
+.toast{top:auto;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translate(-50%,16px)}
+.toast.show{transform:translate(-50%,0)}
+html.locked .toast{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 12px);transform:translate(-50%,-16px)}   /* a sheet is open: its handle sits at the bottom */
+html.locked .toast.show{transform:translate(-50%,0)}
+.updbar{bottom:calc(152px + env(safe-area-inset-bottom,0px))}
 </style>
 </head>
 <body>
@@ -833,7 +839,7 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
       <img class="mark" src="icons/earmark-mark.png" alt="" width="88" height="88">
       <div class="eyebrow">Step 3 of 3</div>
       <h2 id="obDoneTitle">You're set.</h2>
-      <p class="lead">Tap the + whenever you finish a session to log today's listening. Your streak starts with day one, and your first 25 hours earn Bronze.</p>
+      <p class="lead" id="obDoneLead">Tap the + whenever you finish a session to log today's listening. Your streak starts with day one. Your first 25 hours earn Bronze.</p>
       <button class="cta" id="obFinish">Start listening</button>
     </section>
     <div class="dots" id="obDots"><i class="on"></i><i></i><i></i><i></i></div>
@@ -1731,7 +1737,7 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
   $("#bkCovers").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return; $$("#bkCovers button").forEach(x=>x.classList.toggle("on",x===b)); newCover=coverHits[+b.dataset.i].cover; showBkCover(newCover); });
   $("#bkNoCover").onclick=()=>{ newCover=null; $$("#bkCovers button").forEach(x=>x.classList.remove("on")); showBkCover(null); };
   $("#bkH").addEventListener("input",()=>{ $("#bkEst").hidden=true; }); $("#bkM").addEventListener("input",()=>{ $("#bkEst").hidden=true; });
-  function afterBooksChanged(){ derive(); save(); renderHero(); renderGoals(); renderNow(); renderShelf(shelfMode); renderShelfAll(); recomputeMedals(); renderInsights(); }
+  function afterBooksChanged(){ pruneCovers(); derive(); save(); renderHero(); renderGoals(); renderNow(); renderShelf(shelfMode); renderShelfAll(); recomputeMedals(); renderInsights(); }
   $("#bkSave").onclick=()=>{
     const b=editing; if(!b) return;
     const t=titleCase($("#bkTitle").value); if(!t){ $("#bkTitle").focus(); toast("A book needs a title"); return; }
@@ -1816,8 +1822,12 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
     if(searchMemo.has(k)) return searchMemo.get(k);
     let found=null, failed=false;
     try{ found=await openLibrary(k,signal); }catch(e){ if(e.name==="AbortError") throw e; failed=true; }
-    if(!found||!found.length){ try{ const g=await googleBooks(k,signal); if(g.length||!found) found=g; failed=false; }catch(e){ if(e.name==="AbortError") throw e; if(!found) throw e; } }
+    if(!found||!found.length){
+      try{ const g=await googleBooks(k,signal); if(g.length||!found) found=g; if(g.length) failed=false; }
+      catch(e){ if(e.name==="AbortError") throw e; if(!found) throw e; failed=true; }   // no signal: show what there is, but let the next search try again
+    }
     found=rankBooks(found||[],q);
+    if(failed&&!found.length) throw new Error("search unavailable");   // say search isn't working, not "no matches"
     if(!failed) remember(k,found);
     return found;
   }
@@ -1825,6 +1835,12 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
   function saveCover(url){
     if(!url||!("caches" in window)) return;
     caches.open("earmark-covers").then(c=>c.match(url).then(hit=>hit||fetch(url,{mode:"no-cors"}).then(r=>c.put(url,r)))).catch(()=>{});
+  }
+  function pruneCovers(){
+    if(!("caches" in window)) return;
+    const keep=new Set(LIB.map(b=>b.cover).filter(Boolean));
+    caches.open("earmark-covers").then(c=>c.keys().then(keys=>keys.forEach(r=>{ if(!keep.has(r.url)) c.delete(r); }))).catch(()=>{});
+    keep.forEach(saveCover);   // and any shelf cover that isn't saved yet
   }
   const OFFLINE_MSG="You're offline, so search isn't available right now. You can add the book by hand instead.";
   const FAIL_MSG="Search isn't working right now. Check your connection, or add the book by hand.";
@@ -2676,7 +2692,15 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
 
   /* onboarding — first visit only (no saved data). Name → past hours → books → done. */
   const ob=$("#onboard");
-  function obGo(n){ $$(".ob-step").forEach(st=>st.classList.toggle("on",+st.dataset.step===n)); $$("#obDots i").forEach((d,i)=>d.classList.toggle("on",i===n)); ob.scrollTo({top:0}); if(n===3) $("#obDoneTitle").textContent=`You're set, ${displayName()}.`; }
+  function obGo(n){ $$(".ob-step").forEach(st=>st.classList.toggle("on",+st.dataset.step===n)); $$("#obDots i").forEach((d,i)=>d.classList.toggle("on",i===n)); ob.scrollTo({top:0}); if(n===3){ $("#obDoneTitle").textContent=`You're set, ${displayName()}.`; $("#obDoneLead").textContent=`Tap the + whenever you finish a session to log today's listening. Your streak starts with day one. ${nextMilestone()}`; } }
+  // "your first 25 hours earn Bronze", or the real next rank for someone who brought hours with them
+  function nextMilestone(){
+    const rl=BY.rank.levels, k=rl.filter(L=>ST.total>=L.t).length, nx=rl[k];
+    if(!nx) return "You've already reached every rank.";
+    if(!ST.total) return `Your first ${nx.t} hours earn ${cap(TIERS[k])}.`;
+    const left=plural(Math.max(1,Math.ceil(nx.t-ST.total)),"more hour","more hours");
+    return k?`You're already ${cap(TIERS[k-1])}, and ${left} earns ${cap(TIERS[k])}.`:`${left[0].toUpperCase()+left.slice(1)} earns ${cap(TIERS[k])}.`;
+  }
   if(!ST.onboarded){
     ob.classList.add("open"); $("#obName").value=ST.user.name;
     $("#obNext0").onclick=()=>{ ST.user.name=$("#obName").value.trim(); save(); obGo(1); };
@@ -2934,7 +2958,7 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
       <p>Tap Today, This week or This month on Home to see your listening history. Charts show the listening you've logged. Imported past hours have no date, so they count toward your total but aren't charted.</p>`;
   }
 
-  renderBackupNudge(); renderInstall(); renderNow(); renderTimer(); renderPending();
+  renderBackupNudge(); renderInstall(); renderNow(); renderTimer(); renderPending(); pruneCovers();
   if(!ST.onboarded&&iosSafari&&!isStandalone()){
     $("#obInstallSteps").innerHTML=IOS_STEPS; obGo(8);
     $("#obSafari").onclick=()=>obGo(0);

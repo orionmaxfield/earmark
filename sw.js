@@ -7,7 +7,7 @@
    - Pages: network first (so a fresh deploy and the login both show up), falling back to the
      cached app when offline or on a very slow connection.
    - App files, icons and fonts: from the cache, refreshed in the background.
-   - Book covers: kept on the device once seen, so the shelf works offline.
+   - Book covers: the shelf's covers are kept on the device, so it works offline.
    - Book search (Open Library, Google Books): always the network; the app says so when offline.
    A new version waits until the page's "Update available — tap to refresh" is tapped. */
 const SHELL = "earmark-shell-v1", RUNTIME = "earmark-runtime-v1", COVERS = "earmark-covers";
@@ -101,14 +101,11 @@ async function fromCache(req, name = SHELL) {
   try { return await refresh; } catch (err) { return Response.error(); }
 }
 
+// covers of books on the shelf are saved by the page; search-result covers aren't kept
 async function cover(req) {
-  const cache = await caches.open(COVERS), hit = await cache.match(req.url);
+  const hit = await (await caches.open(COVERS)).match(req.url);
   if (hit) return hit;
-  try {
-    const res = await fetch(req);
-    if (res.ok || res.type === "opaque") cache.put(req.url, res.clone());
-    return res;
-  } catch (err) { return Response.error(); }
+  try { return await fetch(req); } catch (err) { return Response.error(); }
 }
 
 // a new deploy of the page: keep it for the next open, and tell the page so it can offer a refresh
