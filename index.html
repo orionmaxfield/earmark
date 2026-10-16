@@ -411,6 +411,12 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
 #s-home{position:relative}
 .gear{position:absolute;top:10px;right:max(8px,env(safe-area-inset-right,0px));width:44px;height:44px;display:grid;place-items:center;border:0;background:transparent;color:var(--ink-2);border-radius:50%;cursor:pointer;z-index:2}
 .gear svg{width:24px;height:24px}
+/* sync: a tiny icon beside the gear, only when something's wrong */
+.syncwarn{position:absolute;top:10px;right:calc(max(8px,env(safe-area-inset-right,0px)) + 40px);width:44px;height:44px;display:grid;place-items:center;border:0;background:transparent;color:var(--gold);border-radius:50%;cursor:pointer;z-index:2}
+.syncwarn svg{width:22px;height:22px}
+.syncwarn[hidden]{display:none}
+.srow .sl.accent{color:var(--accent)}
+.srow[hidden]{display:none}
 .gear:active{background:var(--surface)}
 .goals{margin-top:12px;text-align:left;display:grid;gap:14px}
 .goals[hidden]{display:none}
@@ -790,13 +796,13 @@ html.locked .toast.show{transform:translate(-50%,0)}
 <!-- ONBOARDING: shown once, on the first visit with no saved data -->
 <div class="ob navy" id="onboard" role="dialog" aria-label="Welcome to Earmark">
   <div class="inner">
-    <!-- iPhone Safari only: the home-screen app keeps its own data, so install before starting -->
+    <!-- iPhone Safari only: suggest the home-screen app before starting; history syncs, so nothing needs moving -->
     <section class="ob-step center" data-step="8">
       <img class="mark" src="icons/earmark-mark.png" alt="" width="88" height="88">
       <h1>Install Earmark first</h1>
-      <p class="lead">Your history saves inside the home-screen app. On iPhone it keeps its own copy, separate from Safari, so set it up there before you start.</p>
+      <p class="lead">Earmark works best from your home screen. It opens like a real app, and your history is saved to your account, so it's all there when you sign in.</p>
       <ol class="isteps" id="obInstallSteps"></ol>
-      <p class="note">You'll sign in once more inside the app, then you're all set.</p>
+      <p class="note">You'll sign in once more inside the app. Everything you add syncs automatically, so there's nothing to move over.</p>
       <button class="ghost" id="obSafari" type="button">Continue in Safari anyway</button>
     </section>
     <section class="ob-step on center" data-step="0">
@@ -805,7 +811,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
       <p class="lead">Track every hour you listen, earn medals along the way, and fill a shelf with what you've finished.</p>
       <div class="field" style="margin-top:24px"><input id="obName" placeholder="Your name" autocomplete="given-name" aria-label="Your name"></div>
       <button class="cta" id="obNext0">Continue</button>
-      <p class="obprivacy">Your listening history stays on this device. <button type="button" id="obPrivacyBtn">Privacy</button></p>
+      <p class="obprivacy">Your listening history is private to your account. <button type="button" id="obPrivacyBtn">Privacy</button></p>
     </section>
     <section class="ob-step" data-step="9">
       <h2>Privacy</h2>
@@ -850,6 +856,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
 
 <!-- HOME -->
 <section class="screen active" id="s-home">
+  <button class="syncwarn" id="syncWarn" type="button" hidden aria-label="Sync problem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M7 18h10.5a4 4 0 0 0 .6-7.96A6 6 0 0 0 6.6 8.6 4.75 4.75 0 0 0 7 18z"/><path d="M12 10.5v3.5M12 16.6v.01"/></svg></button>
   <button class="gear" data-go="s-settings" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
   <div class="brandblock"><div class="brandrow"><img src="icons/earmark-mark.png" alt="" width="32" height="32"><div class="brand">Ear<span class="mk">mark</span></div></div><div class="tagline">Listen up<span class="dot">.</span></div></div>
   <div class="card install" id="installCard" hidden>
@@ -884,7 +891,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
     <div class="card bookgoal" id="bookGoal" hidden></div>
     <div class="card nudge" id="backupNudge" hidden>
       <div class="nic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19.5h14"/></svg></div>
-      <div class="nt"><b>Save a backup of your listening history</b><small>A file you keep, in case this browser clears its data.</small></div>
+      <div class="nt"><b>Save a backup of your listening history</b><small>An extra copy you keep, on top of your account.</small></div>
       <button class="nbtn" id="nudgeSave" type="button">Save</button><button class="nx" id="nudgeX" type="button" aria-label="Dismiss">×</button>
     </div>
     <div class="notes" id="notes"></div>
@@ -923,7 +930,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
     <div class="bookcase" id="bookcase"></div>
   </div>
 
-  <p class="proto">Beta · saved on this device · <a id="homeFeedback" href="#" target="_blank" rel="noopener">Send feedback</a></p>
+  <p class="proto">Beta · synced to your account · <a id="homeFeedback" href="#" target="_blank" rel="noopener">Send feedback</a></p>
 </section>
 
 <!-- BOOKSHELF: every book, as a grid of three or a list one by one -->
@@ -969,10 +976,12 @@ html.locked .toast.show{transform:translate(-50%,0)}
   <div class="sgroup">
     <label class="srow static"><span class="sl">Display name</span><input id="setName" class="sinput" autocomplete="name" autocapitalize="words" placeholder="Your name"></label>
     <div class="srow static"><span class="sl">Email</span><span class="sv" id="setEmail">Not connected</span></div>
-    <button class="srow" id="setSignOut" type="button"><span class="sl">Sign out</span><span class="sv">Coming soon</span></button>
+    <button class="srow" id="setSyncNow" type="button"><span class="sl">Sync now</span><span class="sv" id="setSyncState"></span></button>
+    <button class="srow" id="setSignIn" type="button" hidden><span class="sl accent">Sign in again to sync</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button>
+    <button class="srow" id="setSignOut" type="button"><span class="sl">Sign out</span></button>
     <button class="srow danger" id="setDelete" type="button"><span class="sl">Delete account</span></button>
   </div>
-  <p class="sgnote">Your account lives on this device for now. Signing in from other devices is coming soon.</p>
+  <p class="sgnote" id="syncNote">Your books, listening and medals are saved to your account, so they're on every device you sign in on with this email.</p>
 
   <div class="sgh">Listening goals</div>
   <div class="sgroup">
@@ -1158,7 +1167,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
 
 <!-- RESTORE: preview a backup, then merge or replace -->
 <div class="alert" id="restoreDlg" role="alertdialog" aria-modal="true" aria-labelledby="rTitle">
-  <div class="abox"><h3 id="rTitle">Restore from backup</h3><div class="rprev" id="rPrev"></div><p>Merge adds books and listening from the backup that aren't on this device yet. Replace swaps everything here for the backup.</p>
+  <div class="abox"><h3 id="rTitle">Restore from backup</h3><div class="rprev" id="rPrev"></div><p>Merge adds books and listening from the backup that aren't here yet. Replace swaps everything for the backup.</p>
     <div class="abtns col"><button id="rMerge" type="button">Merge into this device</button><button id="rReplace" class="danger" type="button">Replace everything</button><button id="rCancel" type="button">Cancel</button></div></div>
 </div>
 <button class="timerbar" id="timerBar" type="button" hidden aria-label="Listening timer running. Tap to stop."><span class="tdot"></span><span>Listening… <span class="ttime" id="timerTime">0:00</span></span><span class="tbook" id="timerBook"></span><span class="tstop">Stop</span></button>
@@ -1276,10 +1285,14 @@ html.locked .toast.show{transform:translate(-50%,0)}
     lastBackup:null,backupNudgeDismissed:null,installDismissed:null,
     settings:{...SETTINGS_DEFAULT}});
   function load(){ try{ const raw=localStorage.getItem(KEY); if(raw){ const o=JSON.parse(raw); return Object.assign(fresh(),o,{user:Object.assign({name:""},o.user||{}),keys:Object.assign({},fresh().keys,o.keys||{}),settings:Object.assign({},SETTINGS_DEFAULT,o.settings||{}),legacy:Object.assign({},fresh().legacy,o.legacy||{})}); } }catch(e){} return fresh(); }
-  function save(){ try{ localStorage.setItem(KEY,JSON.stringify(ST)); }catch(e){} }
-  const ST=load();
+  function save(){ try{ localStorage.setItem(KEY,JSON.stringify(ST)); }catch(e){} if(SY.ready) syncSoon(); }
+  const ST=load(), SY={ready:false};   // SY: sync, set up near the end
   const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
-  ST.books.forEach(b=>{ if(!b.id) b.id=uid(); });
+  /* every book, session and past-hours entry has a permanent id, so it can sync; saved data from before gets one now */
+  const goodId=id=>typeof id==="string"&&/^[A-Za-z0-9_.:-]{1,100}$/.test(id);
+  ST.books.forEach(b=>{ if(goodId(b.id)) return; const was=b.id; b.id=uid(); if(was!=null) ST.sessions.forEach(x=>{ if(x.book===was) x.book=b.id; }); });
+  ST.sessions.forEach(x=>{ if(!goodId(x.id)) x.id=uid(); });
+  ST.past.forEach(x=>{ if(!goodId(x.id)) x.id=uid(); });
   if(!ST.firstUseAt) ST.firstUseAt=ST.createdAt;   // first use on this device: decides Founding Listener   // books saved before editing existed get an id
   const pad=n=>String(n).padStart(2,"0");
   const dayKey=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
@@ -2319,7 +2332,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
     derive(); save(); renderHero(); renderGoals(); renderNow(); renderNotes(); recomputeMedals(); renderInsights(); renderBackupNudge();
     return welcome;
   }
-  function addPastHours(hours,src){ ST.past.push({src,h:hours,at:new Date().toISOString()}); derive(); save(); renderHero(); recomputeMedals(); renderInsights(); }
+  function addPastHours(hours,src){ ST.past.push({id:uid(),src,h:hours,at:new Date().toISOString()}); derive(); save(); renderHero(); recomputeMedals(); renderInsights(); }
   $$("[data-done]").forEach(b=>b.onclick=()=>{
     const k=b.dataset.done;
     if(k==="live"){
@@ -2724,19 +2737,14 @@ html.locked .toast.show{transform:translate(-50%,0)}
       okB.onclick=()=>done(true); noB.onclick=()=>done(false);
     });
   }
-  const wipe=()=>{ try{ localStorage.removeItem(KEY); }catch(e){} location.reload(); };
-  async function resetFlow(){
-    if(!await ask({title:"Reset all data?",msg:"This erases every book, session, note and medal on this device.",ok:"Continue",danger:true})) return;
-    if(!await ask({title:"Are you sure?",msg:"This can't be undone. Export your data first if you might want it back.",ok:"Reset everything",danger:true})) return;
-    wipe();
-  }
+  const wipe=()=>{ try{ localStorage.removeItem(KEY); localStorage.removeItem("earmark.sync.v1"); }catch(e){} location.reload(); };
 
   /* settings: every change saves and updates the app straight away */
   function refreshAll(){ derive(); save(); applyMotion(); renderHero(); renderGoals(); renderNotes(); renderShelf(shelfMode); renderShelfAll(); recomputeMedals(true); renderInsights(); renderNow(); if(current==="s-stats") renderStats(false); }
   function applyMotion(){ const r=ST.settings.reduceMotion, h=document.documentElement; h.classList.toggle("rm-on",r==="on"); h.classList.toggle("rm-off",r==="off"); }
   function renderSettings(){
     const S=ST.settings;
-    $("#setName").value=ST.user.name; $("#setEmail").textContent=S.email||"Not connected";
+    $("#setName").value=ST.user.name; if(SY.ready) renderSyncState(true);
     $("#setDaily").value=S.dailyGoalMin; $("#setWeekly").value=S.weeklyGoalH; $("#setMinMin").value=S.streakMinMin; $("#setBooks").value=S.bookGoal||"";
     const rs=$("#setRest"); rs.classList.toggle("on",!!S.restDays); rs.setAttribute("aria-checked",!!S.restDays);
     const sw=$("#setShowGoals"); sw.classList.toggle("on",!!S.showGoals); sw.setAttribute("aria-checked",!!S.showGoals);
@@ -2757,13 +2765,6 @@ html.locked .toast.show{transform:translate(-50%,0)}
     if(k in ST.settings) ST.settings[k]=v; else ST[k]=v;
     refreshAll(); renderSettings();
   });
-  $("#setSignOut").onclick=()=>toast("Accounts are coming soon. Your data stays saved on this device.");
-  $("#setDelete").onclick=async()=>{
-    if(!await ask({title:"Delete your account?",msg:"This permanently deletes your profile, books, listening history and medals from this device.",ok:"Continue",danger:true})) return;
-    if(!await ask({title:"Delete everything?",msg:"There's no way to recover a deleted account. This can't be undone.",ok:"Delete account",danger:true})) return;
-    wipe();
-  };
-  $("#setReset").onclick=resetFlow;
   $("#setImport").onclick=()=>{ openSheet(); $("#menu").style.display="none"; $("#f-past").classList.add("show"); };
   /* backups: a readable summary plus the whole saved state, stamped with BACKUP_VERSION */
   function exportBackup(){
@@ -2849,7 +2850,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
     if(!checked){ await ask({title:"This backup looks damaged",msg:"Its list of books couldn't be read, so nothing was changed. Try another backup file.",single:true}); return; }
     const st=checked.st, how=await chooseRestore(st,o), skipped=checked.dropped?` (${plural(checked.dropped,"damaged entry","damaged entries")} skipped)`:"";
     if(how==="replace"){
-      if(!await ask({title:"Replace everything?",msg:"Everything on this device is swapped for the backup. Anything you haven't backed up will be lost. Medal levels you've already earned are kept.",ok:"Replace",danger:true})) return;
+      if(!await ask({title:"Replace everything?",msg:SYNC.email?"Everything on this device and in your account is swapped for the backup, on every device. Anything you haven't backed up will be lost. Medal levels you've already earned are kept.":"Everything on this device is swapped for the backup. Anything you haven't backed up will be lost. Medal levels you've already earned are kept.",ok:"Replace",danger:true})) return;
       const next=Object.assign(fresh(),st,{onboarded:true,medals:mergeMedalStores(ST.medals,st.medals),createdAt:earliest(ST.createdAt,st.createdAt),firstUseAt:earliest(ST.firstUseAt,st.firstUseAt,st.createdAt),welcomeSeen:true,lastBackup:o.exportedAt||ST.lastBackup});
       try{ localStorage.setItem(KEY,JSON.stringify(next)); sessionStorage.setItem("earmark.flash","Restored from your backup"+skipped); }catch(err){ toast("Couldn't restore. There may not be enough space."); return; }
       location.reload();
@@ -2889,20 +2890,15 @@ html.locked .toast.show{transform:translate(-50%,0)}
     const mode=isStandalone()?null:iosSafari?"ios":installPrompt?"android":null;
     const waiting=ST.installDismissed&&Date.now()-Date.parse(ST.installDismissed)<3*864e5;
     $("#installCard").hidden=!mode||waiting||!ST.onboarded;
-    // iPhone keeps the home-screen app's data apart from Safari's: anyone with history here needs to bring it over
-    const moving=mode==="ios"&&(ST.sessions.length>0||LIB.length>0||ST.past.length>0);
-    $("#installTitle").textContent=moving?"Move your history to the home-screen app":"Add Earmark to your home screen";
-    $("#installWhy").textContent=moving?"On iPhone, the home-screen app keeps its own copy of your data, separate from Safari. Bring yours over in three steps:":"Keeps your history safe and opens like a real app.";
-    if(moving) $("#installBody").innerHTML=`<ol class="isteps" aria-label="How to move your history to the home-screen app">
-      <li><span class="num">1</span><span><b>Export a backup</b> here</span><button class="lact go" type="button" id="installExport">Export</button></li>
-      <li><span class="num">2</span><span><b>Add Earmark to your home screen:</b> tap Share, then Add to Home Screen</span></li>
-      <li><span class="num">3</span><span><b>Open it</b>, sign in once more, and choose <b>Settings › Data › Restore from backup</b></span></li></ol>`;
-    else if(mode==="ios") $("#installBody").innerHTML=`<ol class="isteps" aria-label="How to add Earmark to your home screen">${IOS_STEPS}</ol>`;
+    // history syncs to the account, so the home-screen app brings it along when they sign in
+    const synced=mode==="ios"&&(ST.sessions.length>0||LIB.length>0||ST.past.length>0);
+    $("#installTitle").textContent="Add Earmark to your home screen";
+    $("#installWhy").textContent=synced?"It opens like a real app. Sign in there and your history comes with you.":"Keeps your history safe and opens like a real app.";
+    if(mode==="ios") $("#installBody").innerHTML=`<ol class="isteps" aria-label="How to add Earmark to your home screen">${IOS_STEPS}</ol>`;
     else if(mode==="android") $("#installBody").innerHTML=`<button class="cta" id="installBtn" type="button">Install app</button>`;
   }
   $("#installCard").addEventListener("click",async e=>{
     if(e.target.closest("#installX")){ ST.installDismissed=new Date().toISOString(); save(); renderInstall(); return; }
-    if(e.target.closest("#installExport")){ exportBackup(); return; }
     if(e.target.closest("#installBtn")&&installPrompt){ const p=installPrompt; installPrompt=null; p.prompt(); try{ await p.userChoice; }catch(err){} renderInstall(); }
   });
   /* beta pages: welcome and privacy */
@@ -2917,21 +2913,22 @@ html.locked .toast.show{transform:translate(-50%,0)}
       <ul><li><b>iPhone:</b> open Earmark in Safari, tap the Share button, then <b>Add to Home Screen</b>.</li>
         <li><b>Android:</b> in Chrome, tap <b>Install app</b> on Home, or open the ⋮ menu and choose <b>Install app</b>.</li></ul>
       <p>From then on, open Earmark from its icon.</p>
-      <p><b>Already started in Safari on iPhone?</b> The home-screen app keeps its own copy of your data, separate from Safari. To move your history over: 1) in Safari, go to Settings › Data › Export a backup; 2) add Earmark to your home screen; 3) open it, sign in once more, and choose Settings › Data › Restore from backup.</p>
+      <p><b>Already started in Safari on iPhone?</b> There's nothing to move. Your history is saved to your account, so when you open the home-screen app and sign in, everything is there. If you'd like an extra safety copy first, go to Settings › Data › Export a backup.</p>
       <h3>What to try</h3>
       <ul><li>Log your listening every day with the + button. Your streak starts on day one.</li>
         <li>Rest days are on by default, so a missed day here and there won't break your streak. You can turn them off in Settings.</li>
         <li>Add the books you've finished, and the ones you're listening to now.</li>
         <li>Check your medals in Achievements, and tap Today, This week or This month to see your charts.</li></ul>
-      <h3>Back up your data</h3>
-      <p>Your history is saved on this device only. Every week or so, go to Settings › Data › Export a backup and keep the file somewhere safe.</p>
+      <h3>Your data, on every device</h3>
+      <p>Your history is saved to your account and syncs to every phone or computer you sign in on with the same email. Backups are optional: Settings › Data › Export a backup saves a file you can keep as an extra copy.</p>
       <h3>How long the test runs</h3>
       <p>${end?`The beta runs until <b>${end}</b>.`:"The beta runs for a few weeks. We'll email you the end date."} Near the end, please fill in the short final survey in Settings › Help.</p>
       <h3>Send feedback</h3>
       <p>Found a bug, or have an idea? <a href="${FEEDBACK_URL}" target="_blank" rel="noopener">Send feedback</a> any time. It's also at the bottom of Home and in Settings › Help.</p>`;
   }
-  const PRIVACY=`<p><b>Your listening data is stored only on this device,</b> in this browser. It isn't uploaded, shared or sold.</p>
-    <p>The only thing collected is the email address you use to log in to the beta.</p>
+  const PRIVACY=`<p><b>Your listening data is saved to your account</b> on Earmark's server, tied to your email, so it's available on all your devices. It's never shared or sold, and only you can see it.</p>
+    <p>Deleting your account (Settings › Account › Delete account) erases it from the server and from this device.</p>
+    <p>Your email address is what you use to log in to the beta, and it's how your account is found.</p>
     <p>The site counts visits with privacy-friendly analytics that use no cookies and don't follow you around the web.</p>
     <p>Feedback forms are optional. What you write in them goes to the developer.</p>
     <p>A backup you export is your own file. It stays wherever you save it.</p>`;
@@ -2948,7 +2945,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
       <h3>Hours</h3>
       <p><b>Listening you log</b> with the + button is dated. It counts toward everything: your totals, rank, streaks, goals and every medal.</p>
       <p><b>Hours from the past</b>, imported from apps like Audible or Libby, count toward your lifetime total, rank and time milestones, but never toward streaks or live medals.</p>
-      <p><b>Your data</b> is saved in this browser on this device. Export a backup now and then from Settings › Data, and restore it on any device.</p>
+      <p><b>Your data</b> is saved on this device first, so the app works offline, then synced to your account so it's on every device you sign in on. Settings › Account shows when it last synced. A backup from Settings › Data is an optional extra copy.</p>
       <p><b>Finishing a book</b> adds the rest of its length (its length minus the time you logged to it) to your lifetime total, rank and hour medals. That part isn't counted toward charts, streaks or today, because it wasn't listened to today. Moving the book back to Listening takes it off again; time you logged always stays.</p>
       <p><b>Book hours</b> are the length you give a book on your shelf. They add to your lifetime total. Books without a date finished are backlog: they count toward totals and book medals, never toward streaks.</p>
       <h3>Medals</h3>
@@ -2967,6 +2964,246 @@ html.locked .toast.show{transform:translate(-50%,0)}
   // ask the browser to keep this site's data; a quiet no is fine
   try{ if(navigator.storage&&navigator.storage.persist) navigator.storage.persisted().then(p=>p||navigator.storage.persist()).catch(()=>{}); }catch(e){}
   try{ const flash=sessionStorage.getItem("earmark.flash"); if(flash){ sessionStorage.removeItem("earmark.flash"); setTimeout(()=>toast(flash),1700); } }catch(e){}
+
+  /* ---- sync: the same data on every device signed in with the same email ----
+     Cloudflare Access signs everyone in; the server reads the verified email and uses it as the account.
+     Everything is saved on this device first, so the app stays instant and works offline. Each book, session,
+     past-hours entry, setting, medal and the profile is a record with a permanent id. The sync index (kept
+     beside the saved data) holds, for each record, when it last changed, whether it was deleted, and the
+     version the account last confirmed. A deleted record stays in the index as deleted, so the deletion
+     reaches every device. The server numbers every change it saves, and this device asks for everything
+     after the last number it saw, so a device whose clock is wrong never misses an update. */
+  const SYNC_KEY="earmark.sync.v1", API="api/", BATCH=500;
+  const freshSync=()=>({email:null,created:null,cursor:0,recs:{},lastSync:null,offset:0});
+  const SYNC=(()=>{ try{ const o=JSON.parse(localStorage.getItem(SYNC_KEY)); if(o&&o.recs) return Object.assign(freshSync(),o); }catch(e){} return freshSync(); })();
+  const saveSync=()=>{ try{ localStorage.setItem(SYNC_KEY,JSON.stringify(SYNC)); }catch(e){} };
+  const syncClock=()=>Date.now()+(SYNC.offset||0);   // corrected by the server's clock at each sync
+  const hash=s=>{ let a=0xdeadbeef,b=0x41c6ce57; for(let i=0;i<s.length;i++){ const c=s.charCodeAt(i); a=Math.imul(a^c,2654435761); b=Math.imul(b^c,1597334677); }
+    a=Math.imul(a^(a>>>16),2246822507)^Math.imul(b^(b>>>13),3266489909); b=Math.imul(b^(b>>>16),2246822507)^Math.imul(a^(a>>>13),3266489909);
+    return (4294967296*(2097151&b)+(a>>>0)).toString(36); };
+  const LISTS={book:()=>ST.books,session:()=>ST.sessions,"past-hours":()=>ST.past};   // only these are ever deleted
+  const SETTING_KEYS=[...Object.keys(SETTINGS_DEFAULT).filter(k=>k!=="email"),"shelfView","shelfFilter"];
+  const medalData=m=>({lv:m.lv,at:Array.from({length:m.lv},(_,i)=>(m.at&&m.at[i])||null)});
+  const profileData=()=>({createdAt:ST.createdAt||null,firstUseAt:ST.firstUseAt||null,totalBase:+ST.totalBase||0,legacy:ST.legacy||null,carry:ST.carry||{},
+    notesWritten:ST.notesWritten||0,shares:ST.shares||0,yearReviewViewed:!!ST.yearReviewViewed});
+  // every record this device has now: key "kind|id" → {kind, id, data, h}
+  function records(){
+    const out=new Map(), add=(kind,id,data)=>out.set(kind+"|"+id,{kind,id,data,h:hash(JSON.stringify(data))});
+    Object.entries(LISTS).forEach(([kind,list])=>list().forEach(x=>add(kind,x.id,x)));
+    SETTING_KEYS.forEach(k=>add("settings",k,{v:k in SETTINGS_DEFAULT?ST.settings[k]:ST[k]}));
+    Object.entries(ST.medals).forEach(([id,m])=>{ if(m&&m.lv>0&&goodId(id)) add("medal",id,medalData(m)); });
+    add("profile","name",{v:ST.user.name||""}); add("profile","me",profileData());
+    return out;
+  }
+  /* compare with the index: stamp what changed, mark what was deleted */
+  function scan(){
+    let cur=records(); const R=SYNC.recs, t=syncClock();
+    // a record that was deleted coming back (from a restored backup) gets a new id, so it isn't lost
+    let moved=false;
+    cur.forEach((c,k)=>{ if(R[k]&&R[k].d&&LISTS[c.kind]){ const n=uid(); if(c.kind==="book") ST.sessions.forEach(x=>{ if(x.book===c.id) x.book=n; }); c.data.id=n; moved=true; } });
+    if(moved){ save(); cur=records(); }
+    cur.forEach((c,k)=>{ const e=R[k]||(R[k]={s:null,h:null,u:0}); if(e.h!==c.h){ e.h=c.h; e.u=Math.max(t,e.u+1); } });
+    Object.keys(R).forEach(k=>{ const e=R[k]; if(e.d||cur.has(k)||!LISTS[k.slice(0,k.indexOf("|"))]) return;
+      if(e.s==null) delete R[k];                              // never reached the account
+      else R[k]={d:1,s:e.s,h:"-",u:Math.max(t,e.u+1)}; });   // deleted here: the deletion syncs
+    saveSync(); return cur;
+  }
+  const isDirty=e=>e.h!==e.s;
+  const dirtyKeys=()=>Object.keys(SYNC.recs).filter(k=>isDirty(SYNC.recs[k]));
+  /* a record from the account, written into this device's data. Medals keep the higher level; the profile keeps the earliest dates and the larger counts */
+  function writeLocal(kind,id,data,idx){
+    if(LISTS[kind]){ const v=Object.assign({},data,{id}), o=idx[kind].get(id);
+      if(o){ Object.keys(o).forEach(k=>delete o[k]); Object.assign(o,v); } else { LISTS[kind]().push(v); idx[kind].set(id,v); } return; }
+    if(kind==="settings"){ const def=id in SETTINGS_DEFAULT?SETTINGS_DEFAULT[id]:ST[id];
+      if(SETTING_KEYS.includes(id)&&typeof data.v===typeof def){ if(id in SETTINGS_DEFAULT) ST.settings[id]=data.v; else ST[id]=data.v; } return; }
+    if(kind==="medal"){ ST.medals[id]=mergeMedalStores({[id]:ST.medals[id]||{lv:0,at:[]}},{[id]:data})[id]; return; }
+    if(kind==="profile"&&id==="name"){ if(typeof data.v==="string"&&(data.v||!ST.user.name)) ST.user.name=data.v; return; }
+    if(kind==="profile"&&id==="me"){
+      ST.createdAt=earliest(ST.createdAt,data.createdAt)||ST.createdAt; ST.firstUseAt=earliest(ST.firstUseAt,data.firstUseAt)||ST.firstUseAt;
+      ST.totalBase=Math.max(+ST.totalBase||0,+data.totalBase||0);
+      const L=data.legacy; if(L&&Array.isArray(L.days)){ const M=ST.legacy; M.days=[...new Set([...M.days,...L.days])];
+        M.bestStreak=Math.max(M.bestStreak||0,L.bestStreak||0); M.bestDayH=Math.max(M.bestDayH||0,L.bestDayH||0); ["owl","earlyBird","comeback"].forEach(f=>{ M[f]=!!(M[f]||L[f]); }); }
+      if(!Object.keys(ST.carry||{}).length&&data.carry&&typeof data.carry==="object") ST.carry=data.carry;
+      ST.notesWritten=Math.max(ST.notesWritten||0,+data.notesWritten||0); ST.shares=Math.max(ST.shares||0,+data.shares||0); ST.yearReviewViewed=!!(ST.yearReviewViewed||data.yearReviewViewed);
+    }
+  }
+  const indexes=()=>Object.fromEntries(Object.entries(LISTS).map(([k,l])=>[k,new Map(l().map(x=>[x.id,x]))]));
+  function removeLocal(kind,id,idx){ const o=idx[kind].get(id); if(!o) return false; const l=LISTS[kind](), i=l.indexOf(o); if(i>=0) l.splice(i,1); idx[kind].delete(id); return true; }
+  // apply one record from the account; true when this device's data changed
+  function applyRow(r,cur,idx){
+    const k=r.kind+"|"+r.id, e=SYNC.recs[k];
+    if(r.deleted){ const had=LISTS[r.kind]?removeLocal(r.kind,r.id,idx):false; SYNC.recs[k]={d:1,s:"-",h:"-",u:r.updated}; return had; }
+    const rh=hash(JSON.stringify(r.data));
+    if(e&&isDirty(e)&&e.h!==rh&&(e.d||e.u>r.updated)){ e.s=rh; return false; }   // changed (or deleted) here more recently: this device's version is sent next
+    const before=cur.get(k);
+    writeLocal(r.kind,r.id,r.data,idx);
+    SYNC.recs[k]={s:rh,h:rh,u:r.updated};   // if a merge made this device's copy differ, the next scan sends it back
+    return !before||before.h!==rh;
+  }
+
+  /* talking to the server. Errors say what went wrong: offline, signed out, not set up here, or the server */
+  const syncErr=kind=>Object.assign(new Error(kind),{kind});
+  async function api(method,path,body){
+    const t0=Date.now(); let res;
+    try{ res=await fetch(API+path,{method,headers:body?{"content-type":"application/json"}:{},body:body?JSON.stringify(body):undefined,
+      credentials:"same-origin",cache:"no-store",redirect:"manual"}); }
+    catch(e){ throw syncErr("offline"); }
+    // the Access login page (a redirect, or a page that isn't ours) is never read as data
+    if(res.type==="opaqueredirect"||res.status===401||res.status===403||(res.status>=300&&res.status<400)) throw syncErr("auth");
+    if(res.status===404||res.status===405) throw syncErr("off");   // no sync server here (a local copy, or Functions not deployed)
+    const isJson=/application\/json/.test(res.headers.get("content-type")||""), json=isJson?await res.json().catch(()=>null):null;
+    if(!res.ok) throw syncErr(res.status===503&&json&&/set up/.test(json.error||"")?"off":"error");
+    if(!isJson) throw syncErr("auth");   // a sign-in page served in place of the app's answer
+    if(!json) throw syncErr("error");
+    if(typeof json.now==="number") SYNC.offset=Math.round(json.now-(t0+Date.now())/2);
+    return json;
+  }
+  /* status, shown quietly in Settings; on Home only when something's wrong */
+  let syncState=navigator.onLine?"idle":"offline";
+  function setSyncState(s){ syncState=s; renderSyncState(); }
+  function syncLabel(){
+    if(syncState==="syncing") return "Syncing…";
+    if(syncState==="offline") return "Offline — will sync when connected";
+    if(syncState==="auth") return "Sign in again to sync";
+    if(syncState==="off") return "Not available here";
+    if(syncState==="error") return "Couldn't sync. Trying again soon";
+    if(!SYNC.lastSync) return "Not synced yet";
+    const ago=(Date.now()-Date.parse(SYNC.lastSync))/6e4;
+    if(ago<1) return "Synced just now";
+    if(ago<60) return `Synced ${Math.floor(ago)} min ago`;
+    const d=new Date(SYNC.lastSync);
+    return dayKey(d)===dayKey(new Date())?`Synced at ${d.toLocaleTimeString([],{hour:"numeric",minute:"2-digit"})}`:`Synced ${fmtDay(SYNC.lastSync)}`;
+  }
+  function renderSyncState(settingsOpen){
+    const pending=syncState==="offline"&&dirtyKeys().length>0;
+    const warn=syncState==="auth"||syncState==="error"||pending;
+    const w=$("#syncWarn"); w.hidden=!warn; w.setAttribute("aria-label",syncState==="auth"?"Sign in again to sync":syncState==="error"?"Couldn't sync":"Offline — will sync when connected");
+    if(!settingsOpen&&current!=="s-settings") return;
+    $("#setSyncState").textContent=syncLabel(); $("#setSignIn").hidden=syncState!=="auth";
+    $("#setEmail").textContent=SYNC.email||(syncState==="off"?"This device only":"Not connected");
+    $("#syncNote").textContent=syncState==="off"?"Syncing isn't available here, so your data is saved on this device only. Export a backup to keep a copy.":
+      "Your books, listening and medals are saved to your account, so they're on every device you sign in on with this email.";
+  }
+  $("#syncWarn").onclick=()=>go("s-settings");
+  $("#setSignIn").onclick=()=>location.reload();   // the page load goes through the sign-in
+  setInterval(()=>{ if(current==="s-settings") renderSyncState(); },30*1000);
+
+  /* the first sync on this device: an empty account gets this device's data, an empty device gets the
+     account's, and when both have history they're combined record by record like a backup Merge */
+  async function firstSync(){
+    const rows=[]; let since=0, res;
+    do{ res=await api("POST","sync",{since,changes:[]}); rows.push(...res.records); since=res.latest; }while(res.more&&rows.length<500000);
+    const live=rows.filter(r=>!r.deleted), isHist=r=>!!LISTS[r.kind];
+    const accountHas=live.some(isHist), deviceHas=ST.books.length+ST.sessions.length+ST.past.length>0;
+    Object.assign(SYNC,{email:res.email,created:res.created,cursor:since,recs:{}});
+    // the account's version of every record is what this device compares against from now on
+    rows.forEach(r=>{ const h=r.deleted?"-":hash(JSON.stringify(r.data)); SYNC.recs[r.kind+"|"+r.id]=r.deleted?{d:1,s:"-",h:"-",u:r.updated}:{s:h,h,u:r.updated}; });
+    const idx=indexes(), put=r=>writeLocal(r.kind,r.id,r.data,idx);
+    let msg=null;
+    if(!deviceHas){
+      live.forEach(put);   // a new device: everything comes from the account
+      if(accountHas&&!ST.onboarded){ ST.onboarded=true; ST.welcomeSeen=true; ob.classList.remove("open"); go("s-home",{tab:true}); msg="Welcome back. Your history is here."; }
+    } else if(!accountHas){
+      live.filter(r=>r.kind==="medal").forEach(put);   // this device's history goes up; medals keep the higher level
+    } else {
+      live.filter(r=>!isHist(r)).forEach(put);   // the account's name and settings; medals and the profile merge
+      const pick=k=>live.filter(r=>r.kind===k).map(r=>Object.assign({},r.data,{id:r.id}));
+      // the same book on both (by id, or by title and author) keeps the account's version, which other devices may have edited,
+      // plus anything only this device had; this device's sessions move onto it. Then a backup Merge adds the rest without duplicates.
+      const norm=v=>(v||"").trim().toLowerCase(), bkey=b=>norm(b.t)+"|"+norm(b.author), mine=new Map(ST.books.map(b=>[bkey(b),b]));
+      pick("book").forEach(a=>{ const here=ST.books.find(b=>b.id===a.id)||mine.get(bkey(a)); if(!here) return;
+        if(here.id!==a.id) ST.sessions.forEach(x=>{ if(x.book===here.id) x.book=a.id; });
+        const merged=Object.assign({},here,a); Object.keys(here).forEach(k=>delete here[k]); Object.assign(here,merged); });
+      mergeBackup({books:pick("book"),sessions:pick("session"),past:pick("past-hours")});
+      msg="Combined this device's history with your account.";
+    }
+    return msg;
+  }
+  /* a sync: send what changed here (500 at a time), take what changed elsewhere, then recalculate */
+  let syncing=null, syncAgain=false, syncTimer=null;
+  function syncSoon(){ clearTimeout(syncTimer); syncTimer=setTimeout(()=>{ scan(); if(ST.onboarded&&dirtyKeys().length) syncNow(); else renderSyncState(); },3000); }
+  function syncNow(){
+    if(syncing){ syncAgain=true; return syncing; }
+    syncing=runSync().finally(()=>{ syncing=null; if(syncAgain){ syncAgain=false; syncNow(); } });
+    return syncing;
+  }
+  async function runSync(){
+    if(!/^https?:$/.test(location.protocol)){ setSyncState("off"); return false; }   // opened as a file: no server to sync with
+    if(!navigator.onLine){ scan(); setSyncState("offline"); return false; }
+    if(syncState!=="ok"&&syncState!=="idle") setSyncState("syncing");
+    let changed=false, msg=null;
+    try{
+      if(!SYNC.email) msg=await firstSync();
+      for(let round=0;round<50;round++){
+        const cur=scan(), keys=ST.onboarded?dirtyKeys().slice(0,BATCH):[];   // a device still on the welcome screens only listens
+        const changes=keys.map(k=>{ const e=SYNC.recs[k], i=k.indexOf("|"), kind=k.slice(0,i), id=k.slice(i+1);
+          return e.d?{kind,id,updated:e.u,deleted:true}:{kind,id,updated:e.u,deleted:false,data:cur.get(k).data}; })
+          .filter(c=>c.deleted||JSON.stringify(c.data).length<60000);
+        const res=await api("POST","sync",{since:SYNC.cursor,changes});
+        if(res.email!==SYNC.email){ Object.assign(SYNC,freshSync(),{offset:SYNC.offset}); msg=await firstSync(); changed=true; continue; }   // signed in as someone else
+        if(SYNC.created&&res.created!==SYNC.created){ await accountGone(); return false; }
+        const now=scan(), idx=indexes();   // anything changed while the request was out is stamped first, so it isn't overwritten
+        res.records.forEach(r=>{ changed=applyRow(r,now,idx)||changed; });
+        SYNC.cursor=Math.max(SYNC.cursor,res.latest); saveSync();
+        // carry on while the account has more, or this device still has unsent changes (a record sent twice in a row waits for the next sync)
+        const left=ST.onboarded?dirtyKeys():[], sent=new Set(keys);
+        if(!res.more&&!left.some(k=>!sent.has(k))&&(round>0||!left.length)) break;
+      }
+      SYNC.lastSync=new Date().toISOString(); saveSync();
+      if(ST.settings.email!==SYNC.email){ ST.settings.email=SYNC.email; }
+      setSyncState("ok");
+    }catch(err){ setSyncState(err.kind||"error"); if(err.kind!=="offline"&&err.kind!=="auth"&&err.kind!=="off") console.warn("sync",err); return false; }
+    if(changed||msg){ refreshAll(); renderInstall(); renderBackupNudge(); renderPending(); if(current==="s-settings") renderSettings(); }
+    else save();
+    if(msg) toast(msg);
+    return changed;
+  }
+  // the account was deleted from another device: the person decides what happens to this one
+  async function accountGone(){
+    const clear=await ask({title:"Your account was deleted",msg:"Your Earmark account was deleted on another device. Clear this device too, or keep its history and sync it back to your account?",ok:"Clear this device",cancel:"Keep and sync",danger:true});
+    if(clear){ wipe(); return; }
+    Object.assign(SYNC,freshSync(),{offset:SYNC.offset}); saveSync(); syncNow();
+  }
+  $("#setSyncNow").onclick=async()=>{ await syncNow(); renderSyncState(); if(syncState==="ok") toast("Synced"); };
+
+  /* signing out, deleting the account and resetting all reach the server too */
+  const syncOn=()=>!!SYNC.email;   // this device has synced with an account
+  async function deleteServerData(){
+    if(!syncOn()) return true;   // nothing on a server to delete
+    try{ await api("DELETE","account"); return true; }
+    catch(err){ await ask({title:"Couldn't delete your data",msg:err.kind==="auth"?"Sign in again, then try once more. Nothing was deleted.":"Check your connection and try again. Nothing was deleted.",single:true}); return false; }
+  }
+  $("#setSignOut").onclick=async()=>{
+    if(!syncOn()){ toast(syncState==="auth"?"You're already signed out. Sign in again to sync.":"Signing in isn't available here."); return; }
+    if(!await ask({title:"Sign out?",msg:"Your history stays safe in your account. This device's copy is cleared, and you'll sign in again next time.",ok:"Sign out"})) return;
+    await syncNow();
+    if(dirtyKeys().length&&!await ask({title:"Some changes haven't synced",msg:"Changes made on this device since the last sync will be lost if you sign out now.",ok:"Sign out anyway",danger:true})) return;
+    try{ localStorage.removeItem(KEY); localStorage.removeItem(SYNC_KEY); }catch(e){}
+    location.href="/cdn-cgi/access/logout";
+  };
+  $("#setDelete").onclick=async()=>{
+    if(!await ask({title:"Delete your account?",msg:"This permanently deletes your profile, books, listening history and medals, from this device and from your Earmark account on every device you sign in on.",ok:"Continue",danger:true})) return;
+    if(!await ask({title:"Delete everything?",msg:"There's no way to recover a deleted account. This can't be undone.",ok:"Delete account",danger:true})) return;
+    if(await deleteServerData()) wipe();
+  };
+  async function resetFlow(){
+    if(!await ask({title:"Reset all data?",msg:"This erases every book, session, note and medal, on this device and in your account on every device.",ok:"Continue",danger:true})) return;
+    if(!await ask({title:"Are you sure?",msg:"This can't be undone. Export your data first if you might want it back.",ok:"Reset everything",danger:true})) return;
+    if(await deleteServerData()) wipe();
+  }
+  $("#setReset").onclick=resetFlow;
+
+  // when: on open, ~3 s after a change, when the connection comes back, every 5 minutes while open, and on returning to the app
+  SY.ready=true;
+  addEventListener("online",()=>syncNow());
+  addEventListener("offline",()=>setSyncState("offline"));
+  setInterval(()=>{ if(document.visibilityState==="visible") syncNow(); },5*60*1000);
+  document.addEventListener("visibilitychange",()=>{
+    if(document.visibilityState==="visible"){ if(!SYNC.lastSync||Date.now()-Date.parse(SYNC.lastSync)>30*1000) syncNow(); }
+    else scan();   // leaving: changes are stamped now, and sent next time
+  });
+  addEventListener("pagehide",()=>scan());
+  renderSyncState(); syncNow();
 
   /* offline: sw.js caches the app; a new version waits for a tap on "Update available" */
   if("serviceWorker" in navigator&&/^https?:$/.test(location.protocol)){

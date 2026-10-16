@@ -6,7 +6,7 @@ Earmark keeps track of your audiobook listening: your daily streak, your hours, 
 
 ## 1. Open Earmark and add it to your home screen
 
-Open the link from your invite email and log in with your email address. Then add Earmark to your home screen. It keeps your listening history safe and opens like a real app.
+Open the link from your invite email and log in with your email address. That email is your Earmark account: your listening history is saved to it, so it's there on every phone or computer you sign in on. Then add Earmark to your home screen so it opens like a real app.
 
 **iPhone**
 
@@ -15,13 +15,7 @@ Open the link from your invite email and log in with your email address. Then ad
 3. Scroll down and tap **Add to Home Screen**, then **Add**.
 4. From now on, open Earmark from its icon on your home screen.
 
-This matters on iPhone. Safari can clear saved data from websites you haven't opened for about a week, but apps on your home screen are kept.
-
-**Do this before you start on iPhone.** The home-screen app keeps its own copy of your data, separate from Safari, and you'll sign in once more inside it. If you've already started in Safari, move your history over:
-
-1. In Safari, open **Settings › Data › Export a backup**.
-2. Add Earmark to your home screen (steps above).
-3. Open it from your home screen, sign in, and choose **Settings › Data › Restore from backup**.
+**Already started in Safari?** There's nothing to move. Open Earmark from your home screen and sign in once more, and everything you've logged comes over automatically. If you'd like an extra safety copy first, open **Settings › Data › Export a backup** in Safari.
 
 **Android**
 
@@ -37,9 +31,11 @@ This matters on iPhone. Safari can clear saved data from websites you haven't op
 - **Check your medals** in Achievements. They level up from Bronze all the way to Celestial.
 - **Look at your charts.** On Home, tap Today, This week or This month.
 
-## 3. Back up your data
+## 3. Your data, on every device
 
-Your listening history is saved on your phone only. Nothing is uploaded. Every week or so, open **Settings › Data › Export a backup** and keep the file somewhere safe, like your Files app, Google Drive or email. If anything goes wrong, **Settings › Data › Restore from backup** brings it all back.
+Everything you log is saved on your device first, so Earmark works offline, then synced to your account. Sign in on another phone or computer with the same email and your books, listening and medals are all there. **Settings › Account** shows when it last synced, with a **Sync now** button.
+
+Backups are optional. **Settings › Data › Export a backup** saves a file you can keep as an extra copy, and **Settings › Data › Restore from backup** brings it back.
 
 ## 4. How long the test runs
 
@@ -55,6 +51,6 @@ You can also reach the form from the bottom of Earmark's Home screen, or from Se
 
 ## Privacy
 
-Your listening data stays on your device. It isn't shared or sold. The only thing collected is the email address you use to log in. The site counts visits with privacy-friendly analytics that use no cookies. Feedback forms are optional, and what you write there comes to me. A backup you export is your own file.
+Your listening data is saved to your account on Earmark's server, tied to your email, so it's available on all your devices. It's never shared or sold, and only you can see it. Deleting your account (**Settings › Account › Delete account**) erases it from the server. The site counts visits with privacy-friendly analytics that use no cookies. Feedback forms are optional, and what you write there comes to me. A backup you export is your own file.
 
 Thanks again for helping. Happy listening.
