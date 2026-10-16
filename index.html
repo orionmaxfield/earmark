@@ -761,6 +761,13 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
 .restdays i{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:var(--accent-dim);color:var(--accent)}
 .restdays i svg{width:12px;height:12px}
 .streakwrap .sub.rest{color:var(--accent)}
+
+/* iPhone: install first, and moving history from Safari */
+.ob .isteps{margin:20px 0 4px}
+.ob .isteps li{text-align:left}
+.ob [data-step="8"] .lead{margin-bottom:4px}
+.isteps .num{width:38px;height:38px;flex:0 0 auto;border-radius:50%;display:grid;place-items:center;background:var(--accent-dim);color:var(--accent);font-weight:800;font-size:var(--t-16)}
+.isteps .lact{margin-left:auto}
 </style>
 </head>
 <body>
@@ -768,6 +775,15 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
 <!-- ONBOARDING: shown once, on the first visit with no saved data -->
 <div class="ob navy" id="onboard" role="dialog" aria-label="Welcome to Earmark">
   <div class="inner">
+    <!-- iPhone Safari only: the home-screen app keeps its own data, so install before starting -->
+    <section class="ob-step center" data-step="8">
+      <img class="mark" src="icons/earmark-mark.png" alt="" width="88" height="88">
+      <h1>Install Earmark first</h1>
+      <p class="lead">Your history saves inside the home-screen app. On iPhone it keeps its own copy, separate from Safari, so set it up there before you start.</p>
+      <ol class="isteps" id="obInstallSteps"></ol>
+      <p class="note">You'll sign in once more inside the app, then you're all set.</p>
+      <button class="ghost" id="obSafari" type="button">Continue in Safari anyway</button>
+    </section>
     <section class="ob-step on center" data-step="0">
       <img class="mark" src="icons/earmark-mark.png" alt="" width="88" height="88">
       <h1>Welcome to Earmark</h1>
@@ -823,8 +839,8 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
   <div class="brandblock"><div class="brandrow"><img src="icons/earmark-mark.png" alt="" width="32" height="32"><div class="brand">Ear<span class="mk">mark</span></div></div><div class="tagline">Listen up<span class="dot">.</span></div></div>
   <div class="card install" id="installCard" hidden>
     <button class="nx" id="installX" type="button" aria-label="Not now">×</button>
-    <b>Add Earmark to your home screen</b>
-    <p>Keeps your history safe and opens like a real app.</p>
+    <b id="installTitle">Add Earmark to your home screen</b>
+    <p id="installWhy">Keeps your history safe and opens like a real app.</p>
     <div id="installBody"></div>
   </div>
 
@@ -2756,18 +2772,27 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
   addEventListener("appinstalled",()=>{ installPrompt=null; renderInstall(); });
   const IOS_SHARE=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 15V4M8 7.5 12 4l4 3.5"/><path d="M7 10H5.5v10h13V10H17"/></svg>`;
   const IOS_ADD=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8.5v7M8.5 12h7"/></svg>`;
+  const IOS_STEPS=`<li><span class="ib">${IOS_SHARE}</span><span>Tap <b>Share</b> in Safari's toolbar</span></li>
+      <li><span class="ib">${IOS_ADD}</span><span>Scroll down and tap <b>Add to Home Screen</b></span></li>
+      <li><span class="ib"><img src="icons/apple-touch-icon.png" alt=""></span><span>Open <b>Earmark</b> from your home screen from now on</span></li>`;
   function renderInstall(){
     const mode=isStandalone()?null:iosSafari?"ios":installPrompt?"android":null;
     const waiting=ST.installDismissed&&Date.now()-Date.parse(ST.installDismissed)<3*864e5;
     $("#installCard").hidden=!mode||waiting||!ST.onboarded;
-    if(mode==="ios") $("#installBody").innerHTML=`<ol class="isteps" aria-label="How to add Earmark to your home screen">
-      <li><span class="ib">${IOS_SHARE}</span><span>Tap <b>Share</b> in Safari's toolbar</span></li>
-      <li><span class="ib">${IOS_ADD}</span><span>Scroll down and tap <b>Add to Home Screen</b></span></li>
-      <li><span class="ib"><img src="icons/apple-touch-icon.png" alt=""></span><span>Open <b>Earmark</b> from your home screen from now on</span></li></ol>`;
+    // iPhone keeps the home-screen app's data apart from Safari's: anyone with history here needs to bring it over
+    const moving=mode==="ios"&&(ST.sessions.length>0||LIB.length>0||ST.past.length>0);
+    $("#installTitle").textContent=moving?"Move your history to the home-screen app":"Add Earmark to your home screen";
+    $("#installWhy").textContent=moving?"On iPhone, the home-screen app keeps its own copy of your data, separate from Safari. Bring yours over in three steps:":"Keeps your history safe and opens like a real app.";
+    if(moving) $("#installBody").innerHTML=`<ol class="isteps" aria-label="How to move your history to the home-screen app">
+      <li><span class="num">1</span><span><b>Export a backup</b> here</span><button class="lact go" type="button" id="installExport">Export</button></li>
+      <li><span class="num">2</span><span><b>Add Earmark to your home screen:</b> tap Share, then Add to Home Screen</span></li>
+      <li><span class="num">3</span><span><b>Open it</b>, sign in once more, and choose <b>Settings › Data › Restore from backup</b></span></li></ol>`;
+    else if(mode==="ios") $("#installBody").innerHTML=`<ol class="isteps" aria-label="How to add Earmark to your home screen">${IOS_STEPS}</ol>`;
     else if(mode==="android") $("#installBody").innerHTML=`<button class="cta" id="installBtn" type="button">Install app</button>`;
   }
   $("#installCard").addEventListener("click",async e=>{
     if(e.target.closest("#installX")){ ST.installDismissed=new Date().toISOString(); save(); renderInstall(); return; }
+    if(e.target.closest("#installExport")){ exportBackup(); return; }
     if(e.target.closest("#installBtn")&&installPrompt){ const p=installPrompt; installPrompt=null; p.prompt(); try{ await p.userChoice; }catch(err){} renderInstall(); }
   });
   /* beta pages: welcome and privacy */
@@ -2782,6 +2807,7 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
       <ul><li><b>iPhone:</b> open Earmark in Safari, tap the Share button, then <b>Add to Home Screen</b>.</li>
         <li><b>Android:</b> in Chrome, tap <b>Install app</b> on Home, or open the ⋮ menu and choose <b>Install app</b>.</li></ul>
       <p>From then on, open Earmark from its icon.</p>
+      <p><b>Already started in Safari on iPhone?</b> The home-screen app keeps its own copy of your data, separate from Safari. To move your history over: 1) in Safari, go to Settings › Data › Export a backup; 2) add Earmark to your home screen; 3) open it, sign in once more, and choose Settings › Data › Restore from backup.</p>
       <h3>What to try</h3>
       <ul><li>Log your listening every day with the + button. Your streak starts on day one.</li>
         <li>Add the books you've finished, and the ones you're listening to now.</li>
@@ -2823,6 +2849,10 @@ body.timing .toast{top:calc(env(safe-area-inset-top,0px) + 60px)}
   }
 
   renderBackupNudge(); renderInstall(); renderNow(); renderTimer();
+  if(!ST.onboarded&&iosSafari&&!isStandalone()){
+    $("#obInstallSteps").innerHTML=IOS_STEPS; obGo(8);
+    $("#obSafari").onclick=()=>obGo(0);
+  }
   // ask the browser to keep this site's data; a quiet no is fine
   try{ if(navigator.storage&&navigator.storage.persist) navigator.storage.persisted().then(p=>p||navigator.storage.persist()).catch(()=>{}); }catch(e){}
   try{ const flash=sessionStorage.getItem("earmark.flash"); if(flash){ sessionStorage.removeItem("earmark.flash"); setTimeout(()=>toast(flash),1700); } }catch(e){}

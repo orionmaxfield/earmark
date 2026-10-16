@@ -17,6 +17,12 @@ Open the link from your invite email and log in with your email address. Then ad
 
 This matters on iPhone. Safari can clear saved data from websites you haven't opened for about a week, but apps on your home screen are kept.
 
+**Do this before you start on iPhone.** The home-screen app keeps its own copy of your data, separate from Safari, and you'll sign in once more inside it. If you've already started in Safari, move your history over:
+
+1. In Safari, open **Settings › Data › Export a backup**.
+2. Add Earmark to your home screen (steps above).
+3. Open it from your home screen, sign in, and choose **Settings › Data › Restore from backup**.
+
 **Android**
 
 1. Open Earmark in **Chrome**.
