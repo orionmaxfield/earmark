@@ -1259,8 +1259,8 @@ html.locked .toast.show{transform:translate(-50%,0)}
   /* ---- beta settings: fill these in ---- */
   const FEEDBACK_URL="https://docs.google.com/forms/d/e/1FAIpQLSd0juSwRwq8oNXawAh7rJ79hCi84N0al5oX6bwg_KqX-gkqEw/viewform";   // "Send feedback"
   const FINAL_SURVEY_URL="https://docs.google.com/forms/d/e/1FAIpQLSfLebyfyRnXDIu-X4ERDeldCd_olUcJBbSbxtkAN0O6HENCbA/viewform";   // Settings > Help > Final thoughts survey
-  const TEST_END_DATE=null;          // TODO: the last day of the beta, e.g. "2026-12-15" (shown on the welcome page)
-  const FOUNDING_CUTOFF_DATE=null;   // TODO: e.g. "2027-01-01". Only people whose first use is before this date earn Founding Listener; while null, everyone does
+  const TEST_END_DATE="2026-11-13";          // the last day of the beta (shown on the welcome page)
+  const FOUNDING_CUTOFF_DATE="2026-12-31";   // Founding Listener goes to people whose first use is on or before this day
   const BACKUP_VERSION=1;   // the format of exported backups; restore reads this version and every one before it
   const SETTINGS_DEFAULT={email:"",dailyGoalMin:30,weeklyGoalH:5,showGoals:true,streakMinMin:5,weekStart:"mon",timeFormat:"hm",reduceMotion:"system",chartStyle:"bars",bookGoal:24,restDays:true};
   const fresh=()=>({v:1,onboarded:false,user:{name:""},total:0,todayH:0,weekH:0,monthH:0,lastMonthH:0,yearH:0,
@@ -2052,7 +2052,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
       years:(Date.now()-new Date(ST.createdAt))/(365.2425*864e5),notes:ST.notesWritten,shares:ST.shares,
       firstLog:ST.sessions.length>0||ST.legacy.days.length>0,importer:ST.past.length>0,undated,stocker:undated>=10,
       newYear:days.some(d=>d.endsWith("-01-01")),holiday:days.some(d=>d.endsWith("-12-25")),leap:days.some(d=>d.endsWith("-02-29")),
-      comeback:!!ST.comeback,founding:!FOUNDING_CUTOFF_DATE||ST.firstUseAt<FOUNDING_CUTOFF_DATE,wrap:!!ST.yearReviewViewed,
+      comeback:!!ST.comeback,founding:!FOUNDING_CUTOFF_DATE||dayKey(new Date(ST.firstUseAt))<=FOUNDING_CUTOFF_DATE,wrap:!!ST.yearReviewViewed,
       answer:ST.sessions.some(x=>x.m===42&&!x.part),onTime:ST.sessions.some(x=>x.m===60&&!x.part),bookends:Object.values(firstLast).some(f=>f.a&&f.z),nightDay:D.nightDay};
     MEDALS.forEach(m=>{ if(m.genres) S[m.v]=LIB.filter(b=>m.genres.includes(b.genre)).reduce((t,b)=>t+(b.h||0),0); });
     return S;
@@ -2920,6 +2920,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
       <p><b>Already started in Safari on iPhone?</b> The home-screen app keeps its own copy of your data, separate from Safari. To move your history over: 1) in Safari, go to Settings › Data › Export a backup; 2) add Earmark to your home screen; 3) open it, sign in once more, and choose Settings › Data › Restore from backup.</p>
       <h3>What to try</h3>
       <ul><li>Log your listening every day with the + button. Your streak starts on day one.</li>
+        <li>Rest days are on by default, so a missed day here and there won't break your streak. You can turn them off in Settings.</li>
         <li>Add the books you've finished, and the ones you're listening to now.</li>
         <li>Check your medals in Achievements, and tap Today, This week or This month to see your charts.</li></ul>
       <h3>Back up your data</h3>

@@ -32,6 +32,7 @@ This matters on iPhone. Safari can clear saved data from websites you haven't op
 ## 2. What to try
 
 - **Log your listening every day** with the + button. Your streak starts on day one.
+- **Rest days are on by default**, so a missed day here and there won't break your streak. You can turn them off in Settings.
 - **Add the books you've finished**, and the ones you're listening to now.
 - **Check your medals** in Achievements. They level up from Bronze all the way to Celestial.
 - **Look at your charts.** On Home, tap Today, This week or This month.
@@ -42,7 +43,7 @@ Your listening history is saved on your phone only. Nothing is uploaded. Every w
 
 ## 4. How long the test runs
 
-The beta runs until **[TEST END DATE]**. Near the end, please fill in the short final survey. It's in Settings › Help › Final thoughts survey.
+The beta runs until **November 13, 2026**. Near the end, please fill in the short final survey. It's in Settings › Help › Final thoughts survey.
 
 ## 5. Send feedback
 
