@@ -66,38 +66,44 @@ async function signingKey(origin, kid) {
   return keyCache.keys.get(kid) || null;
 }
 
-// the verified email, lowercased, or null
+/* ACCESS_AUD: one Audience tag, or several (production and preview each have their own Access
+   application). Separated by commas; spaces, line breaks and quotes around them are ignored. */
+export const audiences = v => String(v || "").split(/[,;\s]+/).map(a => a.replace(/^["']+|["']+$/g, "")).filter(Boolean);
+
+// { email } (verified, lowercased), or { reason } saying why the token was refused
 async function verifiedEmail(request, env) {
   const token = request.headers.get("Cf-Access-Jwt-Assertion");
-  if (!token) return null;
+  if (!token) return { reason: "no-token" };
   const [h, p, s] = token.split(".");
-  if (!h || !p || !s) return null;
+  if (!h || !p || !s) return { reason: "bad-token" };
   let header, claims;
-  try { header = part(h); claims = part(p); } catch { return null; }
-  if (header.alg !== "RS256" || !header.kid) return null;
+  try { header = part(h); claims = part(p); } catch { return { reason: "bad-token" }; }
+  if (header.alg !== "RS256" || !header.kid) return { reason: "bad-token" };
   const origin = teamOrigin(env.ACCESS_TEAM_DOMAIN);
   const key = await signingKey(origin, header.kid);
-  if (!key) return null;
+  if (!key) return { reason: "unknown-key" };
   let ok = false;
-  try { ok = await crypto.subtle.verify("RSASSA-PKCS1-v1_5", key, b64url(s), new TextEncoder().encode(`${h}.${p}`)); } catch { return null; }
-  if (!ok) return null;
+  try { ok = await crypto.subtle.verify("RSASSA-PKCS1-v1_5", key, b64url(s), new TextEncoder().encode(`${h}.${p}`)); } catch { ok = false; }
+  if (!ok) return { reason: "bad-signature" };
   const now = Date.now() / 1000;
-  const allowed = String(env.ACCESS_AUD).split(",").map(a => a.trim()).filter(Boolean);
+  const allowed = audiences(env.ACCESS_AUD);
   const aud = Array.isArray(claims.aud) ? claims.aud : [claims.aud];
-  if (!aud.some(a => allowed.includes(a))) return null;
-  if (typeof claims.exp !== "number" || claims.exp <= now) return null;
-  if (typeof claims.nbf === "number" && claims.nbf > now + 60) return null;
-  if (typeof claims.iss !== "string" || claims.iss.replace(/\/+$/, "") !== origin) return null;
+  if (!aud.some(a => allowed.includes(a))) return { reason: "wrong-audience" };
+  if (typeof claims.exp !== "number" || claims.exp <= now) return { reason: "expired" };
+  if (typeof claims.nbf === "number" && claims.nbf > now + 60) return { reason: "not-yet-valid" };
+  if (typeof claims.iss !== "string" || claims.iss.replace(/\/+$/, "") !== origin) return { reason: "wrong-issuer" };
   const email = typeof claims.email === "string" ? claims.email.trim().toLowerCase() : "";
-  return /^[^@\s]+@[^@\s]+$/.test(email) ? email : null;
+  return /^[^@\s]+@[^@\s]+$/.test(email) ? { email } : { reason: "no-email" };
 }
 
 export async function onRequest(context) {
   const { request, env } = context;
-  if (!env.DB || !env.ACCESS_AUD || !env.ACCESS_TEAM_DOMAIN) return json({ error: "Sync isn't set up on the server yet." }, 503);
-  let email = null;
-  try { email = await verifiedEmail(request, env); } catch (err) { return json({ error: "Couldn't check your sign-in. Try again." }, 503); }
-  if (!email) return json({ error: "Sign in again to sync." }, 401);
+  if (!env.DB || !audiences(env.ACCESS_AUD).length || !env.ACCESS_TEAM_DOMAIN) return json({ error: "Sync isn't set up on the server yet." }, 503);
+  let check;
+  try { check = await verifiedEmail(request, env); } catch (err) { return json({ error: "Couldn't check your sign-in. Try again." }, 503); }
+  // the reason (e.g. "wrong-audience") helps tell a sign-in that expired from a setting that's wrong; it reveals nothing about any account
+  if (!check.email) return json({ error: "Sign in again to sync.", reason: check.reason }, 401);
+  const email = check.email;
   context.data.email = email;
   try {
     await ensureSchema(env.DB);
