@@ -1830,7 +1830,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
   /* best matches first: drop summaries and study guides (unless asked for), anything without an author, and anything
      whose title doesn't share the main words of the search; rank by how closely the title and author match, then
      popularity (editions), then having a cover */
-  const JUNK=/\b(summar(y|ies)|workbooks?|analysis|study guides?|notes on|conversation starters)\b/i;
+  const JUNK=/\b(summar(y|ies)|workbooks?|analysis|study guides?|notes on|conversation starters|trivia|quiz(zes)?)\b/i;
   const plain=t=>String(t||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9 ]+/g," ").replace(/\s+/g," ").trim();
   const SMALL_SEARCH_WORDS=new Set(["the","a","an","of","and","in","on","to","for","by","with","at","from","or","is"]);
   // the title has the main words of the search (all, or all but one in a longer search, for a typo). The last word may be
@@ -1846,11 +1846,20 @@ html.locked .toast.show{transform:translate(-50%,0)}
   }
   function rankBooks(list,q){
     const nq=plain(q), words=nq.split(" ").filter(Boolean), askedJunk=JUNK.test(q);
-    return list.filter(r=>r.author&&(askedJunk||!JUNK.test(r.t))&&sharesWords(r,words)).map(r=>{
+    const main=words.filter(w=>!SMALL_SEARCH_WORDS.has(w)), all=(text,ws)=>ws.length>0&&ws.every(w=>text.split(" ").includes(w));
+    // a search for an author ("Andy Weir"): the author's own books first, best known (more editions, a cover) on top.
+    // Titles with the author's name in them are about the author (biographies, "…by Andy Weir" guides): dropped,
+    // or, when the author wrote it (a box set), put after their books.
+    const authorSearch=list.some(r=>all(plain(r.author),main)&&!all(plain(r.t),main));
+    return list.filter(r=>r.author&&(askedJunk||!JUNK.test(r.t))&&sharesWords(r,words)&&!(authorSearch&&all(plain(r.t),main)&&!all(plain(r.author),main))).map(r=>{
       const t=plain(r.t), a=plain(r.author), tw=t.split(" "), aw=a.split(" ");
-      let score=t===nq?100:t.startsWith(nq)?60:nq.startsWith(t+" ")?50:0;   // "dune frank herbert" starts with the title
-      words.forEach(w=>{ score+=tw.includes(w)?10:aw.includes(w)?8:(t.includes(w)||a.includes(w))?3:0; });
-      score-=Math.max(0,tw.length-words.length)*1.5;                           // tighter titles first
+      let score;
+      if(authorSearch&&all(a,main)) score=60+Math.log2(1+(r.editions||0))*6+(r.cover?6:0)-(all(t,main)?40:0);
+      else {
+        score=t===nq?100:t.startsWith(nq)?60:nq.startsWith(t+" ")?50:0;   // "dune frank herbert" starts with the title
+        words.forEach(w=>{ score+=tw.includes(w)?10:aw.includes(w)?8:(t.includes(w)||a.includes(w))?3:0; });
+        score-=Math.max(0,tw.length-words.length)*1.5;                       // tighter titles first
+      }
       return {r,score};
     }).sort((x,y)=>y.score-x.score||(y.r.editions||0)-(x.r.editions||0)||(!!y.r.cover-!!x.r.cover)).slice(0,10).map(x=>x.r);
   }
