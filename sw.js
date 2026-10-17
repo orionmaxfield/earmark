@@ -8,7 +8,7 @@
      cached app when offline or on a very slow connection.
    - App files, icons and fonts: from the cache, refreshed in the background.
    - Book covers: the shelf's covers are kept on the device, so it works offline.
-   - Book search (Open Library, Google Books): always the network; the app says so when offline.
+   - Book search (Open Library, Google Books) and sync (/api/): always the network; the app says so when offline.
    A new version waits until the page's "Update available — tap to refresh" is tapped. */
 const SHELL = "earmark-shell-v1", RUNTIME = "earmark-runtime-v1", COVERS = "earmark-covers";
 const SCOPE = self.registration.scope;
@@ -17,7 +17,8 @@ const FONT_CSS = "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wgh
 const PRECACHE = ["./", "manifest.webmanifest", "icons/favicon-32.png", "icons/favicon-16.png", "icons/favicon.ico",
   "icons/apple-touch-icon.png", "icons/icon-192.png", "icons/icon-512.png", "icons/icon-512-maskable.png",
   "icons/earmark-mark.png", "icons/earmark-wordmark.png"].map(u => new URL(u, SCOPE).href);
-const APP_MARK = 'id="s-home"';   // only a page containing the app's home screen is ever cached as the app
+const APP_MARK = 'id="s-home"';
+const API = new URL("api/", SCOPE).pathname;   // only a page containing the app's home screen is ever cached as the app
 
 const isAccess = url => /(^|\.)cloudflareaccess\.com\b|\/cdn-cgi\/access\//.test(url);
 // keep a response only if it is a real answer from our own site: no redirects, no login page
@@ -67,6 +68,7 @@ self.addEventListener("fetch", e => {
   if (req.method !== "GET") return;
   const url = new URL(req.url);
   if (isAccess(url.href)) return;                                   // the login flow is never touched
+  if (url.origin === self.location.origin && url.pathname.startsWith(API)) return;   // sync always goes to the server, never a cache
   if (req.mode === "navigate") { e.respondWith(page(req)); return; }
   if (url.origin === self.location.origin) { e.respondWith(fromCache(req)); return; }
   if (/^fonts\.(googleapis|gstatic)\.com$/.test(url.hostname)) { e.respondWith(fromCache(req, RUNTIME)); return; }
