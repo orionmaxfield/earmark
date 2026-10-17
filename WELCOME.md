@@ -51,6 +51,8 @@ You can also reach the form from the bottom of Earmark's Home screen, or from Se
 
 ## Privacy
 
-Your listening data is saved to your account on Earmark's server, tied to your email, so it's available on all your devices. It's never shared or sold, and only you can see it. Deleting your account (**Settings › Account › Delete account**) erases it from the server. The site counts visits with privacy-friendly analytics that use no cookies. Feedback forms are optional, and what you write there comes to me. A backup you export is your own file.
+Your listening data is saved to your account on Earmark's server, tied to your email, so it's available on all your devices. That includes your display name, the books on your shelf, your listening sessions and any notes you add to them, past hours, settings and medals.
+
+It's stored on Earmark's server. The developer can access it to run the service. It's never shared or sold. Deleting your account (**Settings › Account › Delete account**) erases it from the server. The site counts visits with privacy-friendly analytics that use no cookies. Feedback forms are optional, and what you write there comes to me. A backup you export is your own file.
 
 Thanks again for helping. Happy listening.

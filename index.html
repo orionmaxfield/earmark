@@ -800,9 +800,9 @@ html.locked .toast.show{transform:translate(-50%,0)}
     <section class="ob-step center" data-step="8">
       <img class="mark" src="icons/earmark-mark.png" alt="" width="88" height="88">
       <h1>Install Earmark first</h1>
-      <p class="lead">Earmark works best from your home screen. It opens like a real app, and your history is saved to your account, so it's all there when you sign in.</p>
+      <p class="lead" id="obInstallLead">Earmark works best from your home screen. It opens like a real app and keeps your history safe.</p>
       <ol class="isteps" id="obInstallSteps"></ol>
-      <p class="note">You'll sign in once more inside the app. Everything you add syncs automatically, so there's nothing to move over.</p>
+      <p class="note" id="obInstallNote">You'll sign in once more inside the app.</p>
       <button class="ghost" id="obSafari" type="button">Continue in Safari anyway</button>
     </section>
     <section class="ob-step on center" data-step="0">
@@ -2906,7 +2906,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
     // history syncs to the account, so the home-screen app brings it along when they sign in
     const synced=mode==="ios"&&(ST.sessions.length>0||LIB.length>0||ST.past.length>0);
     $("#installTitle").textContent="Add Earmark to your home screen";
-    $("#installWhy").textContent=synced?"It opens like a real app. Sign in there and your history comes with you.":"Keeps your history safe and opens like a real app.";
+    $("#installWhy").textContent=synced&&syncConnected()?"It opens like a real app. Sign in there and your history comes with you.":"Keeps your history safe and opens like a real app.";
     if(mode==="ios") $("#installBody").innerHTML=`<ol class="isteps" aria-label="How to add Earmark to your home screen">${IOS_STEPS}</ol>`;
     else if(mode==="android") $("#installBody").innerHTML=`<button class="cta" id="installBtn" type="button">Install app</button>`;
   }
@@ -2926,20 +2926,23 @@ html.locked .toast.show{transform:translate(-50%,0)}
       <ul><li><b>iPhone:</b> open Earmark in Safari, tap the Share button, then <b>Add to Home Screen</b>.</li>
         <li><b>Android:</b> in Chrome, tap <b>Install app</b> on Home, or open the ⋮ menu and choose <b>Install app</b>.</li></ul>
       <p>From then on, open Earmark from its icon.</p>
-      <p><b>Already started in Safari on iPhone?</b> There's nothing to move. Your history is saved to your account, so when you open the home-screen app and sign in, everything is there. If you'd like an extra safety copy first, go to Settings › Data › Export a backup.</p>
+      ${syncConnected()?`<p><b>Already started in Safari on iPhone?</b> There's nothing to move. Your history is saved to your account, so when you open the home-screen app and sign in, everything is there. If you'd like an extra safety copy first, go to Settings › Data › Export a backup.</p>`:""}
       <h3>What to try</h3>
       <ul><li>Log your listening every day with the + button. Your streak starts on day one.</li>
         <li>Rest days are on by default, so a missed day here and there won't break your streak. You can turn them off in Settings.</li>
         <li>Add the books you've finished, and the ones you're listening to now.</li>
         <li>Check your medals in Achievements, and tap Today, This week or This month to see your charts.</li></ul>
-      <h3>Your data, on every device</h3>
-      <p>Your history is saved to your account and syncs to every phone or computer you sign in on with the same email. Backups are optional: Settings › Data › Export a backup saves a file you can keep as an extra copy.</p>
+      ${syncConnected()?`<h3>Your data, on every device</h3>
+      <p>Your history is saved to your account and syncs to every phone or computer you sign in on with the same email. Backups are optional: Settings › Data › Export a backup saves a file you can keep as an extra copy.</p>`:`<h3>Your data</h3>
+      <p>Your history is saved on this device, and it syncs to your account once you're connected (Settings › Account shows when). Settings › Data › Export a backup saves a file you can keep as an extra copy.</p>`}
       <h3>How long the test runs</h3>
       <p>${end?`The beta runs until <b>${end}</b>.`:"The beta runs for a few weeks. We'll email you the end date."} Near the end, please fill in the short final survey in Settings › Help.</p>
       <h3>Send feedback</h3>
       <p>Found a bug, or have an idea? <a href="${FEEDBACK_URL}" target="_blank" rel="noopener">Send feedback</a> any time. It's also at the bottom of Home and in Settings › Help.</p>`;
   }
-  const PRIVACY=`<p><b>Your listening data is saved to your account</b> on Earmark's server, tied to your email, so it's available on all your devices. It's never shared or sold, and only you can see it.</p>
+  const PRIVACY=`<p><b>Your listening data is saved to your account</b> on Earmark's server, tied to your email, so it's available on all your devices.</p>
+    <p>What's stored: your display name, the books on your shelf, your listening sessions and any notes you add to them, past hours, settings and medals.</p>
+    <p>It's stored on Earmark's server. The developer can access it to run the service. It's never shared or sold.</p>
     <p>Deleting your account (Settings › Account › Delete account) erases it from the server and from this device.</p>
     <p>Your email address is what you use to log in to the beta, and it's how your account is found.</p>
     <p>The site counts visits with privacy-friendly analytics that use no cookies and don't follow you around the web.</p>
@@ -3089,7 +3092,13 @@ html.locked .toast.show{transform:translate(-50%,0)}
     const d=new Date(SYNC.lastSync);
     return dayKey(d)===dayKey(new Date())?`Synced at ${d.toLocaleTimeString([],{hour:"numeric",minute:"2-digit"})}`:`Synced ${fmtDay(SYNC.lastSync)}`;
   }
+  // this device is connected to an account, so it's true to say history is saved there
+  function syncConnected(){ return SY.ready&&!!SYNC.email&&syncState!=="off"; }
   function renderSyncState(settingsOpen){
+    if(SY.ready){ const on=syncConnected();
+      $("#obInstallLead").textContent=on?"Earmark works best from your home screen. It opens like a real app, and your history is saved to your account, so it's all there when you sign in.":"Earmark works best from your home screen. It opens like a real app and keeps your history safe.";
+      $("#obInstallNote").textContent=on?"You'll sign in once more inside the app. Everything you add syncs automatically, so there's nothing to move over.":"You'll sign in once more inside the app.";
+      renderInstall(); }
     const pending=syncState==="offline"&&dirtyKeys().length>0;
     const warn=syncState==="auth"||syncState==="unavailable"||syncState==="error"||pending;
     const w=$("#syncWarn"); w.hidden=!warn; w.setAttribute("aria-label",syncState==="auth"?"Sign in again to sync":syncState==="unavailable"?"Sync isn't available right now":syncState==="error"?"Couldn't sync":"Offline — will sync when connected");
@@ -3097,6 +3106,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
     $("#setSyncState").textContent=syncLabel(); $("#setSignIn").hidden=syncState!=="auth";
     $("#setEmail").textContent=SYNC.email||(syncState==="off"?"This device only":"Not connected");
     $("#syncNote").textContent=syncState==="off"?"Syncing isn't available here, so your data is saved on this device only. Export a backup to keep a copy.":
+      !SYNC.email?"Not connected to an account yet, so for now your data is saved on this device only.":
       syncState==="unavailable"?"Sync isn't available right now — your data is safe on this device. It syncs again by itself once the account can be reached.":
       "Your books, listening and medals are saved to your account, so they're on every device you sign in on with this email.";
   }
