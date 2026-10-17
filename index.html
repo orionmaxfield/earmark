@@ -2862,8 +2862,9 @@ html.locked .toast.show{transform:translate(-50%,0)}
     const incoming=st.books||[], byId=new Map(LIB.map(b=>[b.id,b])), match=new Map(), taken=new Set();
     incoming.forEach(b=>{ const here=byId.get(b.id); if(here){ match.set(b,here); taken.add(here); } });
     const free=new Map(); LIB.forEach(b=>{ if(!taken.has(b)){ const k=key(b); if(!free.has(k)) free.set(k,[]); free.get(k).push(b); } });
-    incoming.forEach(b=>{ if(match.has(b)) return; const list=free.get(key(b))||[];   // a copy finished the same day pairs first
-      const i=Math.max(0,list.findIndex(x=>(x.finished||null)===(b.finished||null))), here=list.splice(i,1)[0]; if(here) match.set(b,here); });
+    // every copy finished the same day pairs first; what's left pairs in order
+    incoming.forEach(b=>{ if(match.has(b)) return; const list=free.get(key(b))||[], i=list.findIndex(x=>(x.finished||null)===(b.finished||null)); if(i>=0) match.set(b,list.splice(i,1)[0]); });
+    incoming.forEach(b=>{ if(match.has(b)) return; const here=(free.get(key(b))||[]).shift(); if(here) match.set(b,here); });
     const same={};
     incoming.forEach(b=>{
       const here=match.get(b);
@@ -3097,7 +3098,8 @@ html.locked .toast.show{transform:translate(-50%,0)}
     // the Access login page (a redirect, or a page that isn't ours) is never read as data
     if(res.status===401){ const j=await res.json().catch(()=>null); throw Object.assign(syncErr("auth"),{reason:j&&j.reason}); }
     if(res.type==="opaqueredirect"||res.status===403||(res.status>=300&&res.status<400)) throw syncErr("auth");
-    if(res.status===404||res.status===405||res.status===501) throw syncErr("off");   // no sync server here (a local copy, or Functions not deployed)
+    if(res.status===404||res.status===405||res.status===501) throw syncErr("off");
+    if(res.status===409) throw syncErr("gone");   // the account this device synced with was deleted moments ago   // no sync server here (a local copy, or Functions not deployed)
     const isJson=/application\/json/.test(res.headers.get("content-type")||""), json=isJson?await res.json().catch(()=>null):null;
     if(!res.ok) throw syncErr(res.status===503&&json&&/set up/.test(json.error||"")?"off":"error");
     if(!isJson) throw syncErr("auth");   // a sign-in page served in place of the app's answer
@@ -3196,7 +3198,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
     if(!/^https?:$/.test(location.protocol)){ setSyncState("off"); return false; }   // opened as a file: no server to sync with
     if(!navigator.onLine){ scan(); setSyncState("offline"); return false; }
     if(syncState!=="ok"&&syncState!=="idle") setSyncState("syncing");
-    let changed=false, msg=null, more=false;
+    let changed=false, msg=null, more=false, bigMsg=null;
     try{
       if(!SYNC.email) msg=await firstSync();
       else {
@@ -3218,8 +3220,8 @@ html.locked .toast.show{transform:translate(-50%,0)}
           const c=cur.get(k); if(JSON.stringify(c.data).length>MAX_RECORD){ e.tb=e.h; tooBig.push(c); return; }
           changes.push({kind,id,updated:e.u,deleted:false,data:c.data}); });
         if(tooBig.length){ saveSync(); const c=tooBig[0], name=c.kind==="book"?`“${c.data.t}”`:c.kind==="session"?"A listening session":"Some of your data";
-          toast(`${name}${tooBig.length>1?` and ${plural(tooBig.length-1,"other","others")}`:""} ${tooBig.length>1?"are":"is"} too large to sync, so ${tooBig.length>1?"they stay":"it stays"} on this device only`); }
-        const res=await api("POST","sync",{since:SYNC.cursor,changes});
+          bigMsg=`${name}${tooBig.length>1?` and ${plural(tooBig.length-1,"other","others")}`:""} ${tooBig.length>1?"are":"is"} too large to sync, so ${tooBig.length>1?"they stay":"it stays"} on this device only`; }
+        const res=await api("POST","sync",{since:SYNC.cursor,changes,account:SYNC.created||null});
         if(res.email!==SYNC.email){ await switchAccount(res.email); return false; }
         if(SYNC.created&&res.created!==SYNC.created){ await accountGone(); return false; }
         if(!SYNC.created&&res.created) SYNC.created=res.created;   // the account began with this device's first upload
@@ -3234,11 +3236,14 @@ html.locked .toast.show{transform:translate(-50%,0)}
       if(ST.settings.email!==SYNC.email){ ST.settings.email=SYNC.email; }
       try{ sessionStorage.removeItem(SIGNIN_KEY); }catch(e){}
       setSyncState("ok");
-    }catch(err){ setSyncState(err.kind==="auth"&&(SETUP_REASONS.has(err.reason)||triedSignIn())?"unavailable":err.kind||"error"); if(!["offline","auth","off"].includes(err.kind)) console.warn("sync",err); return false; }
+    }catch(err){
+      if(err.kind==="gone"){ setSyncState("idle"); await accountGone(); return false; }
+      setSyncState(err.kind==="auth"&&(SETUP_REASONS.has(err.reason)||triedSignIn())?"unavailable":err.kind||"error"); if(!["offline","auth","off"].includes(err.kind)) console.warn("sync",err); return false; }
     if(!ST.onboarded&&!msg&&accountHasData()){ msg=joinedAccount(Object.keys(SYNC.recs).some(k=>LISTS[k.slice(0,k.indexOf("|"))]&&!SYNC.recs[k].d)); changed=true; }
     if(changed||msg){ refreshAll(); renderInstall(); renderBackupNudge(); renderPending(); if(current==="s-settings") renderSettings(); }
     else save();
-    if(msg) toast(msg);
+    // the first-sync message, then (not replaced by it) the one about anything too large to sync
+    if(msg){ toast(msg); if(bigMsg) setTimeout(()=>toast(bigMsg),2600); } else if(bigMsg) toast(bigMsg);
     return changed;
   }
   /* signed in with a different email than this device last synced: its history belongs to the other account,
@@ -3247,7 +3252,8 @@ html.locked .toast.show{transform:translate(-50%,0)}
   const STASH="earmark.stash.";
   async function switchAccount(email){
     const old=SYNC.email, has=ST.books.length+ST.sessions.length+ST.past.length>0||dirtyKeys().length>0;
-    const clear=has&&await ask({title:"Signed in with another email",msg:`You're now signed in as ${email}. This device has the history of ${old}, which won't be added to this account. Keep it on this device, separate (it comes back when ${old} signs in here), or clear it?`,ok:"Clear it",cancel:"Keep it separate",danger:true});
+    const unsent=dirtyKeys().length;
+    const clear=has&&await ask({title:"Signed in with another email",msg:`You're now signed in as ${email}. This device has the history of ${old}, which won't be added to this account. Keep it on this device, separate (it comes back when ${old} signs in here), or clear it? Clearing it also discards ${unsent===1?"1 change that hasn't":unsent?plural(unsent,"change","changes")+" that haven't":"any changes that haven't"} synced yet.`,ok:"Clear it",cancel:"Keep it separate",danger:true});
     try{
       if(has&&!clear){ scan(); localStorage.setItem(STASH+old,JSON.stringify({state:ST,sync:SYNC})); }
       if(!restoreStash(email)){ localStorage.removeItem(KEY); localStorage.removeItem(SYNC_KEY); }

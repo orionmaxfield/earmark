@@ -12,7 +12,10 @@ import { json, touchUser } from "./_middleware.js";
    (so a device whose change lost learns what won), and `latest`, the number to send next time.
    Devices decide what's new by these numbers, never by their own clocks.
    The account row is created by the first request that sends changes; one that only reads leaves a
-   deleted account deleted (its reply has created: null, so the device knows). */
+   deleted account deleted (its reply has created: null, so the device knows). A device sends `account`,
+   the created date of the account it last synced with; if that account has since been deleted (or deleted
+   and started again), its changes are refused with 409 and nothing is written, so a deletion moments
+   earlier isn't undone by an upload that was already on its way. */
 
 const KINDS = new Set(["book", "session", "settings", "past-hours", "medal", "profile"]);
 const MAX_BATCH = 500, PAGE = 1000, MAX_RECORD = 64 * 1024;
@@ -54,6 +57,10 @@ export async function onRequestPost({ request, env, data }) {
   const sentKeys = JSON.stringify([...incoming.keys()]);
 
   if (incoming.size) {
+    const known = typeof body.account === "string" && body.account ? body.account : null;
+    const user = await db.prepare("SELECT created FROM users WHERE email = ?1").bind(email).first();
+    if (known && (!user || user.created !== known))
+      return json({ error: "This account was deleted.", reason: "account-gone", created: user ? user.created : null }, 409);
     await db.prepare(`INSERT INTO users (email, created, last_seen, seq) VALUES (?1, ?2, ?2, 0)
       ON CONFLICT (email) DO UPDATE SET last_seen = excluded.last_seen`).bind(email, new Date(now).toISOString()).run();
     const stored = new Map();
