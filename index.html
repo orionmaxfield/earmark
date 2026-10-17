@@ -3051,7 +3051,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
     // the Access login page (a redirect, or a page that isn't ours) is never read as data
     if(res.status===401){ const j=await res.json().catch(()=>null); throw Object.assign(syncErr("auth"),{reason:j&&j.reason}); }
     if(res.type==="opaqueredirect"||res.status===403||(res.status>=300&&res.status<400)) throw syncErr("auth");
-    if(res.status===404||res.status===405) throw syncErr("off");   // no sync server here (a local copy, or Functions not deployed)
+    if(res.status===404||res.status===405||res.status===501) throw syncErr("off");   // no sync server here (a local copy, or Functions not deployed)
     const isJson=/application\/json/.test(res.headers.get("content-type")||""), json=isJson?await res.json().catch(()=>null):null;
     if(!res.ok) throw syncErr(res.status===503&&json&&/set up/.test(json.error||"")?"off":"error");
     if(!isJson) throw syncErr("auth");   // a sign-in page served in place of the app's answer
@@ -3214,11 +3214,19 @@ html.locked .toast.show{transform:translate(-50%,0)}
 
   /* signing out, deleting the account and resetting all reach the server too */
   const syncOn=()=>!!SYNC.email;   // this device has synced with an account
+  /* the account's data is always deleted on the server when there is one, whether or not this device ever synced.
+     "account": deleted on the server; "device": there's no sync server here, so only this device had it; null: nothing deleted */
+  const serverHere=()=>/^https?:$/.test(location.protocol)&&syncState!=="off";
   async function deleteServerData(){
-    if(!syncOn()) return true;   // nothing on a server to delete
-    try{ await api("DELETE","account"); return true; }
-    catch(err){ await ask({title:"Couldn't delete your data",msg:err.kind==="auth"?"Sign in again, then try once more. Nothing was deleted.":"Check your connection and try again. Nothing was deleted.",single:true}); return false; }
+    if(!/^https?:$/.test(location.protocol)) return "device";
+    try{ await api("DELETE","account"); return "account"; }
+    catch(err){
+      if(err.kind==="off") return "device";
+      await ask({title:"Couldn't delete your account",msg:(err.kind==="auth"?"Your sign-in has expired. Sign in again, then try once more.":err.kind==="offline"?"You're offline. Try again when you're connected.":"The server couldn't be reached. Try again in a moment.")+" Nothing was deleted.",single:true});
+      return null;
+    }
   }
+  function deleted(msg){ try{ sessionStorage.setItem("earmark.flash",msg); }catch(e){} wipe(); }
   $("#setSignOut").onclick=async()=>{
     if(!syncOn()){ toast(syncState==="auth"?"You're already signed out. Sign in again to sync.":"Signing in isn't available here."); return; }
     if(!await ask({title:"Sign out?",msg:"Your history stays safe in your account. This device's copy is cleared, and you'll sign in again next time.",ok:"Sign out"})) return;
@@ -3228,14 +3236,14 @@ html.locked .toast.show{transform:translate(-50%,0)}
     location.href="/cdn-cgi/access/logout";
   };
   $("#setDelete").onclick=async()=>{
-    if(!await ask({title:"Delete your account?",msg:"This permanently deletes your profile, books, listening history and medals, from this device and from your Earmark account on every device you sign in on.",ok:"Continue",danger:true})) return;
+    if(!await ask({title:"Delete your account?",msg:serverHere()?"This permanently deletes your profile, books, listening history and medals, from this device and from your Earmark account on every device you sign in on.":"This permanently deletes your profile, books, listening history and medals from this device.",ok:"Continue",danger:true})) return;
     if(!await ask({title:"Delete everything?",msg:"There's no way to recover a deleted account. This can't be undone.",ok:"Delete account",danger:true})) return;
-    if(await deleteServerData()) wipe();
+    const where=await deleteServerData(); if(where) deleted(where==="account"?"Your account was deleted on every device":"Deleted from this device");
   };
   async function resetFlow(){
-    if(!await ask({title:"Reset all data?",msg:"This erases every book, session, note and medal, on this device and in your account on every device.",ok:"Continue",danger:true})) return;
+    if(!await ask({title:"Reset all data?",msg:serverHere()?"This erases every book, session, note and medal, on this device and in your account on every device.":"This erases every book, session, note and medal on this device.",ok:"Continue",danger:true})) return;
     if(!await ask({title:"Are you sure?",msg:"This can't be undone. Export your data first if you might want it back.",ok:"Reset everything",danger:true})) return;
-    if(await deleteServerData()) wipe();
+    const where=await deleteServerData(); if(where) deleted(where==="account"?"Everything was erased on every device":"Erased from this device");
   }
   $("#setReset").onclick=resetFlow;
 
