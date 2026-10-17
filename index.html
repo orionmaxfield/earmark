@@ -3138,6 +3138,11 @@ html.locked .toast.show{transform:translate(-50%,0)}
     $("#syncNote").textContent=syncState==="off"?"Syncing isn't available here, so your data is saved on this device only. Export a backup to keep a copy.":
       !SYNC.email?"Not connected to an account yet, so for now your data is saved on this device only.":
       syncState==="unavailable"?"Sync isn't available right now — your data is safe on this device. It syncs again by itself once the account can be reached.":
+      // only "saved to your account" when it is: signed in, and nothing waiting to be sent
+      syncState==="auth"?"Your data is safe on this device. It syncs to your account once you sign in again.":
+      dirtyKeys().length?(syncState==="offline"?"Your data is safe on this device. Your latest changes sync to your account once you're back online.":
+        syncState==="error"?"Your data is safe on this device. Your latest changes sync to your account as soon as the server can be reached.":
+        "Your data is safe on this device. Your latest changes are being synced to your account."):
       "Your books, listening and medals are saved to your account, so they're on every device you sign in on with this email.";
   }
   $("#syncWarn").onclick=()=>go("s-settings");
