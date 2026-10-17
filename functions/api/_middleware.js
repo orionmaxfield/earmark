@@ -11,6 +11,7 @@
      ACCESS_AUD          the Access application's Audience (AUD) tag; several, comma separated,
                          when previews have their own Access application
    Binding: DB          the D1 database. Its tables are created on the first request. */
+export const touchUser = (db, email) => db.prepare("UPDATE users SET last_seen = ?2 WHERE email = ?1").bind(email, new Date().toISOString());
 
 const SCHEMA = [
   `CREATE TABLE IF NOT EXISTS users (
@@ -107,9 +108,8 @@ export async function onRequest(context) {
   context.data.email = email;
   try {
     await ensureSchema(env.DB);
-    // the account row: created on the first request, last seen on every one
-    await env.DB.prepare(`INSERT INTO users (email, created, last_seen, seq) VALUES (?1, ?2, ?2, 0)
-      ON CONFLICT (email) DO UPDATE SET last_seen = excluded.last_seen`).bind(email, new Date().toISOString()).run();
+    // the account row is created when a device first sends data (in sync.js), never by a request that only reads,
+    // so a device that finds its account was deleted doesn't bring it back just by asking
     return await context.next();
   } catch (err) {
     console.error(err);

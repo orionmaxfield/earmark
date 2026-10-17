@@ -3150,7 +3150,9 @@ html.locked .toast.show{transform:translate(-50%,0)}
         // before anything is sent: is this still the account this device synced with? (nothing is sent in this request)
         const head=await api("POST","sync",{since:SYNC.cursor,changes:[]});
         if(head.email!==SYNC.email){ await switchAccount(head.email); return false; }
+        // the account was deleted (or deleted and started again) on another device: decided before anything is sent
         if(SYNC.created&&head.created!==SYNC.created){ await accountGone(); return false; }
+        if(!SYNC.created&&head.created) SYNC.created=head.created;
         const now=scan(), idx=indexes(); head.records.forEach(r=>{ changed=applyRow(r,now,idx)||changed; });
         SYNC.cursor=Math.max(SYNC.cursor,head.latest); more=head.more; saveSync();
       }
@@ -3163,6 +3165,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
         const res=await api("POST","sync",{since:SYNC.cursor,changes});
         if(res.email!==SYNC.email){ await switchAccount(res.email); return false; }
         if(SYNC.created&&res.created!==SYNC.created){ await accountGone(); return false; }
+        if(!SYNC.created&&res.created) SYNC.created=res.created;   // the account began with this device's first upload
         const now=scan(), idx=indexes();   // anything changed while the request was out is stamped first, so it isn't overwritten
         res.records.forEach(r=>{ changed=applyRow(r,now,idx)||changed; });
         SYNC.cursor=Math.max(SYNC.cursor,res.latest); more=res.more; saveSync();

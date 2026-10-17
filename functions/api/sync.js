@@ -1,4 +1,4 @@
-import { json } from "./_middleware.js";
+import { json, touchUser } from "./_middleware.js";
 
 /* POST /api/sync
    Body: { since: the last change number this device saw,
@@ -10,7 +10,9 @@ import { json } from "./_middleware.js";
    Every saved write gets the next change number for this account. The reply holds every record
    whose change number is above `since`, plus the stored version of each record that was sent
    (so a device whose change lost learns what won), and `latest`, the number to send next time.
-   Devices decide what's new by these numbers, never by their own clocks. */
+   Devices decide what's new by these numbers, never by their own clocks.
+   The account row is created by the first request that sends changes; one that only reads leaves a
+   deleted account deleted (its reply has created: null, so the device knows). */
 
 const KINDS = new Set(["book", "session", "settings", "past-hours", "medal", "profile"]);
 const MAX_BATCH = 500, PAGE = 1000, MAX_RECORD = 64 * 1024;
@@ -52,6 +54,8 @@ export async function onRequestPost({ request, env, data }) {
   const sentKeys = JSON.stringify([...incoming.keys()]);
 
   if (incoming.size) {
+    await db.prepare(`INSERT INTO users (email, created, last_seen, seq) VALUES (?1, ?2, ?2, 0)
+      ON CONFLICT (email) DO UPDATE SET last_seen = excluded.last_seen`).bind(email, new Date(now).toISOString()).run();
     const stored = new Map();
     const { results } = await db.prepare(`SELECT kind, id, data, updated, deleted FROM records
       WHERE email = ?1 AND kind || '|' || id IN (SELECT value FROM json_each(?2))`).bind(email, sentKeys).all();
@@ -86,7 +90,7 @@ export async function onRequestPost({ request, env, data }) {
           .bind(email, JSON.stringify(writes.map(w => [w.kind, w.id, w.text, w.updated, w.deleted])), writes.length),
       ]);
     }
-  }
+  } else await touchUser(db, email).run();
 
   // everything changed since `since`, oldest first, a page at a time
   const page = (await db.prepare(`SELECT kind, id, data, updated, deleted, change FROM records
