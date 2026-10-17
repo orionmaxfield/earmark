@@ -1816,13 +1816,26 @@ html.locked .toast.show{transform:translate(-50%,0)}
       return {...seriesOf(v.title||""),src:"googlebooks",key:it.id,author:(v.authors||[])[0]||null,year:v.publishedDate?+String(v.publishedDate).slice(0,4)||null:null,
         cover:img?img.replace(/^http:/,"https:").replace("&edge=curl",""):null,pages:v.pageCount||null,genre:genreOf(v.categories)}; }).filter(x=>x.t);
   }
-  /* best matches first: drop summaries and study guides (unless asked for) and anything without an author,
-     rank by how closely the title and author match, then popularity (editions), then having a cover */
+  /* best matches first: drop summaries and study guides (unless asked for), anything without an author, and anything
+     whose title doesn't share the main words of the search; rank by how closely the title and author match, then
+     popularity (editions), then having a cover */
   const JUNK=/\b(summar(y|ies)|workbooks?|analysis|study guides?|notes on|conversation starters)\b/i;
   const plain=t=>String(t||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9 ]+/g," ").replace(/\s+/g," ").trim();
+  const SMALL_SEARCH_WORDS=new Set(["the","a","an","of","and","in","on","to","for","by","with","at","from","or","is"]);
+  // the title has the main words of the search (all, or all but one in a longer search, for a typo). The last word may be
+  // half typed. Words that are the author's name count too, so "Andy Weir" or "Dune Frank Herbert" still find the book.
+  function sharesWords(r,words){
+    const main=words.filter(w=>!SMALL_SEARCH_WORDS.has(w)&&(w.length>1||/\d/.test(w)));
+    if(!main.length) return true;
+    const tw=plain(r.t).split(" "), aw=plain(r.author).split(" "), last=main[main.length-1];
+    const has=(ws,w)=>ws.includes(w)||(w===last&&w.length>=2&&ws.some(x=>x.startsWith(w)));
+    const inTitle=main.filter(w=>has(tw,w)).length, byAuthor=main.filter(w=>!has(tw,w)&&has(aw,w)).length;
+    if(!inTitle&&byAuthor<main.length) return false;   // nothing from the search in the title, and it isn't a search for the author
+    return inTitle+byAuthor>=main.length-(main.length>=3?1:0);
+  }
   function rankBooks(list,q){
     const nq=plain(q), words=nq.split(" ").filter(Boolean), askedJunk=JUNK.test(q);
-    return list.filter(r=>r.author&&(askedJunk||!JUNK.test(r.t))).map(r=>{
+    return list.filter(r=>r.author&&(askedJunk||!JUNK.test(r.t))&&sharesWords(r,words)).map(r=>{
       const t=plain(r.t), a=plain(r.author), tw=t.split(" "), aw=a.split(" ");
       let score=t===nq?100:t.startsWith(nq)?60:nq.startsWith(t+" ")?50:0;   // "dune frank herbert" starts with the title
       words.forEach(w=>{ score+=tw.includes(w)?10:aw.includes(w)?8:(t.includes(w)||a.includes(w))?3:0; });
