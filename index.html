@@ -3049,7 +3049,8 @@ html.locked .toast.show{transform:translate(-50%,0)}
       credentials:"same-origin",cache:"no-store",redirect:"manual"}); }
     catch(e){ throw syncErr("offline"); }
     // the Access login page (a redirect, or a page that isn't ours) is never read as data
-    if(res.type==="opaqueredirect"||res.status===401||res.status===403||(res.status>=300&&res.status<400)) throw syncErr("auth");
+    if(res.status===401){ const j=await res.json().catch(()=>null); throw Object.assign(syncErr("auth"),{reason:j&&j.reason}); }
+    if(res.type==="opaqueredirect"||res.status===403||(res.status>=300&&res.status<400)) throw syncErr("auth");
     if(res.status===404||res.status===405) throw syncErr("off");   // no sync server here (a local copy, or Functions not deployed)
     const isJson=/application\/json/.test(res.headers.get("content-type")||""), json=isJson?await res.json().catch(()=>null):null;
     if(!res.ok) throw syncErr(res.status===503&&json&&/set up/.test(json.error||"")?"off":"error");
@@ -3066,6 +3067,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
     if(syncState==="offline") return "Offline — will sync when connected";
     if(syncState==="auth") return "Sign in again to sync";
     if(syncState==="off") return "Not available here";
+    if(syncState==="unavailable") return "Not available right now";
     if(syncState==="error") return "Couldn't sync. Trying again soon";
     if(!SYNC.lastSync) return "Not synced yet";
     const ago=(Date.now()-Date.parse(SYNC.lastSync))/6e4;
@@ -3076,16 +3078,23 @@ html.locked .toast.show{transform:translate(-50%,0)}
   }
   function renderSyncState(settingsOpen){
     const pending=syncState==="offline"&&dirtyKeys().length>0;
-    const warn=syncState==="auth"||syncState==="error"||pending;
-    const w=$("#syncWarn"); w.hidden=!warn; w.setAttribute("aria-label",syncState==="auth"?"Sign in again to sync":syncState==="error"?"Couldn't sync":"Offline — will sync when connected");
+    const warn=syncState==="auth"||syncState==="unavailable"||syncState==="error"||pending;
+    const w=$("#syncWarn"); w.hidden=!warn; w.setAttribute("aria-label",syncState==="auth"?"Sign in again to sync":syncState==="unavailable"?"Sync isn't available right now":syncState==="error"?"Couldn't sync":"Offline — will sync when connected");
     if(!settingsOpen&&current!=="s-settings") return;
     $("#setSyncState").textContent=syncLabel(); $("#setSignIn").hidden=syncState!=="auth";
     $("#setEmail").textContent=SYNC.email||(syncState==="off"?"This device only":"Not connected");
     $("#syncNote").textContent=syncState==="off"?"Syncing isn't available here, so your data is saved on this device only. Export a backup to keep a copy.":
+      syncState==="unavailable"?"Sync isn't available right now — your data is safe on this device. It syncs again by itself once the account can be reached.":
       "Your books, listening and medals are saved to your account, so they're on every device you sign in on with this email.";
   }
   $("#syncWarn").onclick=()=>go("s-settings");
-  $("#setSignIn").onclick=()=>location.reload();   // the page load goes through the sign-in
+  /* "Sign in again" reloads the page, which goes through the sign-in. If the server still refuses after that,
+     another reload won't help, so the message changes instead of offering the same button again */
+  const SIGNIN_KEY="earmark.signin";
+  $("#setSignIn").onclick=()=>{ try{ sessionStorage.setItem(SIGNIN_KEY,String(Date.now())); }catch(e){} location.reload(); };
+  const triedSignIn=()=>{ try{ return Date.now()-(+sessionStorage.getItem(SIGNIN_KEY)||0)<10*60*1000; }catch(e){ return false; } };
+  // refusals a sign-in can't fix: the server's settings don't accept this site's sign-in
+  const SETUP_REASONS=new Set(["wrong-audience","wrong-issuer","unknown-key","no-email"]);
   setInterval(()=>{ if(current==="s-settings") renderSyncState(); },30*1000);
 
   /* the first sync on this device: an empty account gets this device's data, an empty device gets the
@@ -3151,8 +3160,9 @@ html.locked .toast.show{transform:translate(-50%,0)}
       }
       SYNC.lastSync=new Date().toISOString(); saveSync();
       if(ST.settings.email!==SYNC.email){ ST.settings.email=SYNC.email; }
+      try{ sessionStorage.removeItem(SIGNIN_KEY); }catch(e){}
       setSyncState("ok");
-    }catch(err){ setSyncState(err.kind||"error"); if(err.kind!=="offline"&&err.kind!=="auth"&&err.kind!=="off") console.warn("sync",err); return false; }
+    }catch(err){ setSyncState(err.kind==="auth"&&(SETUP_REASONS.has(err.reason)||triedSignIn())?"unavailable":err.kind||"error"); if(!["offline","auth","off"].includes(err.kind)) console.warn("sync",err); return false; }
     if(changed||msg){ refreshAll(); renderInstall(); renderBackupNudge(); renderPending(); if(current==="s-settings") renderSettings(); }
     else save();
     if(msg) toast(msg);
