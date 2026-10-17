@@ -2832,15 +2832,24 @@ html.locked .toast.show{transform:translate(-50%,0)}
     if(out.legacy&&!Array.isArray(out.legacy.days)) delete out.legacy;
     return {st:out,dropped};
   }
-  function mergeBackup(st){
-    const norm=v=>(v||"").trim().toLowerCase(), key=b=>norm(b.t)+"|"+norm(b.author);
-    const byId=new Map(LIB.map(b=>[b.id,b])), byKey=new Map(LIB.map(b=>[key(b),b])), added={books:0,sessions:0,past:0,pastH:0};
-    // the same book (by id, or by title and author) is matched, so its sessions attach to the book already here
+  /* adopt (first sync with the account): a matched book takes the incoming version and id, keeping fields only the
+     book here had, and the sessions here move onto it. Otherwise (a backup Merge) the book here stays as it is. */
+  function mergeBackup(st,{adopt=false}={}){
+    const norm=v=>(v||"").trim().toLowerCase(), key=b=>norm(b.t)+"|"+norm(b.author), added={books:0,sessions:0,past:0,pastH:0};
+    // the same book is matched so its sessions attach to the book already here: by id first, then by title and author,
+    // one to one, so two copies of a book (a re-listen, two editions) stay two books
+    const incoming=st.books||[], byId=new Map(LIB.map(b=>[b.id,b])), match=new Map(), taken=new Set();
+    incoming.forEach(b=>{ const here=byId.get(b.id); if(here){ match.set(b,here); taken.add(here); } });
+    const free=new Map(); LIB.forEach(b=>{ if(!taken.has(b)){ const k=key(b); if(!free.has(k)) free.set(k,[]); free.get(k).push(b); } });
+    incoming.forEach(b=>{ if(match.has(b)) return; const list=free.get(key(b))||[];   // a copy finished the same day pairs first
+      const i=Math.max(0,list.findIndex(x=>(x.finished||null)===(b.finished||null))), here=list.splice(i,1)[0]; if(here) match.set(b,here); });
     const same={};
-    (st.books||[]).forEach(b=>{
-      const here=byId.get(b.id)||byKey.get(key(b));
-      if(here){ same[b.id]=here.id; return; }
-      LIB.push(b); byId.set(b.id,b); byKey.set(key(b),b); same[b.id]=b.id; added.books++;
+    incoming.forEach(b=>{
+      const here=match.get(b);
+      if(!here){ LIB.push(b); same[b.id]=b.id; added.books++; return; }
+      if(!adopt){ same[b.id]=here.id; return; }
+      if(here.id!==b.id) ST.sessions.forEach(x=>{ if(x.book===here.id) x.book=b.id; });
+      const merged=Object.assign({},here,b); Object.keys(here).forEach(k=>delete here[k]); Object.assign(here,merged); same[b.id]=b.id;
     });
     const sid=new Set(ST.sessions.map(x=>x.id)), sk=new Set(ST.sessions.map(x=>x.at+"|"+x.m));
     (st.sessions||[]).forEach(x=>{ if(sid.has(x.id)||sk.has(x.at+"|"+x.m)) return; ST.sessions.push(Object.assign({},x,{book:x.book?same[x.book]||null:null})); added.sessions++; });
@@ -3025,7 +3034,9 @@ html.locked .toast.show{transform:translate(-50%,0)}
     saveSync(); return cur;
   }
   const isDirty=e=>e.h!==e.s;
-  const dirtyKeys=()=>Object.keys(SYNC.recs).filter(k=>isDirty(SYNC.recs[k]));
+  // waiting to be sent; a record too large to sync waits until it changes (tb: the version that was too large)
+  const dirtyKeys=()=>Object.keys(SYNC.recs).filter(k=>{ const e=SYNC.recs[k]; return isDirty(e)&&e.tb!==e.h; });
+  const MAX_RECORD=60000;
   /* a record from the account, written into this device's data. Medals keep the higher level; the profile keeps the earliest dates and the larger counts */
   function writeLocal(kind,id,data,idx){
     if(LISTS[kind]){ const v=Object.assign({},data,{id}), o=idx[kind].get(id);
@@ -3143,13 +3154,8 @@ html.locked .toast.show{transform:translate(-50%,0)}
     } else {
       live.filter(r=>!isHist(r)).forEach(put);   // the account's name and settings; medals and the profile merge
       const pick=k=>live.filter(r=>r.kind===k).map(r=>Object.assign({},r.data,{id:r.id}));
-      // the same book on both (by id, or by title and author) keeps the account's version, which other devices may have edited,
-      // plus anything only this device had; this device's sessions move onto it. Then a backup Merge adds the rest without duplicates.
-      const norm=v=>(v||"").trim().toLowerCase(), bkey=b=>norm(b.t)+"|"+norm(b.author), mine=new Map(ST.books.map(b=>[bkey(b),b]));
-      pick("book").forEach(a=>{ const here=ST.books.find(b=>b.id===a.id)||mine.get(bkey(a)); if(!here) return;
-        if(here.id!==a.id) ST.sessions.forEach(x=>{ if(x.book===here.id) x.book=a.id; });
-        const merged=Object.assign({},here,a); Object.keys(here).forEach(k=>delete here[k]); Object.assign(here,merged); });
-      mergeBackup({books:pick("book"),sessions:pick("session"),past:pick("past-hours")});
+      // like a backup Merge, with no duplicates; the same book on both keeps the account's version, which other devices may have edited
+      mergeBackup({books:pick("book"),sessions:pick("session"),past:pick("past-hours")},{adopt:true});
       msg="Combined this device's history with your account.";
     }
     return msg;
@@ -3182,9 +3188,13 @@ html.locked .toast.show{transform:translate(-50%,0)}
       for(let round=0;round<50;round++){
         const cur=scan(), keys=ST.onboarded?dirtyKeys().slice(0,BATCH):[];   // a device still on the welcome screens only listens
         if(!keys.length&&!more) break;
-        const changes=keys.map(k=>{ const e=SYNC.recs[k], i=k.indexOf("|"), kind=k.slice(0,i), id=k.slice(i+1);
-          return e.d?{kind,id,updated:e.u,deleted:true}:{kind,id,updated:e.u,deleted:false,data:cur.get(k).data}; })
-          .filter(c=>c.deleted||JSON.stringify(c.data).length<60000);
+        const changes=[], tooBig=[];
+        keys.forEach(k=>{ const e=SYNC.recs[k], i=k.indexOf("|"), kind=k.slice(0,i), id=k.slice(i+1);
+          if(e.d){ changes.push({kind,id,updated:e.u,deleted:true}); return; }
+          const c=cur.get(k); if(JSON.stringify(c.data).length>MAX_RECORD){ e.tb=e.h; tooBig.push(c); return; }
+          changes.push({kind,id,updated:e.u,deleted:false,data:c.data}); });
+        if(tooBig.length){ saveSync(); const c=tooBig[0], name=c.kind==="book"?`“${c.data.t}”`:c.kind==="session"?"A listening session":"Some of your data";
+          toast(`${name}${tooBig.length>1?` and ${plural(tooBig.length-1,"other","others")}`:""} ${tooBig.length>1?"are":"is"} too large to sync, so ${tooBig.length>1?"they stay":"it stays"} on this device only`); }
         const res=await api("POST","sync",{since:SYNC.cursor,changes});
         if(res.email!==SYNC.email){ await switchAccount(res.email); return false; }
         if(SYNC.created&&res.created!==SYNC.created){ await accountGone(); return false; }
