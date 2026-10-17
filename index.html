@@ -1857,13 +1857,14 @@ html.locked .toast.show{transform:translate(-50%,0)}
   async function searchBooks(q,signal){
     const k=q.trim().toLowerCase().replace(/\s+/g," ");
     if(searchMemo.has(k)) return searchMemo.get(k);
-    let found=null, failed=false;
-    try{ found=await openLibrary(k,signal); }catch(e){ if(e.name==="AbortError") throw e; failed=true; }
-    if(!found||!found.length){
-      try{ const g=await googleBooks(k,signal); if(g.length||!found) found=g; if(g.length) failed=false; }
-      catch(e){ if(e.name==="AbortError") throw e; if(!found) throw e; failed=true; }   // no signal: show what there is, but let the next search try again
+    // Open Library's results are filtered first (summaries, no author, titles without the search's main words);
+    // when nothing is left, or it can't be reached, Google Books is asked
+    let found=[], failed=false;
+    try{ found=rankBooks(await openLibrary(k,signal),q); }catch(e){ if(e.name==="AbortError") throw e; failed=true; }
+    if(!found.length){
+      try{ found=rankBooks(await googleBooks(k,signal),q); failed=false; }
+      catch(e){ if(e.name==="AbortError") throw e; failed=true; }   // no signal: the next search tries again
     }
-    found=rankBooks(found||[],q);
     if(failed&&!found.length) throw new Error("search unavailable");   // say search isn't working, not "no matches"
     if(!failed) remember(k,found);
     return found;
