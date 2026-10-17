@@ -655,6 +655,9 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
 .updbar svg{width:18px;height:18px;color:var(--accent)}
 .abtns.col{grid-template-columns:1fr}
 .abtns.col button+button{border-left:0;border-top:1px solid var(--line-2)}
+/* an alert with a long action: stacked, the action on top and Cancel below */
+#alert .abtns.col{display:flex;flex-direction:column-reverse}
+#alert .abtns.col button+button{border-top:0;border-bottom:1px solid var(--line-2)}
 .abtns button[hidden]{display:none}
 .alert .abtns:has(button[hidden]){grid-template-columns:1fr}
 .rprev{margin:0 16px 16px;padding:12px 14px;border-radius:var(--r-sm);background:var(--well);text-align:left;font-size:var(--t-14);line-height:1.5}
@@ -2740,11 +2743,11 @@ html.locked .toast.show{transform:translate(-50%,0)}
       go("s-welcome"); };
   }
   /* alerts — an iPhone-style two-button dialog */
-  function ask({title,msg,ok="OK",cancel="Cancel",danger=false,single=false}){
+  function ask({title,msg,ok="OK",cancel="Cancel",danger=false,single=false,stack=false}){
     return new Promise(res=>{
       const a=$("#alert"), okB=$("#aOk"), noB=$("#aCancel");
       $("#aTitle").textContent=title; $("#aMsg").textContent=msg; okB.textContent=ok; okB.classList.toggle("danger",danger);
-      noB.textContent=cancel; noB.hidden=single;
+      noB.textContent=cancel; noB.hidden=single; okB.parentElement.classList.toggle("col",stack);
       a.classList.add("open"); noB.focus();
       const done=v=>{ a.classList.remove("open"); okB.onclick=noB.onclick=null; res(v); };
       okB.onclick=()=>done(true); noB.onclick=()=>done(false);
@@ -3248,15 +3251,18 @@ html.locked .toast.show{transform:translate(-50%,0)}
   /* signing out, deleting the account and resetting all reach the server too */
   const syncOn=()=>!!SYNC.email;   // this device has synced with an account
   /* the account's data is always deleted on the server when there is one, whether or not this device ever synced.
-     "account": deleted on the server; "device": there's no sync server here, so only this device had it; null: nothing deleted */
+     "account": deleted on the server; "device": there's no sync server here, so only this device had it;
+     "device-only": the account couldn't be reached and they chose to clear just this device; null: nothing deleted */
   const serverHere=()=>/^https?:$/.test(location.protocol)&&syncState!=="off";
   async function deleteServerData(){
     if(!/^https?:$/.test(location.protocol)) return "device";
     try{ await api("DELETE","account"); return "account"; }
     catch(err){
       if(err.kind==="off") return "device";
-      await ask({title:"Couldn't delete your account",msg:(err.kind==="auth"?"Your sign-in has expired. Sign in again, then try once more.":err.kind==="offline"?"You're offline. Try again when you're connected.":"The server couldn't be reached. Try again in a moment.")+" Nothing was deleted.",single:true});
-      return null;
+      // the account can't be reached: this device can still be cleared, and the account is left as it is
+      const why=err.kind==="auth"?"Sync can't sign in right now":err.kind==="offline"?"You're offline":"The server can't be reached right now";
+      const only=await ask({title:"Couldn't reach your account",msg:`${why}, so your account can't be deleted from here. You can delete this device's data only. Anything saved in your account on the server isn't touched, and comes back to this device if it syncs again.`,ok:"Delete from this device only",danger:true,stack:true});
+      return only?"device-only":null;
     }
   }
   function deleted(msg){ try{ sessionStorage.setItem("earmark.flash",msg); }catch(e){} wipe(); }
@@ -3271,12 +3277,12 @@ html.locked .toast.show{transform:translate(-50%,0)}
   $("#setDelete").onclick=async()=>{
     if(!await ask({title:"Delete your account?",msg:serverHere()?"This permanently deletes your profile, books, listening history and medals, from this device and from your Earmark account on every device you sign in on.":"This permanently deletes your profile, books, listening history and medals from this device.",ok:"Continue",danger:true})) return;
     if(!await ask({title:"Delete everything?",msg:"There's no way to recover a deleted account. This can't be undone.",ok:"Delete account",danger:true})) return;
-    const where=await deleteServerData(); if(where) deleted(where==="account"?"Your account was deleted on every device":"Deleted from this device");
+    const where=await deleteServerData(); if(where) deleted(where==="account"?"Your account was deleted on every device":where==="device-only"?"Deleted from this device only. Your account on the server wasn't touched":"Deleted from this device");
   };
   async function resetFlow(){
     if(!await ask({title:"Reset all data?",msg:serverHere()?"This erases every book, session, note and medal, on this device and in your account on every device.":"This erases every book, session, note and medal on this device.",ok:"Continue",danger:true})) return;
     if(!await ask({title:"Are you sure?",msg:"This can't be undone. Export your data first if you might want it back.",ok:"Reset everything",danger:true})) return;
-    const where=await deleteServerData(); if(where) deleted(where==="account"?"Everything was erased on every device":"Erased from this device");
+    const where=await deleteServerData(); if(where) deleted(where==="account"?"Everything was erased on every device":where==="device-only"?"Erased from this device only. Your account on the server wasn't touched":"Erased from this device");
   }
   $("#setReset").onclick=resetFlow;
 
