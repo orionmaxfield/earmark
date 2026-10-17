@@ -1285,8 +1285,8 @@ html.locked .toast.show{transform:translate(-50%,0)}
     lastBackup:null,backupNudgeDismissed:null,installDismissed:null,
     settings:{...SETTINGS_DEFAULT}});
   function load(){ try{ const raw=localStorage.getItem(KEY); if(raw){ const o=JSON.parse(raw); return Object.assign(fresh(),o,{user:Object.assign({name:""},o.user||{}),keys:Object.assign({},fresh().keys,o.keys||{}),settings:Object.assign({},SETTINGS_DEFAULT,o.settings||{}),legacy:Object.assign({},fresh().legacy,o.legacy||{})}); } }catch(e){} return fresh(); }
-  function save(){ try{ localStorage.setItem(KEY,JSON.stringify(ST)); }catch(e){} if(SY.ready) syncSoon(); }
-  const ST=load(), SY={ready:false};   // SY: sync, set up near the end
+  function save(){ if(SY.leaving) return; try{ localStorage.setItem(KEY,JSON.stringify(ST)); }catch(e){} if(SY.ready) syncSoon(); }
+  const ST=load(), SY={ready:false,leaving:false};   // SY: sync, set up near the end. leaving: the saved data was just replaced or cleared and the page is reloading, so nothing is saved over it
   const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
   /* every book, session and past-hours entry has a permanent id, so it can sync; saved data from before gets one now */
   const goodId=id=>typeof id==="string"&&/^[A-Za-z0-9_.:-]{1,100}$/.test(id);
@@ -2737,7 +2737,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
       okB.onclick=()=>done(true); noB.onclick=()=>done(false);
     });
   }
-  const wipe=()=>{ try{ localStorage.removeItem(KEY); localStorage.removeItem("earmark.sync.v1"); }catch(e){} location.reload(); };
+  const wipe=()=>{ SY.leaving=true; try{ localStorage.removeItem(KEY); localStorage.removeItem("earmark.sync.v1"); }catch(e){} location.reload(); };
 
   /* settings: every change saves and updates the app straight away */
   function refreshAll(){ derive(); save(); applyMotion(); renderHero(); renderGoals(); renderNotes(); renderShelf(shelfMode); renderShelfAll(); recomputeMedals(true); renderInsights(); renderNow(); if(current==="s-stats") renderStats(false); }
@@ -2853,7 +2853,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
       if(!await ask({title:"Replace everything?",msg:SYNC.email?"Everything on this device and in your account is swapped for the backup, on every device. Anything you haven't backed up will be lost. Medal levels you've already earned are kept.":"Everything on this device is swapped for the backup. Anything you haven't backed up will be lost. Medal levels you've already earned are kept.",ok:"Replace",danger:true})) return;
       const next=Object.assign(fresh(),st,{onboarded:true,medals:mergeMedalStores(ST.medals,st.medals),createdAt:earliest(ST.createdAt,st.createdAt),firstUseAt:earliest(ST.firstUseAt,st.firstUseAt,st.createdAt),welcomeSeen:true,lastBackup:o.exportedAt||ST.lastBackup});
       try{ localStorage.setItem(KEY,JSON.stringify(next)); sessionStorage.setItem("earmark.flash","Restored from your backup"+skipped); }catch(err){ toast("Couldn't restore. There may not be enough space."); return; }
-      location.reload();
+      SY.leaving=true; location.reload();
     } else if(how==="merge"){
       const a=mergeBackup(st);
       if(!a.books&&!a.sessions&&!a.past){ save(); toast("Everything in that backup is already here"); return; }
@@ -2976,7 +2976,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
   const SYNC_KEY="earmark.sync.v1", API="api/", BATCH=500;
   const freshSync=()=>({email:null,created:null,cursor:0,recs:{},lastSync:null,offset:0});
   const SYNC=(()=>{ try{ const o=JSON.parse(localStorage.getItem(SYNC_KEY)); if(o&&o.recs) return Object.assign(freshSync(),o); }catch(e){} return freshSync(); })();
-  const saveSync=()=>{ try{ localStorage.setItem(SYNC_KEY,JSON.stringify(SYNC)); }catch(e){} };
+  const saveSync=()=>{ if(SY.leaving) return; try{ localStorage.setItem(SYNC_KEY,JSON.stringify(SYNC)); }catch(e){} };
   const syncClock=()=>Date.now()+(SYNC.offset||0);   // corrected by the server's clock at each sync
   const hash=s=>{ let a=0xdeadbeef,b=0x41c6ce57; for(let i=0;i<s.length;i++){ const c=s.charCodeAt(i); a=Math.imul(a^c,2654435761); b=Math.imul(b^c,1597334677); }
     a=Math.imul(a^(a>>>16),2246822507)^Math.imul(b^(b>>>13),3266489909); b=Math.imul(b^(b>>>16),2246822507)^Math.imul(a^(a>>>13),3266489909);
@@ -3100,8 +3100,11 @@ html.locked .toast.show{transform:translate(-50%,0)}
   /* the first sync on this device: an empty account gets this device's data, an empty device gets the
      account's, and when both have history they're combined record by record like a backup Merge */
   async function firstSync(){
-    const rows=[]; let since=0, res;
-    do{ res=await api("POST","sync",{since,changes:[]}); rows.push(...res.records); since=res.latest; }while(res.more&&rows.length<500000);
+    let res=await api("POST","sync",{since:0,changes:[]});
+    // this account's own history, kept aside here when someone else signed in, comes back as it was
+    if(!(ST.books.length+ST.sessions.length+ST.past.length)&&restoreStash(res.email)){ SY.leaving=true; location.reload(); return new Promise(()=>{}); }
+    const rows=[...res.records]; let since=res.latest;
+    while(res.more&&rows.length<500000){ res=await api("POST","sync",{since,changes:[]}); rows.push(...res.records); since=res.latest; }
     const live=rows.filter(r=>!r.deleted), isHist=r=>!!LISTS[r.kind];
     const accountHas=live.some(isHist), deviceHas=ST.books.length+ST.sessions.length+ST.past.length>0;
     Object.assign(SYNC,{email:res.email,created:res.created,cursor:since,recs:{}});
@@ -3140,20 +3143,29 @@ html.locked .toast.show{transform:translate(-50%,0)}
     if(!/^https?:$/.test(location.protocol)){ setSyncState("off"); return false; }   // opened as a file: no server to sync with
     if(!navigator.onLine){ scan(); setSyncState("offline"); return false; }
     if(syncState!=="ok"&&syncState!=="idle") setSyncState("syncing");
-    let changed=false, msg=null;
+    let changed=false, msg=null, more=false;
     try{
       if(!SYNC.email) msg=await firstSync();
+      else {
+        // before anything is sent: is this still the account this device synced with? (nothing is sent in this request)
+        const head=await api("POST","sync",{since:SYNC.cursor,changes:[]});
+        if(head.email!==SYNC.email){ await switchAccount(head.email); return false; }
+        if(SYNC.created&&head.created!==SYNC.created){ await accountGone(); return false; }
+        const now=scan(), idx=indexes(); head.records.forEach(r=>{ changed=applyRow(r,now,idx)||changed; });
+        SYNC.cursor=Math.max(SYNC.cursor,head.latest); more=head.more; saveSync();
+      }
       for(let round=0;round<50;round++){
         const cur=scan(), keys=ST.onboarded?dirtyKeys().slice(0,BATCH):[];   // a device still on the welcome screens only listens
+        if(!keys.length&&!more) break;
         const changes=keys.map(k=>{ const e=SYNC.recs[k], i=k.indexOf("|"), kind=k.slice(0,i), id=k.slice(i+1);
           return e.d?{kind,id,updated:e.u,deleted:true}:{kind,id,updated:e.u,deleted:false,data:cur.get(k).data}; })
           .filter(c=>c.deleted||JSON.stringify(c.data).length<60000);
         const res=await api("POST","sync",{since:SYNC.cursor,changes});
-        if(res.email!==SYNC.email){ Object.assign(SYNC,freshSync(),{offset:SYNC.offset}); msg=await firstSync(); changed=true; continue; }   // signed in as someone else
+        if(res.email!==SYNC.email){ await switchAccount(res.email); return false; }
         if(SYNC.created&&res.created!==SYNC.created){ await accountGone(); return false; }
         const now=scan(), idx=indexes();   // anything changed while the request was out is stamped first, so it isn't overwritten
         res.records.forEach(r=>{ changed=applyRow(r,now,idx)||changed; });
-        SYNC.cursor=Math.max(SYNC.cursor,res.latest); saveSync();
+        SYNC.cursor=Math.max(SYNC.cursor,res.latest); more=res.more; saveSync();
         // carry on while the account has more, or this device still has unsent changes (a record sent twice in a row waits for the next sync)
         const left=ST.onboarded?dirtyKeys():[], sent=new Set(keys);
         if(!res.more&&!left.some(k=>!sent.has(k))&&(round>0||!left.length)) break;
@@ -3167,6 +3179,27 @@ html.locked .toast.show{transform:translate(-50%,0)}
     else save();
     if(msg) toast(msg);
     return changed;
+  }
+  /* signed in with a different email than this device last synced: its history belongs to the other account,
+     so none of it goes to this one. They choose: keep it aside on this device (it comes back when that account
+     signs in here again) or clear it. Then this device starts on the new account. */
+  const STASH="earmark.stash.";
+  async function switchAccount(email){
+    const old=SYNC.email, has=ST.books.length+ST.sessions.length+ST.past.length>0||dirtyKeys().length>0;
+    const clear=has&&await ask({title:"Signed in with another email",msg:`You're now signed in as ${email}. This device has the history of ${old}, which won't be added to this account. Keep it on this device, separate (it comes back when ${old} signs in here), or clear it?`,ok:"Clear it",cancel:"Keep it separate",danger:true});
+    try{
+      if(has&&!clear){ scan(); localStorage.setItem(STASH+old,JSON.stringify({state:ST,sync:SYNC})); }
+      if(!restoreStash(email)){ localStorage.removeItem(KEY); localStorage.removeItem(SYNC_KEY); }
+      sessionStorage.setItem("earmark.flash",`Signed in as ${email}`);
+    }catch(e){ await ask({title:"Couldn't switch accounts",msg:"There isn't enough space on this device to keep both. Nothing was changed, and nothing was synced.",single:true}); save(); saveSync(); setSyncState("error"); return; }
+    SY.leaving=true; location.reload();
+  }
+  // this account's history, kept aside on this device when someone else signed in: put back
+  function restoreStash(email){
+    const raw=localStorage.getItem(STASH+email); if(!raw) return false;
+    const o=JSON.parse(raw); if(!o||!o.state||!o.sync) return false;
+    localStorage.setItem(KEY,JSON.stringify(o.state)); localStorage.setItem(SYNC_KEY,JSON.stringify(o.sync)); localStorage.removeItem(STASH+email);
+    return true;
   }
   // the account was deleted from another device: the person decides what happens to this one
   async function accountGone(){
@@ -3188,7 +3221,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
     if(!await ask({title:"Sign out?",msg:"Your history stays safe in your account. This device's copy is cleared, and you'll sign in again next time.",ok:"Sign out"})) return;
     await syncNow();
     if(dirtyKeys().length&&!await ask({title:"Some changes haven't synced",msg:"Changes made on this device since the last sync will be lost if you sign out now.",ok:"Sign out anyway",danger:true})) return;
-    try{ localStorage.removeItem(KEY); localStorage.removeItem(SYNC_KEY); }catch(e){}
+    SY.leaving=true; try{ localStorage.removeItem(KEY); localStorage.removeItem(SYNC_KEY); }catch(e){}
     location.href="/cdn-cgi/access/logout";
   };
   $("#setDelete").onclick=async()=>{
