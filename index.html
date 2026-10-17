@@ -773,6 +773,7 @@ body.timing .phone{padding-top:50px}
 .ob .isteps{margin:20px 0 4px}
 .ob .isteps li{text-align:left}
 .ob [data-step="8"] .lead{margin-bottom:4px}
+.obload{width:28px;height:28px;margin:4px auto 18px;border-radius:50%;border:3px solid var(--line-2);border-top-color:var(--accent);animation:spin 0.9s linear infinite}
 .isteps .num{width:38px;height:38px;flex:0 0 auto;border-radius:50%;display:grid;place-items:center;background:var(--accent-dim);color:var(--accent);font-weight:800;font-size:var(--t-16)}
 .isteps .lact{margin-left:auto}
 
@@ -807,6 +808,13 @@ html.locked .toast.show{transform:translate(-50%,0)}
       <ol class="isteps" id="obInstallSteps"></ol>
       <p class="note" id="obInstallNote">You'll sign in once more inside the app.</p>
       <button class="ghost" id="obSafari" type="button">Continue in Safari anyway</button>
+    </section>
+    <!-- a signed-in device starting fresh: the account's library is fetched first, so someone who already has one goes straight to Home -->
+    <section class="ob-step center" data-step="7" aria-live="polite">
+      <img class="mark" src="icons/earmark-mark.png" alt="" width="88" height="88">
+      <div class="obload" aria-hidden="true"></div>
+      <h1>Loading your library…</h1>
+      <p class="lead">Checking your account for books and listening from your other devices.</p>
     </section>
     <section class="ob-step on center" data-step="0">
       <img class="mark" src="icons/earmark-mark.png" alt="" width="88" height="88">
@@ -2721,7 +2729,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
 
   /* onboarding — first visit only (no saved data). Name → past hours → books → done. */
   const ob=$("#onboard");
-  function obGo(n){ $$(".ob-step").forEach(st=>st.classList.toggle("on",+st.dataset.step===n)); $$("#obDots i").forEach((d,i)=>d.classList.toggle("on",i===n)); ob.scrollTo({top:0}); if(n===3){ $("#obDoneTitle").textContent=`You're set, ${displayName()}.`; $("#obDoneLead").textContent=`Tap the + whenever you finish a session to log today's listening. Your streak starts with day one. ${nextMilestone()}`; } }
+  function obGo(n){ $$(".ob-step").forEach(st=>st.classList.toggle("on",+st.dataset.step===n)); $$("#obDots i").forEach((d,i)=>d.classList.toggle("on",i===n)); $("#obDots").style.visibility=n===7?"hidden":""; ob.scrollTo({top:0}); if(n===3){ $("#obDoneTitle").textContent=`You're set, ${displayName()}.`; $("#obDoneLead").textContent=`Tap the + whenever you finish a session to log today's listening. Your streak starts with day one. ${nextMilestone()}`; } }
   // "your first 25 hours earn Bronze", or the real next rank for someone who brought hours with them
   function nextMilestone(){
     const rl=BY.rank.levels, k=rl.filter(L=>ST.total>=L.t).length, nx=rl[k];
@@ -2985,10 +2993,8 @@ html.locked .toast.show{transform:translate(-50%,0)}
   }
 
   renderBackupNudge(); renderInstall(); renderNow(); renderTimer(); renderPending(); pruneCovers();
-  if(!ST.onboarded&&iosSafari&&!isStandalone()){
-    $("#obInstallSteps").innerHTML=IOS_STEPS; obGo(8);
-    $("#obSafari").onclick=()=>obGo(0);
-  }
+  const obFirst=!ST.onboarded&&iosSafari&&!isStandalone()?8:0;   // iPhone Safari starts with "Install Earmark first"
+  if(obFirst===8){ $("#obInstallSteps").innerHTML=IOS_STEPS; obGo(8); $("#obSafari").onclick=()=>obGo(0); }
   // ask the browser to keep this site's data; a quiet no is fine
   try{ if(navigator.storage&&navigator.storage.persist) navigator.storage.persisted().then(p=>p||navigator.storage.persist()).catch(()=>{}); }catch(e){}
   try{ const flash=sessionStorage.getItem("earmark.flash"); if(flash){ sessionStorage.removeItem("earmark.flash"); setTimeout(()=>toast(flash),1700); } }catch(e){}
@@ -3151,7 +3157,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
     let msg=null;
     if(!deviceHas){
       live.forEach(put);   // a new device: everything comes from the account
-      if(accountHas&&!ST.onboarded){ ST.onboarded=true; ST.welcomeSeen=true; ob.classList.remove("open"); go("s-home",{tab:true}); msg="Welcome back. Your history is here."; }
+      if(live.length&&!ST.onboarded) msg=joinedAccount(accountHas);
     } else if(!accountHas){
       live.filter(r=>r.kind==="medal").forEach(put);   // this device's history goes up; medals keep the higher level
     } else {
@@ -3214,6 +3220,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
       try{ sessionStorage.removeItem(SIGNIN_KEY); }catch(e){}
       setSyncState("ok");
     }catch(err){ setSyncState(err.kind==="auth"&&(SETUP_REASONS.has(err.reason)||triedSignIn())?"unavailable":err.kind||"error"); if(!["offline","auth","off"].includes(err.kind)) console.warn("sync",err); return false; }
+    if(!ST.onboarded&&!msg&&accountHasData()){ msg=joinedAccount(Object.keys(SYNC.recs).some(k=>LISTS[k.slice(0,k.indexOf("|"))]&&!SYNC.recs[k].d)); changed=true; }
     if(changed||msg){ refreshAll(); renderInstall(); renderBackupNudge(); renderPending(); if(current==="s-settings") renderSettings(); }
     else save();
     if(msg) toast(msg);
@@ -3240,6 +3247,13 @@ html.locked .toast.show{transform:translate(-50%,0)}
     localStorage.setItem(KEY,JSON.stringify(o.state)); localStorage.setItem(SYNC_KEY,JSON.stringify(o.sync)); localStorage.removeItem(STASH+email);
     return true;
   }
+  /* a device that hasn't been set up joins an account that already has data (its profile, settings, medals or history:
+     only a device that finished onboarding sends any), so the welcome steps are skipped and it goes straight to Home */
+  function joinedAccount(hasHistory){
+    ST.onboarded=true; ST.welcomeSeen=true; ob.classList.remove("open"); go("s-home",{tab:true});
+    return hasHistory?"Welcome back. Your history is here.":`Welcome back${ST.user.name?", "+ST.user.name.trim():""}.`;
+  }
+  const accountHasData=()=>Object.values(SYNC.recs).some(e=>!e.d&&e.s);
   // the account was deleted from another device: the person decides what happens to this one
   async function accountGone(){
     const clear=await ask({title:"Your account was deleted",msg:"Your Earmark account was deleted on another device. Clear this device too, or keep its history and sync it back to your account?",ok:"Clear this device",cancel:"Keep and sync",danger:true});
@@ -3296,7 +3310,13 @@ html.locked .toast.show{transform:translate(-50%,0)}
     else scan();   // leaving: changes are stamped now, and sent next time
   });
   addEventListener("pagehide",()=>scan());
-  renderSyncState(); syncNow();
+  renderSyncState();
+  if(!ST.onboarded&&/^https?:$/.test(location.protocol)&&navigator.onLine){
+    obGo(7);
+    const start=()=>{ if(ob.classList.contains("open")&&$('.ob-step[data-step="7"]').classList.contains("on")) obGo(obFirst); };
+    const slow=setTimeout(start,8000);
+    syncNow().finally(()=>{ clearTimeout(slow); start(); });
+  } else syncNow();
 
   /* offline: sw.js caches the app; a new version waits for a tap on "Update available" */
   if("serviceWorker" in navigator&&/^https?:$/.test(location.protocol)){
