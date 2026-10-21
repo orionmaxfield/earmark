@@ -294,6 +294,7 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
 /* the review screen: an import, checked before anything is saved */
 .rvsum b{display:block;font-size:var(--t-16)}
 .rvsum span{color:var(--ink-2);font-size:var(--t-14)}
+.rvsum .rvx{display:block;margin-top:6px;color:var(--ink-3);font-size:13px}
 .rvopt{display:flex;gap:12px;align-items:flex-start;margin-top:12px;cursor:pointer}
 .rvopt b{display:block;font-size:15px}
 .rvopt small{display:block;color:var(--ink-2);font-size:13px;line-height:1.45;margin-top:2px}
@@ -1117,8 +1118,14 @@ html.locked .toast.show{transform:translate(-50%,0)}
     <button class="srow" id="setAudible" type="button"><span class="sl">Complete history<small>Every day you listened and when you finished each book, from Amazon's data request. Takes a few days to arrive.</small></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <p class="sgnote">Amazon's data request: on Amazon, go to Account › Request Your Data, choose Audible, and confirm the email. When it arrives, choose the file here (it may be called File_000). Saved your library from the bookmark as a file instead? <button class="linkbtn" id="impLibFile" type="button">Choose that file</button>.</p>
+  <div class="sgh">From other apps</div>
+  <div class="sgroup">
+    <button class="srow" id="impOther" type="button"><span class="sl">Goodreads, StoryGraph or Libby<small>Your shelves and the dates you finished, from the file each app exports.</small></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button>
+  </div>
+  <p class="sgnote"><b>Goodreads:</b> on the website, My Books › Import and export › Export Library. <b>StoryGraph:</b> Manage Account › Manage Your Data › Export StoryGraph Library. <b>Libby:</b> Shelf › Timeline › Actions › Export Timeline, as a spreadsheet or data. Libby doesn't record finishing, so its books use the day you returned them.</p>
   <input type="file" id="audibleFile" multiple hidden>
   <input type="file" id="libraryFile" accept=".json,application/json" hidden>
+  <input type="file" id="otherFile" accept=".csv,.json,text/csv,application/json" hidden>
 </section>
 
 <!-- REVIEW: an import, checked before anything is saved -->
@@ -3259,22 +3266,24 @@ html.locked .toast.show{transform:translate(-50%,0)}
     items.forEach(it=>{ const here=onShelf(ix,it); it._here=here;
       it._lane=here?(isDone(it)&&!isDone(here)?"update":"have"):isDone(it)?(it.finished?"live":"backlog"):it.status; });
     const pastH=opts.swap?ST.past.filter(x=>x.src===opts.swap).reduce((t,x)=>t+(x.h||0),0):0;
-    REVIEW=Object.assign({sessions:[]},opts,{items,on:items.map(it=>it._lane!=="have"),open:{},pastH,swapOn:true});
+    REVIEW=Object.assign({sessions:[]},opts,{items,on:items.map(it=>it._lane!=="have"),open:{},pastH,swapOn:true,printOn:true});
     renderReview(); go("s-review");
   }
   function reviewRow(it,i,pick){
     const len=it.h>0?(it.hEst?`about ${hm(Math.round(it.h))}`:hm(it.h)):"", d=it.finished?`finished ${parseDay(it.finished).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"})}`:"";
-    const inner=`<span class="rvthumb">${it.cover?`<img src="${esc(it.cover)}" alt="" loading="lazy" onerror="this.remove()">`:""}</span><span class="rvmeta"><b>${esc(it.t)}</b><small>${esc([it.author,len,d].filter(Boolean).join(" · ")||"Unknown author")}</small></span>`;
+    const inner=`<span class="rvthumb">${it.cover?`<img src="${esc(it.cover)}" alt="" loading="lazy" onerror="this.remove()">`:""}</span><span class="rvmeta"><b>${esc(it.t)}</b><small>${esc([len,d,it.author].filter(Boolean).join(" · ")||"Unknown author")}</small></span>`;
     return pick?`<label class="rvrow${REVIEW.on[i]?"":" off"}"><input type="checkbox" data-i="${i}"${REVIEW.on[i]?" checked":""} aria-label="${esc(it.t)}">${inner}</label>`:`<div class="rvrow">${inner}</div>`;
   }
   function renderReview(){
     const R=REVIEW; if(!R) return;
     const by={}; R.items.forEach((it,i)=>(by[it._lane]=by[it._lane]||[]).push(i));
     const have=(by.have||[]).length, sH=R.sessions.reduce((t,x)=>t+x.m,0)/60, days=new Set(R.sessions.map(x=>x.d)).size;
-    let h=`<div class="card rvsum"><b>${esc(R.title)}</b><span>${plural(R.items.length,"book","books")} found${have?`, ${have.toLocaleString()} already in Earmark`:""}${days?`, and ${plural(days,"day","days")} of listening (${esc(hm(sH))})`:""}. Nothing is saved until you tap Add.</span></div>`;
+    let h=`<div class="card rvsum"><b>${esc(R.title)}</b><span>${plural(R.items.length,"book","books")} found${have?`, ${have.toLocaleString()} already in Earmark`:""}${days?`, and ${plural(days,"day","days")} of listening (${esc(hm(sH))})`:""}. Nothing is saved until you tap Add.</span>${R.extra?`<span class="rvx">${esc(R.extra)}</span>`:""}</div>`;
     if(R.pastH>0) h+=`<label class="card rvopt"><input type="checkbox" id="rvSwap"${R.swapOn?" checked":""}><span><b>Replace the ${esc(hm(R.pastH))} ${esc(R.swap)} total you added before</b><small>${esc(R.swapWhy||"These books stand in for it, so the same hours aren't counted twice.")}</small></span></label>`;
+    const nPrint=R.items.filter(it=>it.print&&it._lane!=="have").length;
+    if(nPrint) h+=`<label class="card rvopt"><input type="checkbox" id="rvPrint"${R.printOn?" checked":""}><span><b>Include ${plural(nPrint,"book that isn't an audiobook edition","books that aren't audiobook editions")}</b><small>${esc(R.from)} lists ${nPrint===1?"it":"them"} as print or ebook. Lengths come from the audiobook where there is one.</small></span></label>`;
     LANES.forEach(([lane,title,note])=>{
-      const ix=by[lane]; if(!ix) return;
+      const ix=by[lane]; if(!ix) return; note=(R.notes&&R.notes[lane])||note;
       const pick=lane!=="have", on=ix.filter(i=>R.on[i]).length, open=R.open[lane]??ix.length<=8;
       const hrs=lane==="have"||lane==="want"||lane==="listening"?0:ix.reduce((t,i)=>t+(R.items[i].h>0?R.items[i].h:0),0);
       const box=pick?`<input type="checkbox" class="rvall"${on===ix.length?" checked":""}${on&&on<ix.length?" data-mixed":""} aria-label="All of ${esc(title)}">`:"";
@@ -3294,6 +3303,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
   $("#rvBody").addEventListener("change",e=>{
     const R=REVIEW, x=e.target; if(!R) return;
     if(x.id==="rvSwap"){ R.swapOn=x.checked; return; }
+    if(x.id==="rvPrint"){ R.printOn=x.checked; R.items.forEach((it,i)=>{ if(it.print&&it._lane!=="have") R.on[i]=x.checked; }); renderReview(); return; }
     if(x.classList.contains("rvall")){ const lane=x.closest(".rvgroup").dataset.lane; R.items.forEach((it,i)=>{ if(it._lane===lane) R.on[i]=x.checked; }); renderReview(); return; }
     if(x.dataset.i==null) return;
     R.on[+x.dataset.i]=x.checked; x.closest(".rvrow").classList.toggle("off",!x.checked);
@@ -3305,7 +3315,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
   $("#rvCancel").onclick=()=>{ REVIEW=null; back(); };
   $("#rvAdd").onclick=async()=>{
     const R=REVIEW; if(!R) return;
-    const {add,upd}=reviewPicks(), strip=it=>{ const b=Object.assign({},it); delete b._lane; delete b._here; return b; };
+    const {add,upd}=reviewPicks(), strip=it=>{ const b=Object.assign({},it); delete b._lane; delete b._here; delete b.print; return b; };
     const checked=cleanBackup(backupState({books:add.map(strip),sessions:R.sessions,pastHours:[]}));
     if(!checked){ toast("Couldn't read that import"); return; }
     $("#rvAdd").disabled=true;
@@ -3353,6 +3363,121 @@ html.locked .toast.show{transform:translate(-50%,0)}
   $("#impLibFile").onclick=()=>$("#libraryFile").click();
   $("#libraryFile").onchange=e=>{ const f=e.target.files&&e.target.files[0]; e.target.value=""; if(f) libraryFile(f); };
   $("#impQuick").onclick=()=>{ openSheet(); $("#menu").style.display="none"; $("#f-quick").classList.add("show"); };
+
+  /* ---- Goodreads, StoryGraph and Libby: the file each app exports, read on this device ----
+     Read, currently reading and want to read shelves become finished, listening and want to listen. Finished books
+     keep the date read when there is one. Lengths come from Earmark's server by title and author (Audible's exact
+     runtime when it has the book, otherwise an estimate from the page count). Then the review screen. */
+  const cell=v=>String(v??"").trim().replace(/^="(.*)"$/,"$1").replace(/^=/,"").trim();   // Goodreads writes ISBNs as ="0439023483"
+  const isbnOf=v=>{ const x=cell(v).replace(/[^0-9Xx]/g,"").toUpperCase(); return x.length===13||x.length===10?x:null; };
+  const slashDay=v=>{ const m=/^(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})/.exec(cell(v)); if(!m) return null; const d=`${m[1]}-${m[2].padStart(2,"0")}-${m[3].padStart(2,"0")}`; return isDay(d)&&d<=dayKey(new Date())?d:null; };
+  const noon=d=>d?d+"T12:00:00Z":null;
+  function fromGoodreads(rows){
+    const lane={read:"done","currently-reading":"listening","to-read":"want"};
+    return rows.map(r=>{
+      const st=lane[cell(r["Exclusive Shelf"])], full=cell(r.Title); if(!st||!full) return null;
+      const ser=/\s*\(([^()]+?),?\s*#([\d.]+)\)\s*$/.exec(full), id=cell(r["Book Id"]), bind=cell(r.Binding);
+      const b={id:"gr-"+(id||hash(full+"|"+cell(r.Author))),t:ser?full.slice(0,ser.index).trim():full,author:cell(r.Author)||null,series:ser?ser[1].trim():null,num:ser?+ser[2]||null:null,
+        h:null,pages:parseInt(cell(r["Number of Pages"]),10)||null,isbn:isbnOf(r.ISBN13)||isbnOf(r.ISBN),added:noon(slashDay(r["Date Added"])),
+        finished:st==="done"?slashDay(r["Date Read"]):null,ph:true,genre:null,src:"goodreads",srcKey:id||null,print:!!bind&&!/audio|audible|mp3/i.test(bind)};
+      if(st!=="done") b.status=st;
+      return b;
+    }).filter(Boolean);
+  }
+  function fromStoryGraph(rows){
+    const lane={read:"done","currently-reading":"listening",paused:"listening","to-read":"want"};
+    return rows.map(r=>{
+      const st=lane[cell(r["Read Status"])], t=cell(r.Title); if(!st||!t) return null;
+      const author=cell(r.Authors)||null, fmt=cell(r.Format).toLowerCase();
+      // the last date read: its own column, or the latest of "2023/01/02-2023/01/20, 2024/02/01-2024/02/09"
+      const last=slashDay(r["Last Date Read"])||[...cell(r["Dates Read"]).matchAll(/\d{4}\/\d{1,2}\/\d{1,2}/g)].map(m=>slashDay(m[0])).filter(Boolean).sort().pop()||null;
+      const b={id:"sg-"+hash(t.toLowerCase()+"|"+(author||"").toLowerCase()),t,author,series:null,num:null,h:null,isbn:isbnOf(r["ISBN/UID"]),added:noon(slashDay(r["Date Added"])),
+        finished:st==="done"?last:null,ph:true,genre:null,src:"storygraph",srcKey:cell(r["ISBN/UID"])||null,print:!!fmt&&fmt!=="audio"};
+      if(st!=="done") b.status=st;
+      return b;
+    }).filter(Boolean);
+  }
+  /* Libby's timeline is a list of events (borrowed, returned, placed a hold…), not finished books. An audiobook
+     returned after its last borrow is taken as finished on the day it was returned (the review says so, and any
+     can be unticked); one borrowed in the last 30 days and not yet returned is Listening; a hold alone is Want to
+     listen. Ebooks are left out. */
+  function fromLibby(list){
+    const val=v=>v&&typeof v==="object"&&!Array.isArray(v)?(v.text??v.name??v.value??""):v;
+    const groups=new Map(), now=Date.now();
+    list.forEach(x=>{
+      if(!x||typeof x!=="object") return;
+      const o={}; Object.entries(x).forEach(([k,v])=>{ o[k.toLowerCase()]=val(v); });
+      const t=cell(o.title), fmt=cell(o.format).toLowerCase(); if(!t||(fmt&&!/audio/.test(fmt))) return;
+      const ts=o.timestamp, at=typeof ts==="number"?ts:Date.parse(String(ts||"").replace(/\s+at\s+/i," ")); if(!isFinite(at)) return;
+      const author=cell(o.author)||null, isbn=isbnOf(o.isbn), k=isbn||titleKey(t)+"|"+surname(author);
+      const g=groups.get(k)||{t,author,isbn,borrow:0,ret:0,hold:0}; groups.set(k,g);
+      const act=cell(o.activity).toLowerCase();
+      if(/borrow/.test(act)) g.borrow=Math.max(g.borrow,at); else if(/return/.test(act)) g.ret=Math.max(g.ret,at); else if(/hold/.test(act)) g.hold=Math.max(g.hold,at);
+    });
+    return [...groups].map(([k,g])=>{
+      let status=null, finished=null;
+      if(g.borrow){ if(g.ret>=g.borrow) finished=dayKey(new Date(g.ret)); else if(now-g.borrow<30*864e5) status="listening"; }
+      else if(g.hold) status="want"; else return null;
+      const b={id:"lb-"+hash(k),t:g.t,author:g.author,series:null,num:null,h:null,isbn:g.isbn,added:g.borrow||g.hold?new Date(g.borrow||g.hold).toISOString():null,finished,ph:true,genre:null,src:"libby",srcKey:g.isbn||null};
+      if(status) b.status=status;
+      return b;
+    }).filter(Boolean);
+  }
+  /* lengths by title and author from Earmark's server, 20 at a time, finished books first; it stops after a while
+     and the import goes ahead with what it has */
+  async function matchTitles(books,onProgress){
+    const out=new Map(); if(!canRemember()||!books.length) return out;
+    const stop=Date.now()+45000;
+    for(let i=0;i<books.length&&Date.now()<stop;i+=20){
+      const part=books.slice(i,i+20);
+      try{
+        const res=await fetch("api/books/match",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({items:part.map(b=>({t:b.t,author:b.author,isbn:b.isbn}))}),credentials:"same-origin",redirect:"manual"});
+        if(!res.ok) break;
+        ((await res.json()).books||[]).forEach((c,k)=>{ if(c&&part[k]) out.set(part[k],c); });
+      }catch(e){ break; }
+      if(onProgress) onProgress(Math.min(books.length,i+20),books.length);
+    }
+    return out;
+  }
+  function withMatch(b,c){
+    const x=Object.assign({},b);
+    if(c){
+      if(c.minutes>0){ x.h=Math.round(c.minutes/60*100)/100; x.hEst=false; } else if(c.pages&&!x.pages) x.pages=c.pages;
+      ["cover","narrator","asin","isbn"].forEach(k=>{ if(!x[k]&&c[k]) x[k]=c[k]; });
+      if(c.series&&!x.series){ x.series=c.series; x.num=c.num||null; }
+      if(!x.genre&&c.subjects) x.genre=genreOf(c.subjects)||null;
+    }
+    if(!(x.h>0)&&x.pages){ const e=estHours(x.pages); if(e){ x.h=e; x.hEst=true; } }
+    return x;
+  }
+  async function otherFile(f){
+    let text=""; try{ text=(await f.text()).replace(/^﻿/,""); }catch(e){}
+    let kind=null, items=null;
+    if(/^\s*[\[{]/.test(text)){
+      let o=null; try{ o=JSON.parse(text); }catch(e){}
+      if(o&&o.type==="earmark-audible-library"){ whenSetUp(()=>reviewAudibleLibrary(o)); return; }
+      const tl=Array.isArray(o)?o:o&&(o.timeline||o.Timeline);
+      if(Array.isArray(tl)){ kind="Libby"; items=fromLibby(tl); }
+    } else if(text){
+      const rows=csvObjects(text), head=rows.length?Object.keys(rows[0]):[];
+      if(head.includes("Exclusive Shelf")){ kind="Goodreads"; items=fromGoodreads(rows); }
+      else if(head.includes("Read Status")){ kind="StoryGraph"; items=fromStoryGraph(rows); }
+      else if(head.some(k=>/^activity$/i.test(k))&&head.some(k=>/^timestamp$/i.test(k))){ kind="Libby"; items=fromLibby(rows); }
+    }
+    if(!kind){ await ask({title:"Earmark can't read that file",msg:"Choose the library export from Goodreads or StoryGraph (a .csv file), or Libby's timeline export (a spreadsheet or data file).",single:true}); return; }
+    if(!items.length){ await ask({title:`No books in that ${kind} file`,msg:kind==="Libby"?"Only audiobooks you borrowed or placed on hold come in from Libby.":"Only books on your read, currently reading and want to read shelves come in.",single:true}); return; }
+    whenSetUp(async()=>{
+      const need=items.filter(b=>isDone(b)||b.status==="listening").sort((a,b)=>(isDone(b)?1:0)-(isDone(a)?1:0));
+      toast("Finding your books' lengths…");
+      const got=await matchTitles(need,(n,all)=>toast(`Finding your books' lengths… ${n} of ${all}`));
+      const list=items.map(b=>withMatch(b,got.get(b))), fin=list.filter(isDone), exact=fin.filter(b=>b.h>0&&!b.hEst).length, est=fin.filter(b=>b.hEst).length;
+      const extra=fin.length?`Lengths: ${exact.toLocaleString()} exact runtime${exact===1?"":"s"}${est?`, ${est.toLocaleString()} estimated from page counts`:""}${fin.length-exact-est?`, ${(fin.length-exact-est).toLocaleString()} not found (add them later on the book)`:""}.`:"";
+      await openReview({title:`From ${kind}`,from:kind,items:list,extra,swap:kind==="Libby"?"Libby":null,
+        notes:kind==="Libby"?{live:"Libby doesn't record finishing, so these use the day you returned each book. Untick any you didn't finish."}:null});
+    });
+  }
+  $("#impOther").onclick=()=>$("#otherFile").click();
+  $("#otherFile").onchange=e=>{ const f=e.target.files&&e.target.files[0]; e.target.value=""; if(f) otherFile(f); };
   function awaitAudibleLibrary(){
     try{ const u=new URL(location.href); u.searchParams.delete("import"); history.replaceState(history.state,"",u.pathname+u.search+u.hash); }catch(e){}
     const from=window.opener;

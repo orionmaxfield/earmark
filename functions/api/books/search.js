@@ -2,6 +2,7 @@ import { json } from "../_middleware.js";
 import { configure, isDown, audibleSearch, openLibrarySearch, googleSearch } from "./_sources.js";
 import { relevant, matchKey } from "./_match.js";
 import { saveBooks, findInLibrary } from "./_library.js";
+import { cached } from "./_cache.js";
 
 /* GET /api/books/search?q=…  Sources in order: Earmark's own book table, then Audible's catalog (exact runtimes),
    then Open Library, then Google Books (page counts, so the app estimates the length). When the table already has
@@ -10,17 +11,6 @@ import { saveBooks, findInLibrary } from "./_library.js";
    that's down or limiting us is skipped. Each source's answer to a search is kept for a few days, so the same
    search doesn't reach it again. */
 const CHAIN = [["audible", audibleSearch, 7], ["openlibrary", openLibrarySearch, 3], ["googlebooks", googleSearch, 3]];   // days a search's answer is kept
-
-async function cached(ctx, src, fn, q, days) {
-  const key = new Request(new URL(`/__cache/books/${src}?q=${encodeURIComponent(q)}`, ctx.request.url).href);
-  const cache = typeof caches !== "undefined" ? caches.default : null;
-  const hit = cache && await cache.match(key).catch(() => null);
-  if (hit) return hit.json();
-  const list = await fn(q);
-  if (cache) ctx.waitUntil(cache.put(key, new Response(JSON.stringify(list), {
-    headers: { "content-type": "application/json", "cache-control": `max-age=${(list.length ? days : 1) * 86400}` } })).catch(() => {}));
-  return list;
-}
 
 export async function onRequestGet(ctx) {
   configure(ctx.env);
