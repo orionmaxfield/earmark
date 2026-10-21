@@ -29,6 +29,7 @@ Open the link from your invite email and log in with your email address. That em
 - **Rest days are on by default**, so a missed day here and there won't break your streak. You can turn them off in Settings.
 - **Add the books you've finished**, and the ones you're listening to now.
 - **Check your medals** in Achievements. They level up from Bronze all the way to Celestial.
+- **Bring in your Audible history.** On Amazon, go to Your Account › Request Your Data and choose Audible. When the file arrives, open **Settings › Data › Import from Audible** and pick it. Your books and every day you listened are added to your account.
 - **Look at your charts.** On Home, tap Today, This week or This month.
 
 ## 3. Your data, on every device
