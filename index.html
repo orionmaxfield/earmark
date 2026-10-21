@@ -283,6 +283,12 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
 .sw:after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left var(--fast) var(--ease)}
 .sw.on{background:var(--accent)} .sw.on:after{left:21px}
 .note{font-size:var(--t-14);color:var(--ink-2);margin-top:12px;line-height:1.5}
+/* Quick start: the Audible app's total, step by step */
+.qs{border:1px solid var(--line);background:var(--surface);border-radius:var(--r-md);padding:14px 16px;margin-top:14px;text-align:left}
+.qs>b{font-size:var(--t-16)}
+.qsteps{margin:8px 0 4px;padding-left:20px;color:var(--ink-2);font-size:var(--t-14);line-height:1.5}
+.qsteps b{color:var(--ink)}
+.qsor{margin-top:18px}
 
 /* add books — free-type entry and running list */
 .addbtn{flex:0 0 auto;min-height:48px;border:0;border-radius:var(--r-sm);background:var(--grad);color:var(--accent-ink);font-size:var(--t-16);font-weight:700;padding:0 20px;cursor:pointer;box-shadow:var(--sh-1)}
@@ -833,6 +839,8 @@ html.locked .toast.show{transform:translate(-50%,0)}
       <div class="eyebrow">Step 1 of 3</div>
       <h2>Hours you've already listened</h2>
       <p class="lead">If you have hours from Audible, Libby, or anywhere else, add them so your rank starts where you are. No date is attached and they never count toward streaks.</p>
+      <div class="qs"><b>Quick start from Audible</b><ol class="qsteps"><li>Open the <b>Audible</b> app on your phone.</li><li>Tap <b>Profile</b>, then <b>Stats</b>.</li><li>Your listening time is at the top. If you can pick a period, choose <b>All time</b>.</li></ol><div class="field"><label><input id="obQsH" type="text" inputmode="numeric" autocomplete="off" placeholder="0" aria-label="Hours"><span>hours</span></label><label><input id="obQsM" type="number" inputmode="numeric" min="0" max="59" placeholder="0" aria-label="Minutes"><span>min</span></label></div><p class="note">Type it in as it's shown. If you import your Audible history later, Earmark offers to swap this total for it, so nothing counts twice.</p></div>
+      <div class="lbl qsor">Or hours from somewhere else</div>
       <div class="field"><select id="obSrc"><option>Audible</option><option>Libby</option><option>Libro.fm</option><option>Spotify</option><option>Other</option></select><label><input id="obPast" type="number" inputmode="decimal" min="0" placeholder="0" aria-label="Hours"><span>hours</span></label></div>
       <button class="cta" id="obNext1">Continue</button>
       <button class="ghost" id="obSkip1">Skip for now</button>
@@ -1124,6 +1132,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
       <div class="pend" id="pendMenu" hidden><div class="nt"><b class="pendText"></b><small>From your stopped timer</small></div><button class="lact go" type="button" data-pend="log">Log it</button><button class="lact" type="button" data-pend="discard">Discard</button></div>
       <button class="opt" data-form="f-live"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span><b>Log today's listening</b><small>Keeps your streak alive and counts toward daily achievements.</small></span></button>
       <button class="opt" data-form="f-book"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h12a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3z"/><path d="M4 17a3 3 0 0 1 3-3h12"/></svg></span><span><b>Finished a book</b><small>Puts it on your shelf. Add its hours, or skip them if they're already logged.</small></span></button>
+      <button class="opt" data-form="f-quick"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M13 3 5 13h6l-1 8 8-10h-6z"/></svg></span><span><b>Quick start from Audible</b><small>Your lifetime total from the Audible app, in one step.</small></span></button>
       <button class="opt" data-form="f-past"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 8v4l2 2"/></svg></span><span><b>Add hours from the past</b><small>Audible, Libby, Libro.fm… Counts toward your total and rank only.</small></span></button>
     </div>
     <div class="form" id="f-live"><h2 style="margin:0">Today's listening</h2><div class="timerbox" id="timerBox"></div><div class="field"><label><input type="number" inputmode="numeric" min="0" placeholder="0"><span>hours</span></label><label><input type="number" inputmode="numeric" min="0" max="59" placeholder="0"><span>min</span></label></div><div class="field" id="logBookRow" hidden><select id="logBook" aria-label="Book this time goes toward"></select></div><div class="field"><input id="noteIn" placeholder="Note, e.g. Scythe, chapters 18–20"></div><button class="cta" data-done="live" id="logBtn">Log time</button><button class="ghost" data-back>Back</button></div>
@@ -1138,6 +1147,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
       <div class="added" id="sheetAddedList" aria-live="polite"></div>
       <p class="note">Hours you enter count toward your total. Leave them blank if they're already logged.</p>
       <button class="cta" data-done="book">Done</button><button class="ghost" data-back>Back</button></div>
+    <div class="form" id="f-quick"><h2 style="margin:0">Quick start from Audible</h2><ol class="qsteps"><li>Open the <b>Audible</b> app on your phone.</li><li>Tap <b>Profile</b>, then <b>Stats</b>.</li><li>Your listening time is at the top. If you can pick a period, choose <b>All time</b>.</li></ol><div class="field"><label><input id="qsH" type="text" inputmode="numeric" autocomplete="off" placeholder="0" aria-label="Hours"><span>hours</span></label><label><input id="qsM" type="number" inputmode="numeric" min="0" max="59" placeholder="0" aria-label="Minutes"><span>min</span></label></div><p class="note">Added to your lifetime total and rank, never to streaks. If you import your Audible history later, Earmark offers to swap this total for it, so nothing counts twice.</p><button class="cta" data-done="quick" id="qsBtn">Add my Audible total</button><button class="ghost" data-back>Back</button></div>
     <div class="form" id="f-past"><h2 style="margin:0">Hours from the past</h2><div class="field"><select id="pastSrc"><option>Audible</option><option>Libby</option><option>Libro.fm</option><option>Spotify</option><option>Other</option></select><label><input id="pastH" type="number" inputmode="decimal" min="0" placeholder="0"><span>hours</span></label></div><p class="note">No date attached. Adds to your lifetime total and rank, never to streaks.</p><button class="cta" data-done="past" id="pastBtn">Add hours</button><button class="ghost" data-back>Back</button></div>
   </div>
 </div>
@@ -2440,6 +2450,8 @@ html.locked .toast.show{transform:translate(-50%,0)}
     derive(); save(); renderHero(); renderGoals(); renderNow(); renderNotes(); recomputeMedals(); renderInsights(); renderBackupNudge();
     return welcome;
   }
+  // "1,234 hrs 56 mins" from the Audible app, typed into hours and minutes
+  const quickHours=p=>{ const h=Math.max(0,parseFloat(String($("#"+p+"H").value).replace(/,/g,""))||0), m=Math.min(59,Math.max(0,parseFloat($("#"+p+"M").value)||0)); return Math.round((h+m/60)*100)/100; };
   function addPastHours(hours,src){ ST.past.push({id:uid(),src,h:hours,at:new Date().toISOString()}); derive(); save(); renderHero(); recomputeMedals(); renderInsights(); }
   $$("[data-done]").forEach(b=>b.onclick=()=>{
     const k=b.dataset.done;
@@ -2458,6 +2470,11 @@ html.locked .toast.show{transform:translate(-50%,0)}
         return;
       }
       showPendingEarned(); return;
+    }
+    if(k==="quick"){
+      const h=quickHours("qs"); if(h<=0){ toast("Enter your Audible listening time"); return; }
+      addPastHours(h,"Audible"); $("#qsH").value=$("#qsM").value="";
+      closeSheet(); go("s-home",{tab:true}); toast(`${hm(h)} from Audible added to your lifetime total`); showPendingEarned(); return;
     }
     if(k==="past"){
       const h=+$("#pastH").value||0; if(h<=0){ toast("Enter the hours to add"); return; }
@@ -2826,7 +2843,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
     ob.classList.add("open"); $("#obName").value=ST.user.name;
     $("#obNext0").onclick=()=>{ ST.user.name=$("#obName").value.trim(); save(); obGo(1); };
     $("#obName").addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); $("#obNext0").click(); } });
-    $("#obNext1").onclick=()=>{ const h=+$("#obPast").value||0; if(h>0) addPastHours(h,$("#obSrc").value); obGo(2); };
+    $("#obNext1").onclick=()=>{ const q=quickHours("obQs"); if(q>0) addPastHours(q,"Audible"); const h=+$("#obPast").value||0; if(h>0) addPastHours(h,$("#obSrc").value); obGo(2); };
     $("#obSkip1").onclick=()=>obGo(2);
     $("#obNext2").onclick=$("#obSkip2").onclick=()=>obGo(3);
     $("#obFinish").onclick=()=>{ ST.onboarded=true; ST.welcomeSeen=true; save(); ob.classList.remove("open"); go("s-home",{tab:true}); renderInstall();
