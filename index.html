@@ -3021,7 +3021,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
       const merged=Object.assign({},here,b); Object.keys(here).forEach(k=>delete here[k]); Object.assign(here,merged); same[b.id]=b.id;
     });
     const sid=new Set(ST.sessions.map(x=>x.id)), sk=new Set(ST.sessions.map(x=>x.at+"|"+x.m));
-    (st.sessions||[]).forEach(x=>{ if(sid.has(x.id)||sk.has(x.at+"|"+x.m)) return; ST.sessions.push(Object.assign({},x,{book:x.book?same[x.book]||null:null})); added.sessions++; });
+    (st.sessions||[]).forEach(x=>{ if(sid.has(x.id)||sk.has(x.at+"|"+x.m)) return; ST.sessions.push(Object.assign({},x,{book:x.book?same[x.book]||(byId.has(x.book)?x.book:null):null})); added.sessions++; });   // or a book already here
     const pk=new Set(ST.past.map(x=>x.at+"|"+x.h));
     (st.past||[]).forEach(x=>{ if(pk.has(x.at+"|"+x.h)) return; ST.past.push(x); added.past++; added.pastH+=x.h; });
     if(st.legacy&&Array.isArray(st.legacy.days)) ST.legacy.days=[...new Set([...ST.legacy.days,...st.legacy.days])];
@@ -3208,14 +3208,10 @@ html.locked .toast.show{transform:translate(-50%,0)}
       const cat=await lookupAsins(asins,(n,all)=>toast(`Matching your books with Audible… ${n} of ${all}`));
       result.backup.books=result.backup.books.map(b=>withCatalog(b,cat.get(b.srcKey)));
       result.found.matched=asins.filter(a=>cat.has(a)).length; }
-    $("#toast").classList.remove("show");
-    const f=result.found, yr=d=>d?d.slice(0,4):"", span=f.first?(yr(f.first)===yr(f.last)?` in ${yr(f.first)}`:` from ${yr(f.first)} to ${yr(f.last)}`):"";
-    const parts=[f.finished&&`${f.finished} finished`,f.listening&&`${f.listening} listening`,f.want&&`${f.want} to listen to`].filter(Boolean).join(", ");
-    if(!await ask({title:"Import from Audible?",msg:`Found ${plural(f.books,"book","books")}${parts?` (${parts})`:""} and ${Math.round(f.hours).toLocaleString()} hours of listening${span}. They're added to what's here; nothing is replaced${SYNC.email?", and they sync to your account":""}.`,ok:"Import"})) return;
-    const checked=cleanBackup(backupState(result.backup));
-    if(!checked){ toast("Couldn't read that export"); return; }
-    await rememberNow(checked.st.books.filter(b=>b.h>0||b.author),"import");
-    mergeAndReload(checked.st,{skipped:"",empty:"Everything in that Audible export is already here",prefix:"Imported from Audible"});
+    const f=result.found, yr=d=>d?d.slice(0,4):"", span=f.first?(yr(f.first)===yr(f.last)?`in ${yr(f.first)}`:`from ${yr(f.first)} to ${yr(f.last)}`):"";
+    whenSetUp(()=>openReview({title:"Complete history from Audible",from:"Audible",items:result.backup.books,sessions:result.backup.sessions,swap:"Audible",
+      swapWhy:"Your listening history covers every hour you listened, so the total you typed in isn't needed.",
+      extra:span?`Listening ${span}. Samples, previews and podcasts are left out.`:""}));
   };
 
   /* ---- the review screen: every import is shown here before anything is saved ----
@@ -3266,7 +3262,15 @@ html.locked .toast.show{transform:translate(-50%,0)}
     items.forEach(it=>{ const here=onShelf(ix,it); it._here=here;
       it._lane=here?(isDone(it)&&!isDone(here)?"update":"have"):isDone(it)?(it.finished?"live":"backlog"):it.status; });
     const pastH=opts.swap?ST.past.filter(x=>x.src===opts.swap).reduce((t,x)=>t+(x.h||0),0):0;
-    REVIEW=Object.assign({sessions:[]},opts,{items,on:items.map(it=>it._lane!=="have"),open:{},pastH,swapOn:true,printOn:true});
+    /* imported listening: a session on a book already on the shelf goes onto that book, so its length isn't counted
+       on top of its sessions; one already here (the same import before) is skipped; and a day already logged in
+       Earmark keeps what was logged there, since the import would count the same listening again */
+    const toShelf=new Map(items.filter(it=>it._here).map(it=>[it.id,it._here.id])), haveIds=new Set(ST.sessions.map(x=>x.id));
+    const logged=new Set(ST.sessions.filter(x=>!/^aud/.test(x.id)).map(x=>x.d)), incoming=(opts.sessions||[]).filter(x=>!haveIds.has(x.id));
+    const sessions=incoming.filter(x=>!logged.has(x.d)).map(x=>x.book&&toShelf.has(x.book)?Object.assign({},x,{book:toShelf.get(x.book)}):x);
+    const keptDays=new Set(incoming.filter(x=>logged.has(x.d)).map(x=>x.d)).size;
+    const extra=[opts.extra,keptDays?`${plural(keptDays,"day","days")} you already logged in Earmark keep${keptDays===1?"s":""} what you logged.`:""].filter(Boolean).join(" ");
+    REVIEW=Object.assign({},opts,{items,sessions,extra,on:items.map(it=>it._lane!=="have"),open:{},pastH,swapOn:true,printOn:true});
     renderReview(); go("s-review");
   }
   function reviewRow(it,i,pick){
@@ -3323,10 +3327,12 @@ html.locked .toast.show{transform:translate(-50%,0)}
     upd.forEach(it=>{ const b=it._here; delete b.status; if(!b.finished&&it.finished) b.finished=it.finished;
       if(!(b.h>0)&&it.h>0){ b.h=it.h; if(it.hEst) b.hEst=true; else delete b.hEst; }
       ["cover","asin","isbn","author","narrator"].forEach(k=>{ if(!b[k]&&it[k]) b[k]=it[k]; }); });
+    // a finished book here without a date gets the import's date
+    let dated=0; R.items.forEach(it=>{ const b=it._here; if(it._lane==="have"&&it.finished&&isDone(b)&&!b.finished){ b.finished=it.finished; dated++; } });
     let swapped=0;
     if(R.pastH>0&&R.swapOn){ swapped=R.pastH; for(let i=ST.past.length-1;i>=0;i--) if(ST.past[i].src===R.swap) ST.past.splice(i,1); }
     await rememberNow([...add,...upd].map(strip).filter(b=>b.h>0||b.author),"import");
-    const extra=[upd.length&&`${plural(upd.length,"book","books")} marked finished`,swapped&&`your ${hm(swapped)} ${R.swap} total replaced`].filter(Boolean).join("; ");
+    const extra=[upd.length&&`${plural(upd.length,"book","books")} marked finished`,dated&&`finish dates added to ${plural(dated,"book","books")}`,swapped&&`your ${hm(swapped)} ${R.swap} total replaced`].filter(Boolean).join("; ");
     REVIEW=null;
     mergeAndReload(checked.st,{skipped:extra?`; ${extra}`:"",empty:"Everything in that import is already here",prefix:`Imported from ${R.from}`,changed:extra?extra[0].toUpperCase()+extra.slice(1):""});
   };
