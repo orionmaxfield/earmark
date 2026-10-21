@@ -289,6 +289,34 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
 .qsteps{margin:8px 0 4px;padding-left:20px;color:var(--ink-2);font-size:var(--t-14);line-height:1.5}
 .qsteps b{color:var(--ink)}
 .qsor{margin-top:18px}
+.srow .sl small{display:block;margin-top:2px;color:var(--ink-3);font-size:13px;line-height:1.4}
+.sgnote .linkbtn{min-height:0;padding:0}
+/* the review screen: an import, checked before anything is saved */
+.rvsum b{display:block;font-size:var(--t-16)}
+.rvsum span{color:var(--ink-2);font-size:var(--t-14)}
+.rvopt{display:flex;gap:12px;align-items:flex-start;margin-top:12px;cursor:pointer}
+.rvopt b{display:block;font-size:15px}
+.rvopt small{display:block;color:var(--ink-2);font-size:13px;line-height:1.45;margin-top:2px}
+.rvgroup{margin-top:16px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);box-shadow:var(--sh-1);overflow:hidden}
+.rvhead{display:flex;align-items:center;gap:8px;padding:8px 8px 8px 16px;min-height:56px}
+.rvhead label{flex:1;display:flex;gap:12px;align-items:center;min-width:0;cursor:pointer}
+.rvhead b{display:block;font-size:var(--t-16)}
+.rvhead small{display:block;color:var(--ink-3);font-size:13px}
+.rvnote{margin:0;padding:0 16px 12px;color:var(--ink-2);font-size:var(--t-14);line-height:1.45}
+.rvlist{border-top:1px solid var(--line)}
+.rvlist[hidden]{display:none}
+.rvrow{display:flex;align-items:center;gap:12px;padding:8px 16px;border-bottom:1px solid var(--line);min-height:60px;cursor:pointer}
+.rvrow:last-child{border-bottom:0}
+.rvrow.off .rvmeta{opacity:.5}
+.rvthumb{flex:0 0 30px;width:30px;height:45px;border-radius:4px;background:var(--surface-2);overflow:hidden}
+.rvthumb img{display:block;width:100%;height:100%;object-fit:cover}
+.rvmeta{min-width:0;flex:1}
+.rvmeta b{display:block;font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rvmeta small{display:block;color:var(--ink-3);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#s-review input[type=checkbox]{flex:0 0 auto;width:22px;height:22px;margin:0;accent-color:var(--accent);cursor:pointer}
+.rvbar{position:sticky;bottom:calc(65px + env(safe-area-inset-bottom,0px));margin:0 calc(-1 * var(--gutter));padding:24px var(--gutter) 8px;background:linear-gradient(transparent,var(--bg) 24px)}
+.rvbar .cta{margin-top:0}
+.rvbar .cta:disabled{opacity:.45;cursor:default}
 
 /* add books — free-type entry and running list */
 .addbtn{flex:0 0 auto;min-height:48px;border:0;border-radius:var(--r-sm);background:var(--grad);color:var(--accent-ink);font-size:var(--t-16);font-weight:700;padding:0 20px;cursor:pointer;box-shadow:var(--sh-1)}
@@ -1030,14 +1058,13 @@ html.locked .toast.show{transform:translate(-50%,0)}
   <div class="sgh">Data</div>
   <div class="sgroup">
     <button class="srow" id="setImport" type="button"><span class="sl">Add hours from the past</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button>
-    <button class="srow" id="setAudible" type="button"><span class="sl">Import from Audible</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button>
+    <button class="srow" data-go="s-import" type="button"><span class="sl">Import books</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button>
     <button class="srow" id="setExport" type="button"><span class="sl">Export a backup</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button>
     <button class="srow" id="setRestore" type="button"><span class="sl">Restore from backup</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button>
     <div class="srow static"><span class="sl">Last backup</span><span class="sv" id="setLastBackup">Never</span></div>
     <button class="srow danger" id="setReset" type="button"><span class="sl">Reset all data</span></button>
   </div>
-  <p class="sgnote">Import from Audible reads the file Audible sends when you ask for your data (Amazon › Request Your Data › Audible), with your books and every day you listened. A backup is a file you keep. Restore it on any device to bring your books, listening and medals back.</p>
-  <input type="file" id="audibleFile" multiple hidden>
+  <p class="sgnote">Import books brings in your Audible library or history. You see everything before it's added. A backup is a file you keep. Restore it on any device to bring your books, listening and medals back.</p>
   <input type="file" id="restoreFile" accept=".json,application/json" hidden>
 
   <div class="sgh">Notifications</div>
@@ -1078,6 +1105,27 @@ html.locked .toast.show{transform:translate(-50%,0)}
 <section class="screen" id="s-help">
   <div class="hdr"><button class="backbtn" data-nav-back aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m15 5-7 7 7 7"/></svg>Back</button><div class="title">How it works</div></div>
   <div class="card prose" id="helpBody"></div>
+</section>
+
+<!-- IMPORT: every way to bring books and hours in -->
+<section class="screen" id="s-import">
+  <div class="hdr"><button class="backbtn" data-nav-back aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m15 5-7 7 7 7"/></svg>Back</button><div class="title">Import books</div></div>
+  <div class="sgh">From Audible</div>
+  <div class="sgroup">
+    <button class="srow" id="impQuick" type="button"><span class="sl">Quick start<small>Your lifetime total from the Audible app. Takes a minute.</small></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button>
+    <a class="srow" href="audible-import.html" target="_blank" rel="noopener"><span class="sl">Your Audible library<small>Every book, its length and whether you finished it, with a bookmark on a computer.</small></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></a>
+    <button class="srow" id="setAudible" type="button"><span class="sl">Complete history<small>Every day you listened and when you finished each book, from Amazon's data request. Takes a few days to arrive.</small></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button>
+  </div>
+  <p class="sgnote">Amazon's data request: on Amazon, go to Account › Request Your Data, choose Audible, and confirm the email. When it arrives, choose the file here (it may be called File_000). Saved your library from the bookmark as a file instead? <button class="linkbtn" id="impLibFile" type="button">Choose that file</button>.</p>
+  <input type="file" id="audibleFile" multiple hidden>
+  <input type="file" id="libraryFile" accept=".json,application/json" hidden>
+</section>
+
+<!-- REVIEW: an import, checked before anything is saved -->
+<section class="screen" id="s-review">
+  <div class="hdr"><button class="backbtn" data-nav-back aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m15 5-7 7 7 7"/></svg>Back</button><div class="title">Review import</div></div>
+  <div id="rvBody"></div>
+  <div class="rvbar"><button class="cta" id="rvAdd" type="button">Add</button><button class="ghost" id="rvCancel" type="button">Cancel</button></div>
 </section>
 
 <!-- STATS: listening history by day, week, month and year -->
@@ -2849,7 +2897,8 @@ html.locked .toast.show{transform:translate(-50%,0)}
     $("#obFinish").onclick=()=>{ ST.onboarded=true; ST.welcomeSeen=true; save(); ob.classList.remove("open"); go("s-home",{tab:true}); renderInstall();
       // the welcome page once; the Founding Listener medal follows when they leave it
       const fl=BY.fl; if(fl.lv&&!pendingEarned.some(e=>e.m===fl)) pendingEarned.unshift({m:fl,from:0,to:1});
-      go("s-welcome"); };
+      go("s-welcome");
+      if(pendingReview){ const f=pendingReview; pendingReview=null; f(); } };
   }
   /* alerts — an iPhone-style two-button dialog */
   function ask({title,msg,ok="OK",cancel="Cancel",danger=false,single=false,stack=false}){
@@ -2992,9 +3041,9 @@ html.locked .toast.show{transform:translate(-50%,0)}
     } else if(how==="merge") mergeAndReload(st,{skipped});
   };
   // a backup Merge (or an import): adds what isn't here, says what was added, and reloads to recalculate totals, streaks and medals
-  function mergeAndReload(st,{skipped="",empty="Everything in that backup is already here",prefix="Merged"}={}){
+  function mergeAndReload(st,{skipped="",empty="Everything in that backup is already here",prefix="Merged",changed=""}={}){
     const a=mergeBackup(st);
-    if(!a.books&&!a.sessions&&!a.past){ save(); toast(empty); return; }
+    if(!a.books&&!a.sessions&&!a.past){ save(); if(!changed){ toast(empty); return; } try{ sessionStorage.setItem("earmark.flash",changed); }catch(err){} location.reload(); return; }
     // "Added 120 past hours", or "Merged: 2 books, 14 sessions and 120 past hours added"
     const bits=[a.books&&plural(a.books,"book","books"),a.sessions&&plural(a.sessions,"session","sessions"),a.past&&`${fmtN(a.pastH).toLocaleString()} past hour${a.pastH===1?"":"s"}`].filter(Boolean);
     const msg=bits.length===1&&a.past?`Added ${bits[0]}`:`${prefix}: ${bits.length>1?bits.slice(0,-1).join(", ")+" and "+bits[bits.length-1]:bits[0]} added`;
@@ -3131,6 +3180,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
   $("#setAudible").onclick=()=>$("#audibleFile").click();
   $("#audibleFile").onchange=async e=>{
     const picked=[...(e.target.files||[])]; e.target.value=""; if(!picked.length) return;
+    if(picked.length===1&&/\.json$/i.test(picked[0].name)){ libraryFile(picked[0]); return; }
     toast("Reading your Audible data…"); await new Promise(r=>setTimeout(r,60));
     let files=[], result=null;
     try{
@@ -3160,6 +3210,163 @@ html.locked .toast.show{transform:translate(-50%,0)}
     await rememberNow(checked.st.books.filter(b=>b.h>0||b.author),"import");
     mergeAndReload(checked.st,{skipped:"",empty:"Everything in that Audible export is already here",prefix:"Imported from Audible"});
   };
+
+  /* ---- the review screen: every import is shown here before anything is saved ----
+     A book already in Earmark (the same import id, ASIN or ISBN, or the same title and author) is left as it is, so
+     nothing counts twice; one that's here unfinished, and finished in the import, can be marked finished. The rest
+     is sorted into lanes: finished with a date (counts on that day), finished without one (backlog: totals and book
+     medals, never streaks), listening, and want to listen. Any lane, or book, can be unticked. The shelf is synced
+     first, so books added on another device are matched too. */
+  const titleKey=t=>{ const s=String(t||"").toLowerCase().replace(/\s*\((un)?abridged\)/g,"").trim(), w=x=>x.replace(/[^\p{L}\p{N}]+/gu," ").trim();
+    return w(s.replace(/[:(\[].*$/,"").replace(/^(the|a|an)\s+/,""))||w(s); };
+  const surname=a=>{ const w=String(a||"").split(/,|&|;|\s+and\s+/i)[0].toLowerCase().replace(/[^\p{L}\p{N} ]+/gu,"").split(/\s+/).filter(Boolean); return w[w.length-1]||""; };
+  function shelfIndex(){
+    const ix={id:new Map(),asin:new Map(),isbn:new Map(),key:new Map(),title:new Map()}, first=(m,k,b)=>{ if(k&&!m.has(k)) m.set(k,b); };
+    LIB.forEach(b=>{
+      ix.id.set(b.id,b); first(ix.asin,b.asin||(/^[A-Z0-9]{10}$/.test(b.srcKey||"")?b.srcKey:null),b); first(ix.isbn,b.isbn,b);
+      const t=titleKey(b.t); if(!t) return;
+      first(ix.key,t+"|"+surname(b.author),b); if(!ix.title.has(t)) ix.title.set(t,[]); ix.title.get(t).push(b);
+    });
+    return ix;
+  }
+  function onShelf(ix,it){
+    if(ix.id.has(it.id)) return ix.id.get(it.id);
+    if(it.asin&&ix.asin.has(it.asin)) return ix.asin.get(it.asin);
+    if(it.isbn&&ix.isbn.has(it.isbn)) return ix.isbn.get(it.isbn);
+    const t=titleKey(it.t), s=surname(it.author); if(!t) return null;
+    if(s&&ix.key.has(t+"|"+s)) return ix.key.get(t+"|"+s);
+    return (ix.title.get(t)||[]).find(b=>!s||!surname(b.author))||null;   // no author on one side: the same title is the same book
+  }
+  const LANES=[
+    ["update","On your shelf, now finished","Marked finished, with the length and date from the import."],
+    ["live","Finished, with dates","Count toward your total, charts and medals on the day you finished."],
+    ["backlog","Finished, no date","Count toward your lifetime total and book medals, never toward streaks."],
+    ["listening","Listening now","Go to Listening. Their hours count once you finish them."],
+    ["want","Want to listen","Go to Want to listen."],
+    ["have","Already in Earmark","Left as they are, so nothing counts twice."]];
+  let REVIEW=null, pendingReview=null;
+  /* opts: title, from ("your Audible library"), items (books in the shelf's shape), sessions (dated listening, optional),
+     swap: the past-hours source these books stand in for ("Audible"), offered when there are such hours */
+  async function openReview(opts){
+    if(SY.ready&&syncState!=="off"){ toast("Checking what's already in your account…"); try{ await Promise.race([syncNow(),new Promise(r=>setTimeout(r,15000))]); }catch(e){} }
+    $("#toast").classList.remove("show");
+    const ix=shelfIndex(), seen=new Map(), items=[];
+    opts.items.forEach(it=>{   // the same book twice in one import: the finished copy is kept
+      const k=it.asin||it.isbn||titleKey(it.t)+"|"+surname(it.author), prev=seen.get(k);
+      if(prev){ if(isDone(it)&&!isDone(prev)){ items[items.indexOf(prev)]=it; seen.set(k,it); } return; }
+      seen.set(k,it); items.push(it);
+    });
+    items.forEach(it=>{ const here=onShelf(ix,it); it._here=here;
+      it._lane=here?(isDone(it)&&!isDone(here)?"update":"have"):isDone(it)?(it.finished?"live":"backlog"):it.status; });
+    const pastH=opts.swap?ST.past.filter(x=>x.src===opts.swap).reduce((t,x)=>t+(x.h||0),0):0;
+    REVIEW=Object.assign({sessions:[]},opts,{items,on:items.map(it=>it._lane!=="have"),open:{},pastH,swapOn:true});
+    renderReview(); go("s-review");
+  }
+  function reviewRow(it,i,pick){
+    const len=it.h>0?(it.hEst?`about ${hm(Math.round(it.h))}`:hm(it.h)):"", d=it.finished?`finished ${parseDay(it.finished).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"})}`:"";
+    const inner=`<span class="rvthumb">${it.cover?`<img src="${esc(it.cover)}" alt="" loading="lazy" onerror="this.remove()">`:""}</span><span class="rvmeta"><b>${esc(it.t)}</b><small>${esc([it.author,len,d].filter(Boolean).join(" · ")||"Unknown author")}</small></span>`;
+    return pick?`<label class="rvrow${REVIEW.on[i]?"":" off"}"><input type="checkbox" data-i="${i}"${REVIEW.on[i]?" checked":""} aria-label="${esc(it.t)}">${inner}</label>`:`<div class="rvrow">${inner}</div>`;
+  }
+  function renderReview(){
+    const R=REVIEW; if(!R) return;
+    const by={}; R.items.forEach((it,i)=>(by[it._lane]=by[it._lane]||[]).push(i));
+    const have=(by.have||[]).length, sH=R.sessions.reduce((t,x)=>t+x.m,0)/60, days=new Set(R.sessions.map(x=>x.d)).size;
+    let h=`<div class="card rvsum"><b>${esc(R.title)}</b><span>${plural(R.items.length,"book","books")} found${have?`, ${have.toLocaleString()} already in Earmark`:""}${days?`, and ${plural(days,"day","days")} of listening (${esc(hm(sH))})`:""}. Nothing is saved until you tap Add.</span></div>`;
+    if(R.pastH>0) h+=`<label class="card rvopt"><input type="checkbox" id="rvSwap"${R.swapOn?" checked":""}><span><b>Replace the ${esc(hm(R.pastH))} ${esc(R.swap)} total you added before</b><small>${esc(R.swapWhy||"These books stand in for it, so the same hours aren't counted twice.")}</small></span></label>`;
+    LANES.forEach(([lane,title,note])=>{
+      const ix=by[lane]; if(!ix) return;
+      const pick=lane!=="have", on=ix.filter(i=>R.on[i]).length, open=R.open[lane]??ix.length<=8;
+      const hrs=lane==="have"||lane==="want"||lane==="listening"?0:ix.reduce((t,i)=>t+(R.items[i].h>0?R.items[i].h:0),0);
+      const box=pick?`<input type="checkbox" class="rvall"${on===ix.length?" checked":""}${on&&on<ix.length?" data-mixed":""} aria-label="All of ${esc(title)}">`:"";
+      h+=`<section class="rvgroup" data-lane="${lane}"><div class="rvhead"><label>${box}<span><b>${esc(title)}</b><small>${plural(ix.length,"book","books")}${hrs?` · ${esc(hm(hrs))}`:""}</small></span></label><button class="linkbtn rvmore" type="button" aria-expanded="${open}">${open?"Hide":"Show"}</button></div><p class="rvnote">${esc(note)}</p><div class="rvlist"${open?"":" hidden"}>${open?ix.map(i=>reviewRow(R.items[i],i,pick)).join(""):""}</div></section>`;
+    });
+    $("#rvBody").innerHTML=h;
+    $$("#rvBody [data-mixed]").forEach(x=>{ x.indeterminate=true; });
+    reviewCount();
+  }
+  function reviewPicks(){ const R=REVIEW, pick=R.items.filter((it,i)=>R.on[i]&&it._lane!=="have"); return {add:pick.filter(it=>it._lane!=="update"),upd:pick.filter(it=>it._lane==="update")}; }
+  function reviewCount(){
+    const R=REVIEW, {add,upd}=reviewPicks(), sess=R.sessions.length, b=$("#rvAdd");
+    b.disabled=!add.length&&!upd.length&&!sess;
+    b.textContent=add.length?`Add ${plural(add.length,"book","books")}${upd.length?` and update ${upd.length}`:""}${sess?" and the listening":""}`
+      :upd.length?`Update ${plural(upd.length,"book","books")}${sess?" and add the listening":""}`:sess?"Add the listening":"Nothing new to add";
+  }
+  $("#rvBody").addEventListener("change",e=>{
+    const R=REVIEW, x=e.target; if(!R) return;
+    if(x.id==="rvSwap"){ R.swapOn=x.checked; return; }
+    if(x.classList.contains("rvall")){ const lane=x.closest(".rvgroup").dataset.lane; R.items.forEach((it,i)=>{ if(it._lane===lane) R.on[i]=x.checked; }); renderReview(); return; }
+    if(x.dataset.i==null) return;
+    R.on[+x.dataset.i]=x.checked; x.closest(".rvrow").classList.toggle("off",!x.checked);
+    const g=x.closest(".rvgroup"), lane=g.dataset.lane, all=R.items.map((it,i)=>i).filter(i=>R.items[i]._lane===lane), on=all.filter(i=>R.on[i]).length, head=g.querySelector(".rvall");
+    head.checked=on===all.length; head.indeterminate=on>0&&on<all.length;
+    reviewCount();
+  });
+  $("#rvBody").addEventListener("click",e=>{ const m=e.target.closest(".rvmore"); if(!m) return; REVIEW.open[m.closest(".rvgroup").dataset.lane]=m.getAttribute("aria-expanded")!=="true"; renderReview(); });
+  $("#rvCancel").onclick=()=>{ REVIEW=null; back(); };
+  $("#rvAdd").onclick=async()=>{
+    const R=REVIEW; if(!R) return;
+    const {add,upd}=reviewPicks(), strip=it=>{ const b=Object.assign({},it); delete b._lane; delete b._here; return b; };
+    const checked=cleanBackup(backupState({books:add.map(strip),sessions:R.sessions,pastHours:[]}));
+    if(!checked){ toast("Couldn't read that import"); return; }
+    $("#rvAdd").disabled=true;
+    // books here that the import says are finished
+    upd.forEach(it=>{ const b=it._here; delete b.status; if(!b.finished&&it.finished) b.finished=it.finished;
+      if(!(b.h>0)&&it.h>0){ b.h=it.h; if(it.hEst) b.hEst=true; else delete b.hEst; }
+      ["cover","asin","isbn","author","narrator"].forEach(k=>{ if(!b[k]&&it[k]) b[k]=it[k]; }); });
+    let swapped=0;
+    if(R.pastH>0&&R.swapOn){ swapped=R.pastH; for(let i=ST.past.length-1;i>=0;i--) if(ST.past[i].src===R.swap) ST.past.splice(i,1); }
+    await rememberNow([...add,...upd].map(strip).filter(b=>b.h>0||b.author),"import");
+    const extra=[upd.length&&`${plural(upd.length,"book","books")} marked finished`,swapped&&`your ${hm(swapped)} ${R.swap} total replaced`].filter(Boolean).join("; ");
+    REVIEW=null;
+    mergeAndReload(checked.st,{skipped:extra?`; ${extra}`:"",empty:"Everything in that import is already here",prefix:`Imported from ${R.from}`,changed:extra?extra[0].toUpperCase()+extra.slice(1):""});
+  };
+
+  /* ---- the Audible library bookmark (audible-import.html). On the person's own Audible library page it reads
+     the library list, opens Earmark at ?import=audible and, once Earmark says it's ready, hands the list over.
+     Only a message from an Audible site, from the window that opened this one, in the expected shape, is taken.
+     It can also be saved as a file and chosen in Import books. */
+  const AUDIBLE_ORIGIN=/^https:\/\/www\.audible\.(com|ca|co\.uk|com\.au|de|fr|it|es|co\.jp|in|com\.br)$/;
+  function libraryItems(d){
+    if(!d||d.type!=="earmark-audible-library"||!Array.isArray(d.books)||d.books.length>20000) return null;
+    const str=(v,n=300)=>typeof v==="string"&&v.trim()?v.trim().slice(0,n):null, out=[];
+    d.books.forEach(x=>{
+      if(!x||typeof x!=="object"||!/^[A-Z0-9]{10}$/.test(x.asin||"")) return;
+      const t=str(x.t); if(!t) return;
+      const m=typeof x.minutes==="number"&&x.minutes>0&&x.minutes<20000?x.minutes:null;
+      const b={id:"aud-"+x.asin,t,author:str(x.author),narrator:str(x.narrator),series:str(x.series,200),num:typeof x.num==="number"&&x.num>0&&x.num<1e4?x.num:null,
+        h:m?Math.round(m/60*100)/100:null,cover:typeof x.cover==="string"&&/^https:\/\/m\.media-amazon\.com\/[^"'<>\s]+$/.test(x.cover)?x.cover:null,
+        added:null,finished:null,ph:true,genre:null,src:"audible",srcKey:x.asin,asin:x.asin};
+      if(!x.finished) b.status=x.listening?"listening":"want";
+      out.push(b);
+    });
+    return out;
+  }
+  async function reviewAudibleLibrary(d){
+    const items=libraryItems(d);
+    if(!items||!items.length){ await ask({title:"That isn't an Audible library list",msg:"Use the Earmark bookmark on your Audible library page, or choose the earmark-audible-library file it saved.",single:true}); return; }
+    toast("Matching your books with Audible…");
+    const cat=await lookupAsins(items.map(b=>b.asin),(n,all)=>toast(`Matching your books with Audible… ${n} of ${all}`));
+    await openReview({title:"From your Audible library",from:"your Audible library",items:items.map(b=>withCatalog(b,cat.get(b.asin))),swap:"Audible"});
+  }
+  const whenSetUp=f=>{ if(ST.onboarded) f(); else { pendingReview=f; toast("Finish setting up, then check your Audible books"); } };
+  async function libraryFile(f){ let o=null; try{ o=JSON.parse(await f.text()); }catch(e){} whenSetUp(()=>reviewAudibleLibrary(o)); }
+  $("#impLibFile").onclick=()=>$("#libraryFile").click();
+  $("#libraryFile").onchange=e=>{ const f=e.target.files&&e.target.files[0]; e.target.value=""; if(f) libraryFile(f); };
+  $("#impQuick").onclick=()=>{ openSheet(); $("#menu").style.display="none"; $("#f-quick").classList.add("show"); };
+  function awaitAudibleLibrary(){
+    try{ const u=new URL(location.href); u.searchParams.delete("import"); history.replaceState(history.state,"",u.pathname+u.search+u.hash); }catch(e){}
+    const from=window.opener;
+    if(!from){ setTimeout(()=>toast("Click the Earmark bookmark on your Audible library page to bring it in"),1800); return; }
+    let got=false;
+    const ping=()=>{ if(!got) try{ from.postMessage({earmark:"ready",v:1},"*"); }catch(e){} };   // says only that Earmark is open
+    const timer=setInterval(ping,1000); ping(); setTimeout(()=>clearInterval(timer),15*60*1000);
+    addEventListener("message",e=>{
+      if(got||e.source!==from||!AUDIBLE_ORIGIN.test(e.origin)||!e.data||e.data.type!=="earmark-audible-library") return;
+      got=true; clearInterval(timer);
+      try{ from.postMessage({earmark:"received"},e.origin); }catch(err){}
+      whenSetUp(()=>reviewAudibleLibrary(e.data));
+    });
+  }
 
   /* gentle reminder: two weeks since the last backup, once there's a week of listening history */
   function renderBackupNudge(){
@@ -3263,6 +3470,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
   // ask the browser to keep this site's data; a quiet no is fine
   try{ if(navigator.storage&&navigator.storage.persist) navigator.storage.persisted().then(p=>p||navigator.storage.persist()).catch(()=>{}); }catch(e){}
   try{ const flash=sessionStorage.getItem("earmark.flash"); if(flash){ sessionStorage.removeItem("earmark.flash"); setTimeout(()=>toast(flash),1700); } }catch(e){}
+  if(new URLSearchParams(location.search).get("import")==="audible") awaitAudibleLibrary();
 
   /* ---- sync: the same data on every device signed in with the same email ----
      Cloudflare Access signs everyone in; the server reads the verified email and uses it as the account.
