@@ -1956,6 +1956,34 @@ html.locked .toast.show{transform:translate(-50%,0)}
     for(let i=0;i<all.length;i+=500) sends.push(fetch("api/books/remember",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({kind,books:all.slice(i,i+500)}),credentials:"same-origin",redirect:"manual"}).catch(()=>{}));
     await Promise.race([Promise.all(sends),new Promise(r=>setTimeout(r,5000))]);
   }
+  /* books by Audible ASIN from Earmark's server (its book table, then Audible's catalog, then Audnexus): exact
+     runtimes, covers, narrators and series for imported books. 100 at a time; gives up quietly after a while, and
+     the import goes ahead with what it has */
+  async function lookupAsins(asins,onProgress){
+    const out=new Map(); if(!canRemember()||!asins.length) return out;
+    const stop=Date.now()+25000;
+    for(let i=0;i<asins.length&&Date.now()<stop;i+=100){
+      try{
+        const res=await fetch("api/books/lookup",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({asins:asins.slice(i,i+100)}),credentials:"same-origin",redirect:"manual"});
+        if(!res.ok) break;
+        Object.entries((await res.json()).books||{}).forEach(([a,b])=>out.set(a,b));
+      }catch(e){ break; }
+      if(onProgress) onProgress(Math.min(asins.length,i+100),asins.length);
+    }
+    return out;
+  }
+  // what the catalog knows fills in an imported book: its cover, exact length, narrator, series, and an author or
+  // length the import didn't have (wishlist items have neither)
+  function withCatalog(b,c){
+    if(!c) return b;
+    const x={...b,asin:c.asin||b.asin||null};
+    if(c.cover&&!b.cover) x.cover=c.cover;
+    if(c.minutes>0){ x.h=Math.round(c.minutes/60*100)/100; x.hEst=false; }
+    if(c.narrator&&!b.narrator) x.narrator=c.narrator;
+    if(c.series&&!b.series){ x.series=c.series; x.num=c.num||null; } else if(c.series&&b.series&&!b.num&&c.num) x.num=c.num;
+    if(c.author&&!b.author) x.author=c.author;
+    return x;
+  }
   // a book typed in: gathered for a couple of seconds, then sent
   function rememberBooks(books,kind){
     if(!canRemember()) return;
@@ -3052,7 +3080,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
       else if(!last.has(a)&&r.Ownership==="Active"){ status="want"; found.want++; }
       else { found.skipped++; return; }
       const b={id:"aud-"+a,t:clean(r.Title),author:authors(r.Authors),series:seriesOf(r["Book Series Info"]),num:null,h:mins!=null?Math.round(mins/60*100)/100:null,
-        added:NA(r["Purchase Date"])?null:r["Purchase Date"],finished:fin?last.get(a)||null:null,ph:true,genre:null,src:"audible",srcKey:a};
+        added:NA(r["Purchase Date"])?null:r["Purchase Date"],finished:fin?last.get(a)||null:null,ph:true,genre:null,src:"audible",srcKey:a,asin:a};
       if(status) b.status=status;
       books.push(b); onShelf.set(a,b.id);
     });
@@ -3067,7 +3095,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
     (wishFile?csvObjects(wishFile.text):[]).forEach(r=>{
       if(r.Status!=="Wishlist Item Added"||have.has(norm(r["Product Name"]))) return;
       const t=clean(r["Product Name"].replace(/\s*\([^)]*Collection\)\s*$/,"")); if(!t) return;
-      books.push({id:"aud-w-"+r.ASIN,t,author:null,series:null,num:null,h:null,added:isDay(r["Add Date"])?r["Add Date"]+"T12:00:00Z":null,finished:null,ph:true,genre:null,status:"want",src:"audible",srcKey:r.ASIN});
+      books.push({id:"aud-w-"+r.ASIN,t,author:null,series:null,num:null,h:null,added:isDay(r["Add Date"])?r["Add Date"]+"T12:00:00Z":null,finished:null,ph:true,genre:null,status:"want",src:"audible",srcKey:r.ASIN,asin:/^[A-Z0-9]{10}$/.test(r.ASIN)?r.ASIN:null});
       have.add(norm(t)); found.want++;
     });
     // one session per book per day, at midday (the export has no time of day)
@@ -3100,6 +3128,12 @@ html.locked .toast.show{transform:translate(-50%,0)}
     }
     if(!result||!(result.found.books||result.found.sessions)){
       await ask({title:"That isn't an Audible data export",msg:"Choose the file Audible sends after Request Your Data (it may be called File_000), or Library.csv and Listening History.csv from inside it.",single:true}); return; }
+    // match the books by ASIN, so they land with their covers and exact lengths
+    const asins=result.backup.books.map(b=>b.srcKey).filter(a=>/^[A-Z0-9]{10}$/.test(a||""));
+    if(asins.length){ toast("Matching your books with Audible…");
+      const cat=await lookupAsins(asins,(n,all)=>toast(`Matching your books with Audible… ${n} of ${all}`));
+      result.backup.books=result.backup.books.map(b=>withCatalog(b,cat.get(b.srcKey)));
+      result.found.matched=asins.filter(a=>cat.has(a)).length; }
     $("#toast").classList.remove("show");
     const f=result.found, yr=d=>d?d.slice(0,4):"", span=f.first?(yr(f.first)===yr(f.last)?` in ${yr(f.first)}`:` from ${yr(f.first)} to ${yr(f.last)}`):"";
     const parts=[f.finished&&`${f.finished} finished`,f.listening&&`${f.listening} listening`,f.want&&`${f.want} to listen to`].filter(Boolean).join(", ");
