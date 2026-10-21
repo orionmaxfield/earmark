@@ -1943,8 +1943,28 @@ html.locked .toast.show{transform:translate(-50%,0)}
   }
 
   /* book entry — onboarding, the plus-button sheet and the Add books screen: search, or type it in */
+  /* books added by hand or imported also go into Earmark's shared book table (only facts about the book, never who
+     added it), a few at a time; search results are already there */
+  const rememberQueue=[]; let rememberTimer=null;
+  const bookFacts=b=>({t:b.t,author:b.author||null,narrator:b.narrator||null,series:b.series||null,num:b.num||null,
+    minutes:b.h>0&&!b.hEst?Math.round(b.h*60):null,cover:b.cover||null,asin:b.asin||(/^[A-Z0-9]{10}$/.test(b.srcKey||"")?b.srcKey:null),isbn:b.isbn||null});
+  const canRemember=()=>bookApi&&/^https?:$/.test(location.protocol);
+  // an import: sent now, in batches, and waited for (at most a few seconds) before the page reloads
+  async function rememberNow(books,kind){
+    if(!canRemember()) return;
+    const all=books.map(bookFacts), sends=[];
+    for(let i=0;i<all.length;i+=500) sends.push(fetch("api/books/remember",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({kind,books:all.slice(i,i+500)}),credentials:"same-origin",redirect:"manual"}).catch(()=>{}));
+    await Promise.race([Promise.all(sends),new Promise(r=>setTimeout(r,5000))]);
+  }
+  // a book typed in: gathered for a couple of seconds, then sent
+  function rememberBooks(books,kind){
+    if(!canRemember()) return;
+    rememberQueue.push(...books);
+    clearTimeout(rememberTimer); rememberTimer=setTimeout(()=>rememberNow(rememberQueue.splice(0),kind),2000);
+  }
   function addBook(title,hours,genre,author,finished,extra={}){
     const entry=Object.assign({id:uid(),t:title,author:author||null,series:null,h:hours,c:CLOTH[clothN++%CLOTH.length],added:new Date().toISOString(),finished:finished||null,ph:true,genre:genre||null},extra);
+    if(!extra.src) rememberBooks([entry],"manual");   // typed in (search results are already in the table)
     saveCover(entry.cover);
     LIB.unshift(entry);               // newest book sits first on the shelf
     derive(); save(); renderHero(); renderShelf(shelfMode); renderShelfAll(); renderNow(); renderGoals();   // a finished book's length counts toward the total
@@ -3086,6 +3106,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
     if(!await ask({title:"Import from Audible?",msg:`Found ${plural(f.books,"book","books")}${parts?` (${parts})`:""} and ${Math.round(f.hours).toLocaleString()} hours of listening${span}. They're added to what's here; nothing is replaced${SYNC.email?", and they sync to your account":""}.`,ok:"Import"})) return;
     const checked=cleanBackup(backupState(result.backup));
     if(!checked){ toast("Couldn't read that export"); return; }
+    await rememberNow(checked.st.books.filter(b=>b.h>0||b.author),"import");
     mergeAndReload(checked.st,{skipped:"",empty:"Everything in that Audible export is already here",prefix:"Imported from Audible"});
   };
 
