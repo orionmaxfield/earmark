@@ -29,7 +29,7 @@ Open the link from your invite email and log in with your email address. That em
 - **Rest days are on by default**, so a missed day here and there won't break your streak. You can turn them off in Settings.
 - **Add the books you've finished**, and the ones you're listening to now.
 - **Check your medals** in Achievements. They level up from Bronze all the way to Celestial.
-- **Bring in your Audible history.** On Amazon, go to Your Account › Request Your Data and choose Audible. When the file arrives, open **Settings › Data › Import from Audible** and pick it. Your books and every day you listened are added to your account.
+- **Bring in your history.** Open **Settings › Data › Import books**. The fastest way is **Quick start**: your lifetime total from the Audible app (Profile, then Stats). On a computer, the **Your Audible library** bookmark brings in every book you own and whether you finished it. For every day you listened, ask Amazon for your data (Your Account › Request Your Data › Audible) and choose **Complete history** when the file arrives. Goodreads, StoryGraph and Libby exports work too. You see everything before it's added, and nothing counts twice.
 - **Look at your charts.** On Home, tap Today, This week or This month.
 
 ## 3. Your data, on every device
@@ -55,5 +55,7 @@ You can also reach the form from the bottom of Earmark's Home screen, or from Se
 Your listening data is saved to your account on Earmark's server, tied to your email, so it's available on all your devices. That includes your display name, the books on your shelf, your listening sessions and any notes you add to them, past hours, settings and medals.
 
 It's stored on Earmark's server. The developer can access it to run the service. It's never shared or sold. Deleting your account (**Settings › Account › Delete account**) erases it from the server. The site counts visits with privacy-friendly analytics that use no cookies. Feedback forms are optional, and what you write there comes to me. A backup you export is your own file.
+
+Book searches and lookups go through Earmark's server, which asks Audible's catalog, Audnexus, Open Library or Google Books, so those services never see you. Earmark keeps a shared list of books (title, author, narrator, series, length, cover), never who looked them up. Import files are read on your device, and the Audible bookmark never sees or asks for your password.
 
 Thanks again for helping. Happy listening.

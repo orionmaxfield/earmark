@@ -14,7 +14,8 @@ export async function onRequestPost({ request, env }) {
   const asins = [...new Set((Array.isArray(body && body.asins) ? body.asins : []).map(cleanAsin).filter(Boolean))];
   if (asins.length > 100) return json({ error: "Ask for at most 100 books at a time." }, 413);
   const found = new Map(), complete = b => b.minutes && b.cover;
-  (await findBooks(env.DB, { asins })).forEach(r => { if (r.asin) found.set(r.asin, fromRow(r)); });
+  // only books a catalog confirmed: what people typed in or imported is never handed to anyone else
+  (await findBooks(env.DB, { asins })).forEach(r => { if (r.asin && r.confirmed) found.set(r.asin, fromRow(r)); });
   const sources = {};
   let need = asins.filter(a => !found.has(a) || !complete(found.get(a)));
   for (let i = 0; i < need.length && !isDown("audible"); i += 50) {

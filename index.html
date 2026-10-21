@@ -1342,7 +1342,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
   };
   /* ---- state: everything the app shows comes from here. A new account starts at zero. ---- */
   const KEY="earmark.state.v1";
-  const APP_VERSION="0.12.0";   // shown in Settings > About with a Beta tag
+  const APP_VERSION="0.13.0";   // shown in Settings > About with a Beta tag
   /* ---- beta settings: fill these in ---- */
   const FEEDBACK_URL="https://docs.google.com/forms/d/e/1FAIpQLSd0juSwRwq8oNXawAh7rJ79hCi84N0al5oX6bwg_KqX-gkqEw/viewform";   // "Send feedback"
   const FINAL_SURVEY_URL="https://docs.google.com/forms/d/e/1FAIpQLSfLebyfyRnXDIu-X4ERDeldCd_olUcJBbSbxtkAN0O6HENCbA/viewform";   // Settings > Help > Final thoughts survey
@@ -3568,6 +3568,8 @@ html.locked .toast.show{transform:translate(-50%,0)}
     <p>Deleting your account (Settings › Account › Delete account) erases it from the server and from this device.</p>
     <p>Your email address is what you use to log in to the beta, and it's how your account is found.</p>
     <p>The site counts visits with privacy-friendly analytics that use no cookies and don't follow you around the web.</p>
+    <p><b>Book lookups go through Earmark's server.</b> When you search for a book, or an import needs a book's length and cover, Earmark's server asks Audible's catalog, Audnexus, Open Library or Google Books, so those services see Earmark's server and the book, never you. What's found goes into Earmark's shared book list: only facts about books (title, author, narrator, series, length, cover, ISBN and ASIN), never who looked them up or what's on anyone's shelf. Books you type in or import are kept there too, but never shown to anyone else.</p>
+    <p><b>Imports are read on your device.</b> Files from Amazon, Goodreads, StoryGraph or Libby are opened on this device; only the books and listening you choose to add are saved to your account. The Audible bookmark runs on your own signed-in Audible page and hands your library list to Earmark in your browser. It never sees or asks for your Amazon or Audible password, and Earmark never will.</p>
     <p>Feedback forms are optional. What you write in them goes to the developer.</p>
     <p>A backup you export is your own file. It stays wherever you save it.</p>`;
   $("#privacyBody").innerHTML=$("#obPrivacy").innerHTML=PRIVACY;
@@ -3584,7 +3586,8 @@ html.locked .toast.show{transform:translate(-50%,0)}
       <p><b>Listening you log</b> with the + button is dated. It counts toward everything: your totals, rank, streaks, goals and every medal.</p>
       <p><b>Hours from the past</b>, imported from apps like Audible or Libby, count toward your lifetime total, rank and time milestones, but never toward streaks or live medals.</p>
       <p><b>Your data</b> is saved on this device first, so the app works offline, then synced to your account so it's on every device you sign in on. Settings › Account shows when it last synced. A backup from Settings › Data is an optional extra copy.</p>
-      <p><b>Your Audible history</b> can come in too. On Amazon, go to Your Account › Request Your Data, choose Audible and submit. When the email arrives (it can take a few days), download the file, then in Earmark choose Settings › Data › Import from Audible and pick it (it may be called File_000). Your books, what you've finished and every day you listened are added, and sync to your account. Audible's export has no time of day, and podcasts and samples are left out. Importing the same file again adds nothing.</p>
+      <p><b>Bringing in your history</b>: Settings › Data › Import books. <b>Quick start</b> takes your lifetime total from the Audible app (Profile, then Stats) as past hours. <b>Your Audible library</b> uses a bookmark on a computer to bring in every book in your library, its length and whether you finished it. <b>Complete history</b> reads the file Amazon sends after Request Your Data (it may be called File_000), with every day you listened. Goodreads, StoryGraph and Libby exports work too.</p>
+      <p>Every import shows you what it found before anything is saved. Books already in Earmark are left as they are, a day you've logged here keeps what you logged, and an Audible total you typed in can be swapped for the real history, so nothing counts twice. Importing the same file again adds nothing.</p>
       <p><b>Finishing a book</b> adds the rest of its length (its length minus the time you logged to it) to your lifetime total, rank and hour medals. That part isn't counted toward charts, streaks or today, because it wasn't listened to today. Moving the book back to Listening takes it off again; time you logged always stays.</p>
       <p><b>Book hours</b> are the length you give a book on your shelf. They add to your lifetime total. Books without a date finished are backlog: they count toward totals and book medals, never toward streaks.</p>
       <h3>Medals</h3>
