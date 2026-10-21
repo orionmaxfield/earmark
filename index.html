@@ -1795,7 +1795,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
      search isn't sent twice. Audiobook runtimes aren't in these sources, so hours are estimated
      from the page count and labelled as an estimate. */
   const PAGES_PER_HOUR=22, WORDS_PER_HOUR=9000;   // audiobooks run about 9,000 words, or 22 printed pages, an hour
-  const SEARCH_KEY="earmark.search.v2";   // v2: results are filtered and ranked before they're remembered
+  const SEARCH_KEY="earmark.search.v3";   // v3: results come from Earmark's server, with exact runtimes from Audible
   const searchMemo=new Map();
   try{ (JSON.parse(localStorage.getItem(SEARCH_KEY))||[]).forEach(([k,v])=>searchMemo.set(k,v)); }catch(e){}
   function remember(k,v){ searchMemo.delete(k); searchMemo.set(k,v); while(searchMemo.size>40) searchMemo.delete(searchMemo.keys().next().value); try{ localStorage.setItem(SEARCH_KEY,JSON.stringify([...searchMemo])); }catch(e){} }
@@ -1815,6 +1815,10 @@ html.locked .toast.show{transform:translate(-50%,0)}
   }
   // a word count is the better guide when a source has one; otherwise the page count
   const estHours=(pages,words)=>{ const h=words>0?words/WORDS_PER_HOUR:pages>0?pages/PAGES_PER_HOUR:0; return h>0?Math.max(.5,Math.round(h*2)/2):null; };
+  // an exact runtime from Audible (or Audnexus), in hours
+  const exactHours=r=>r&&r.minutes>0?Math.round(r.minutes/60*100)/100:null;
+  const srcName=r=>({audible:"Audible",audnexus:"Audible",library:"Earmark's library"})[r.src]||"the catalog";
+  const lengthLabel=r=>{ const x=exactHours(r); if(x!=null) return hm(x); const e=estHours(r.pages,r.words); return e!=null?`about ${fmtH(e)} (estimate)`:""; };
   const estBasis=r=>r.words>0?`${r.words.toLocaleString()} words (about ${WORDS_PER_HOUR.toLocaleString()} words an hour)`:`${r.pages.toLocaleString()} pages (about ${PAGES_PER_HOUR} pages an hour)`;
   async function openLibrary(q,signal){
     const r=await fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(q)}&limit=25&fields=key,title,author_name,first_publish_year,cover_i,number_of_pages_median,subject,edition_count`,{signal});
@@ -1865,9 +1869,27 @@ html.locked .toast.show{transform:translate(-50%,0)}
       return {r,score};
     }).sort((x,y)=>y.score-x.score||(y.r.editions||0)-(x.r.editions||0)||(!!y.r.cover-!!x.r.cover)).slice(0,10).map(x=>x.r);
   }
+  /* book search goes through Earmark's server, which asks Audible's catalog (exact runtimes), then Open Library,
+     then Google Books. A copy of the app without Earmark's server (a 404 for /api/) asks Open Library and Google
+     Books itself, as before. */
+  let bookApi=true;
+  // a server result → the app's shape: genre from its subjects, series from the title when the source has none
+  const fromServer=r=>({...r,...(r.series?{}:seriesOf(r.t,r.subjects)),genre:genreOf(r.subjects),editions:r.editions||0});
   async function searchBooks(q,signal){
     const k=q.trim().toLowerCase().replace(/\s+/g," ");
     if(searchMemo.has(k)) return searchMemo.get(k);
+    if(bookApi&&/^https?:$/.test(location.protocol)){
+      let res;
+      try{ res=await fetch("api/books/search?q="+encodeURIComponent(k),{signal,credentials:"same-origin",redirect:"manual",cache:"no-store"}); }
+      catch(e){ if(e.name==="AbortError") throw e; throw new Error("search unavailable"); }
+      if([404,405,501].includes(res.status)) bookApi=false;
+      else {
+        const j=res.ok&&/json/.test(res.headers.get("content-type")||"")?await res.json().catch(()=>null):null;
+        if(!j||j.unavailable) throw new Error("search unavailable");   // signed out, or no source could be reached
+        const found=rankBooks((j.results||[]).map(fromServer),q);
+        remember(k,found); return found;
+      }
+    }
     // Open Library's results are filtered first (summaries, no author, titles without the search's main words);
     // when nothing is left, or it can't be reached, Google Books is asked
     let found=[], failed=false;
@@ -1910,7 +1932,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
         results=await searchBooks(text,ctl.signal);
         if(q.value.trim()!==text) return;
         say(results.length?"":"No matches. Try the author's name, or add it by hand.");
-        list.innerHTML=results.map((r,i)=>`<button class="bsrow" type="button" role="listitem" data-i="${i}">${thumb(r)}<span class="bsmeta"><b>${esc(r.t)}</b><small>${esc([r.author,r.year].filter(Boolean).join(" · ")||"Unknown author")}</small></span></button>`).join("");
+        list.innerHTML=results.map((r,i)=>`<button class="bsrow" type="button" role="listitem" data-i="${i}">${thumb(r)}<span class="bsmeta"><b>${esc(r.t)}</b><small>${esc([r.author,r.year,lengthLabel(r)].filter(Boolean).join(" · ")||"Unknown author")}</small></span></button>`).join("");
       }catch(e){ if(e.name!=="AbortError") say(navigator.onLine?FAIL_MSG:OFFLINE_MSG); }
     }
     q.addEventListener("input",()=>{ clearTimeout(timer); timer=setTimeout(run,300); });
@@ -1941,10 +1963,11 @@ html.locked .toast.show{transform:translate(-50%,0)}
     const sr=mountSearch($(search),{
       onPick(r){
         pick=r; man.hidden=false; sr.manualBtn.hidden=true; sr.input.closest(".bsearch").querySelector(".bsres").innerHTML="";
-        tIn.value=r.t; aIn.value=r.author||""; gIn.value=r.genre||""; const est=estHours(r.pages,r.words); hrIn.value=est!=null?est:"";
+        tIn.value=r.t; aIn.value=r.author||""; gIn.value=r.genre||""; const exact=exactHours(r), est=exact==null?estHours(r.pages,r.words):null; hrIn.value=exact??est??"";
         pickEl.hidden=false; pickEl.innerHTML=`${thumb(r)}<span class="bsmeta"><b>${esc(r.t)}</b><small>${esc([r.author,r.year,r.series?`${r.series}${r.num?" #"+r.num:""}`:""].filter(Boolean).join(" · "))}</small></span><button class="linkmini" type="button">Change</button>`;
-        estEl.hidden=est==null; estEl.textContent=est!=null?`Hours are an estimate from ${estBasis(r)}. Change them if you know the runtime.`:"";
-        if(est==null) hrIn.placeholder="Hours, if you know them";
+        estEl.hidden=exact==null&&est==null;
+        estEl.textContent=exact!=null?`Length from ${srcName(r)}: ${hm(exact)}.`:est!=null?`Hours are an estimate from ${estBasis(r)}. Change them if you know the runtime.`:"";
+        if(exact==null&&est==null) hrIn.placeholder="Hours, if you know them";
       },
       onManual(){ pick=null; pickEl.hidden=true; estEl.hidden=true; man.hidden=false; sr.manualBtn.hidden=true; tIn.focus(); }
     });
@@ -1961,7 +1984,8 @@ html.locked .toast.show{transform:translate(-50%,0)}
       const shelfTo=status(), open=shelfTo!=="done";
       const finished=open?null:dIn&&dIn.value?dIn.value:(dated?dayKey(new Date()):null);
       const extra=pick?{cover:pick.cover||null,pages:pick.pages||null,year:pick.year||null,series:pick.series||null,num:pick.num||null,
-        hEst:hours!=null&&!pick.edited&&estHours(pick.pages,pick.words)===hours,words:pick.words||null,src:pick.src,srcKey:pick.key}:{};
+        hEst:hours!=null&&!pick.edited&&exactHours(pick)==null&&estHours(pick.pages,pick.words)===hours,words:pick.words||null,src:pick.src,srcKey:pick.key,
+        asin:pick.asin||null,isbn:pick.isbn||null,narrator:pick.narrator||null}:{};
       if(open) extra.status=shelfTo;
       const fromSearch=!!pick;
       const b=addBook(t,hours,gIn.value,titleCase(aIn.value),finished,extra); added.push(b); renderList();
