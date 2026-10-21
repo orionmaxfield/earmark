@@ -1022,12 +1022,14 @@ html.locked .toast.show{transform:translate(-50%,0)}
   <div class="sgh">Data</div>
   <div class="sgroup">
     <button class="srow" id="setImport" type="button"><span class="sl">Add hours from the past</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button>
+    <button class="srow" id="setAudible" type="button"><span class="sl">Import from Audible</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button>
     <button class="srow" id="setExport" type="button"><span class="sl">Export a backup</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button>
     <button class="srow" id="setRestore" type="button"><span class="sl">Restore from backup</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button>
     <div class="srow static"><span class="sl">Last backup</span><span class="sv" id="setLastBackup">Never</span></div>
     <button class="srow danger" id="setReset" type="button"><span class="sl">Reset all data</span></button>
   </div>
-  <p class="sgnote">A backup is a file you keep. Restore it on any device to bring your books, listening and medals back.</p>
+  <p class="sgnote">Import from Audible reads the file Audible sends when you ask for your data (Amazon › Request Your Data › Audible), with your books and every day you listened. A backup is a file you keep. Restore it on any device to bring your books, listening and medals back.</p>
+  <input type="file" id="audibleFile" multiple hidden>
   <input type="file" id="restoreFile" accept=".json,application/json" hidden>
 
   <div class="sgh">Notifications</div>
@@ -1275,7 +1277,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
   };
   /* ---- state: everything the app shows comes from here. A new account starts at zero. ---- */
   const KEY="earmark.state.v1";
-  const APP_VERSION="0.11.2";   // shown in Settings > About with a Beta tag
+  const APP_VERSION="0.12.0";   // shown in Settings > About with a Beta tag
   /* ---- beta settings: fill these in ---- */
   const FEEDBACK_URL="https://docs.google.com/forms/d/e/1FAIpQLSd0juSwRwq8oNXawAh7rJ79hCi84N0al5oX6bwg_KqX-gkqEw/viewform";   // "Send feedback"
   const FINAL_SURVEY_URL="https://docs.google.com/forms/d/e/1FAIpQLSfLebyfyRnXDIu-X4ERDeldCd_olUcJBbSbxtkAN0O6HENCbA/viewform";   // Settings > Help > Final thoughts survey
@@ -2898,16 +2900,171 @@ html.locked .toast.show{transform:translate(-50%,0)}
       const next=Object.assign(fresh(),st,{onboarded:true,medals:mergeMedalStores(ST.medals,st.medals),createdAt:earliest(ST.createdAt,st.createdAt),firstUseAt:earliest(ST.firstUseAt,st.firstUseAt,st.createdAt),welcomeSeen:true,lastBackup:o.exportedAt||ST.lastBackup});
       try{ localStorage.setItem(KEY,JSON.stringify(next)); sessionStorage.setItem("earmark.flash","Restored from your backup"+skipped); }catch(err){ toast("Couldn't restore. There may not be enough space."); return; }
       SY.leaving=true; location.reload();
-    } else if(how==="merge"){
-      const a=mergeBackup(st);
-      if(!a.books&&!a.sessions&&!a.past){ save(); toast("Everything in that backup is already here"); return; }
-      // "Added 120 past hours", or "Merged: 2 books, 14 sessions and 120 past hours added"
-      const bits=[a.books&&plural(a.books,"book","books"),a.sessions&&plural(a.sessions,"session","sessions"),a.past&&`${fmtN(a.pastH).toLocaleString()} past hour${a.pastH===1?"":"s"}`].filter(Boolean);
-      const msg=bits.length===1&&a.past?`Added ${bits[0]}`:`Merged: ${bits.length>1?bits.slice(0,-1).join(", ")+" and "+bits[bits.length-1]:bits[0]} added`;
-      save(); try{ sessionStorage.setItem("earmark.flash",msg+skipped); }catch(err){}
-      location.reload();   // recalculates totals, streaks and medal levels from the merged data
-    }
+    } else if(how==="merge") mergeAndReload(st,{skipped});
   };
+  // a backup Merge (or an import): adds what isn't here, says what was added, and reloads to recalculate totals, streaks and medals
+  function mergeAndReload(st,{skipped="",empty="Everything in that backup is already here",prefix="Merged"}={}){
+    const a=mergeBackup(st);
+    if(!a.books&&!a.sessions&&!a.past){ save(); toast(empty); return; }
+    // "Added 120 past hours", or "Merged: 2 books, 14 sessions and 120 past hours added"
+    const bits=[a.books&&plural(a.books,"book","books"),a.sessions&&plural(a.sessions,"session","sessions"),a.past&&`${fmtN(a.pastH).toLocaleString()} past hour${a.pastH===1?"":"s"}`].filter(Boolean);
+    const msg=bits.length===1&&a.past?`Added ${bits[0]}`:`${prefix}: ${bits.length>1?bits.slice(0,-1).join(", ")+" and "+bits[bits.length-1]:bits[0]} added`;
+    save(); try{ sessionStorage.setItem("earmark.flash",msg+skipped); }catch(err){}
+    location.reload();
+  }
+  /* ---- import from Audible: the export from Amazon's "Request Your Data" (a zip, often named File_000 with no
+     extension, or the CSV files inside it). It's read on this device; the books and listening it adds are merged like
+     a backup Merge and sync to the account like anything else.
+     - every listening event counts once (multi-part books repeat each event once per part name), in real clock time;
+       samples, previews and podcasts are left out. One session per book per day; the export has no time of day.
+     - a book is finished when Audible says so, or when 95% of it was reached across its parts (Audible resets
+       "finished" on a re-listen), on the last day it was played
+     - unfinished books played in the 60 days before the export are Listening; owned books never started and the
+       current wishlist are Want to listen; books started long ago and never finished stay off the shelf, but their
+       listening still counts
+     Ids come from Audible's, so importing the same export again adds nothing. */
+  const AUDIBLE_FILES=/^(Library|Listening History(\.\d+)?|Wishlist)\.csv$/i;
+  // the files we need from a zip, as text. Stored and deflated entries (deflate is read with the browser's DecompressionStream)
+  async function unzipText(file){
+    const buf=new Uint8Array(await file.arrayBuffer()), dv=new DataView(buf.buffer), out=[];
+    let end=-1; for(let i=buf.length-22;i>=Math.max(0,buf.length-65557);i--) if(dv.getUint32(i,true)===0x06054b50){ end=i; break; }
+    if(end<0) return null;   // not a zip
+    const utf8=new TextDecoder();
+    for(let k=0,p=dv.getUint32(end+16,true),n=dv.getUint16(end+10,true);k<n&&dv.getUint32(p,true)===0x02014b50;k++){
+      const method=dv.getUint16(p+10,true), size=dv.getUint32(p+20,true), nl=dv.getUint16(p+28,true), off=dv.getUint32(p+42,true);
+      const name=utf8.decode(buf.subarray(p+46,p+46+nl)).split("/").pop(); p+=46+nl+dv.getUint16(p+30,true)+dv.getUint16(p+32,true);
+      if(!AUDIBLE_FILES.test(name)) continue;
+      const at=off+30+dv.getUint16(off+26,true)+dv.getUint16(off+28,true), data=buf.subarray(at,at+size);
+      if(method===8&&typeof DecompressionStream==="undefined") throw Object.assign(new Error("no inflate"),{kind:"inflate"});
+      const bytes=method===0?data:method===8?new Uint8Array(await new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).arrayBuffer()):null;
+      if(bytes) out.push({name,text:utf8.decode(bytes)});
+    }
+    return out;
+  }
+  // rows of a CSV, one at a time: fn(cells) for each, the header first
+  function eachCSVRow(text,fn){
+    const re=/(?:"((?:[^"]|"")*)"|([^,\r\n]*))(,|\r?\n|$)/g; let row=[], m;
+    text=text.replace(/^﻿/,"");
+    while((m=re.exec(text))){
+      row.push(m[1]!=null?m[1].replace(/""/g,'"'):m[2]);
+      if(m[3]===","){ continue; }
+      if(row.length>1||row[0]!=="") fn(row);
+      row=[]; if(m[3]===""||re.lastIndex>=text.length) break;
+    }
+  }
+  function csvObjects(text){ const out=[]; let head=null; eachCSVRow(text,r=>{ if(!head) head=r; else { const o={}; head.forEach((h,i)=>o[h]=r[i]??""); out.push(o); } }); return out; }
+  const sha1=async s=>{ try{ const d=await crypto.subtle.digest("SHA-1",new TextEncoder().encode(s)); return [...new Uint8Array(d)].map(b=>b.toString(16).padStart(2,"0")).join(""); }catch(e){ return hash(s).padStart(12,"0"); } };
+  const roundHalfEven=x=>{ const f=Math.floor(x), r=x-f; return r>.5?f+1:r<.5?f:(f%2?f+1:f); };
+  // the files of an Audible export → an Earmark backup's contents, and what was found
+  async function fromAudible(files){
+    const NA=v=>v==null||v===""||v==="Not Available"||v==="null";
+    const clean=t=>String(t||"").replace(/\s*\((un)?abridged\)/gi,"").trim();
+    const norm=t=>clean(t).toLowerCase().replace(/\s+part\s+\d+\s*$/,"").replace(/[^a-z0-9]+/g," ").trim();
+    const libFile=files.find(f=>/^library\.csv$/i.test(f.name)), wishFile=files.find(f=>/^wishlist\.csv$/i.test(f.name)), histFiles=files.filter(f=>/^listening history/i.test(f.name));
+    if(!libFile&&!histFiles.length) return null;
+    const lib=libFile?csvObjects(libFile.text):[], L=new Map(lib.map(r=>[r.ASIN,r]));
+    const podcast=r=>r["Content Type"]==="Podcast"||["PodcastParent","Periodical"].includes(r["Content Delivery Type"]);
+    // name keys, so a part's listening ("Oathbringer (Unabridged) Part 2") goes to its book
+    const keys=new Map(); lib.forEach(r=>[r.Title,r["Product Name"],r.Title+" "+(NA(r.Subtitle)?"":r.Subtitle)].forEach(n=>{ if(!NA(n)&&norm(n).length>=4&&!keys.has(norm(n))) keys.set(norm(n),r.ASIN); }));
+    const keyList=[...keys.keys()].filter(k=>k.length>=6), parentOf=new Map();
+    const parent=(asin,name)=>{ if(L.has(asin)) return asin; const n=norm(name); if(parentOf.has(n)) return parentOf.get(n);
+      let p=keys.get(n)||null; if(!p){ let best=""; keyList.forEach(k=>{ if(k.length>best.length&&n.startsWith(k+" ")) best=k; }); p=best?keys.get(best):null; }
+      parentOf.set(n,p); return p; };
+    const seen=new Set(), events=[], reach=new Map(), num=v=>/^\d+$/.test(v||"")?+v:0; let dupes=0, samplesMs=0;
+    for(const f of histFiles){ let head=null, ix;
+      eachCSVRow(f.text,r=>{
+        if(!head){ head=r; ix=Object.fromEntries(r.map((h,i)=>[h,i])); return; }
+        const g=c=>r[ix[c]]??"", asin=g("ASIN"), name=g("Product Name");
+        const k=[asin,g("Start Date"),g("End Date"),g("Start Position Milliseconds"),g("End Position Milliseconds"),g("Event Duration Milliseconds")].join("\u0001");
+        if(seen.has(k)){ dupes++; return; } seen.add(k);
+        const ms=+g("Event Duration Milliseconds")||0;
+        if(["CatalogSample","Preview"].includes(g("Audio Type"))){ samplesMs+=ms; return; }
+        const p=parent(asin,name); if(p&&podcast(L.get(p))) return;
+        if(!isDay(g("Start Date"))) return;
+        const t=p?clean(L.get(p).Title):clean(name).replace(/\s+Part\s+\d+\s*$/,"");
+        events.push({d:g("Start Date"),p,t,ms,end:isDay(g("End Date"))?g("End Date"):g("Start Date")});
+        const tk=p||"name:"+norm(name); if(!reach.has(tk)) reach.set(tk,new Map());
+        const parts=reach.get(tk), end=num(g("End Position Milliseconds")), len=num(g("Book Length Milliseconds")), a=parts.get(asin)||[0,0];
+        a[0]=Math.max(a[0],len?Math.min(end,len):end); a[1]=Math.max(a[1],len); parts.set(asin,a);
+      });
+    }
+    const exported=events.reduce((m,e)=>e.end>m?e.end:m,"")||dayKey(new Date());
+    const recentFrom=(()=>{ const d=parseDay(exported); d.setDate(d.getDate()-60); return dayKey(d); })();
+    const keyOf=e=>e.p||"name:"+norm(e.t), last=new Map();
+    events.forEach(e=>{ const k=keyOf(e), v=e.end<exported?e.end:exported; if(!last.has(k)||v>last.get(k)) last.set(k,v); });
+    const reached=(k,mins)=>{ const parts=[...(reach.get(k)||new Map()).values()]; const got=parts.reduce((t,a)=>t+a[0],0); let len=parts.reduce((t,a)=>t+a[1],0);
+      if(mins) len=Math.max(len,mins*60000); return len>0&&got>=.95*len; };
+    const authors=v=>{ if(NA(v)) return null; const ns=v.split(",").map(n=>n.trim()).filter(Boolean); const keep=ns.filter(n=>!n.includes(" - "));
+      return [...new Set(keep.length?keep:ns.slice(0,1).map(n=>n.split(" - ")[0].trim()))].join(", ")||null; };
+    const seriesOf=info=>{ const ns=[...String(info||"").matchAll(/title:([^,]+(?:\([^)]*\))?)/g)].map(m=>m[1].trim());
+      const keep=ns.filter(n=>!/collection|cosmere|universe|chronological|world/i.test(n)); return (keep.length?keep:ns)[0]||null; };
+    const books=[], onShelf=new Map(), found={finished:0,listening:0,want:0,skipped:0};
+    lib.forEach(r=>{
+      if(podcast(r)) return;
+      const a=r.ASIN, mins=/^\d+$/.test(r["Length in Minutes"])?+r["Length in Minutes"]:null, fin=r["Is Finished"]==="Yes"||reached(a,mins);
+      let status=null;
+      if(fin) found.finished++;
+      else if((last.get(a)||"")>=recentFrom){ status="listening"; found.listening++; }
+      else if(!last.has(a)&&r.Ownership==="Active"){ status="want"; found.want++; }
+      else { found.skipped++; return; }
+      const b={id:"aud-"+a,t:clean(r.Title),author:authors(r.Authors),series:seriesOf(r["Book Series Info"]),num:null,h:mins!=null?Math.round(mins/60*100)/100:null,
+        added:NA(r["Purchase Date"])?null:r["Purchase Date"],finished:fin?last.get(a)||null:null,ph:true,genre:null,src:"audible",srcKey:a};
+      if(status) b.status=status;
+      books.push(b); onShelf.set(a,b.id);
+    });
+    // listened to the end but not in the library (returned, or gone from the Plus catalog): the length comes from the history
+    for(const k of reach.keys()){
+      if(!k.startsWith("name:")||!reached(k)) continue;
+      const e=events.find(e=>!e.p&&"name:"+norm(e.t)===k), len=[...reach.get(k).values()].reduce((t,a)=>t+a[1],0), id="aud-t-"+(await sha1(k)).slice(0,10);
+      books.push({id,t:e.t,author:null,series:null,num:null,h:Math.round(len/3.6e6*100)/100,added:null,finished:last.get(k),ph:true,genre:null,src:"audible",srcKey:k.slice(5)});
+      onShelf.set(k,id); found.finished++;
+    }
+    const have=new Set(books.map(b=>norm(b.t)));
+    (wishFile?csvObjects(wishFile.text):[]).forEach(r=>{
+      if(r.Status!=="Wishlist Item Added"||have.has(norm(r["Product Name"]))) return;
+      const t=clean(r["Product Name"].replace(/\s*\([^)]*Collection\)\s*$/,"")); if(!t) return;
+      books.push({id:"aud-w-"+r.ASIN,t,author:null,series:null,num:null,h:null,added:isDay(r["Add Date"])?r["Add Date"]+"T12:00:00Z":null,finished:null,ph:true,genre:null,status:"want",src:"audible",srcKey:r.ASIN});
+      have.add(norm(t)); found.want++;
+    });
+    // one session per book per day, at midday (the export has no time of day)
+    const day=new Map();
+    events.forEach(e=>{ const k=e.d+"\u0001"+keyOf(e), s=day.get(k)||{d:e.d,k:keyOf(e),ms:0}; s.ms+=e.ms; s.t=e.t; day.set(k,s); });
+    const sessions=[];
+    for(const s of day.values()){
+      const m=roundHalfEven(s.ms/60000); if(m<1) continue;
+      sessions.push({id:"aud"+(await sha1(s.k+"|"+s.d)).slice(0,12),at:s.d+"T18:00:00.000Z",d:s.d,m:Math.min(m,1440),note:s.t,book:onShelf.get(s.k)||null});
+    }
+    sessions.sort((a,b)=>a.d<b.d?-1:a.d>b.d?1:0);
+    return {backup:{app:"Earmark",backupVersion:BACKUP_VERSION,appVersion:APP_VERSION,exportedAt:new Date().toISOString(),source:"Audible data export",
+      user:{name:""},settings:{},books,sessions,pastHours:[],totalHours:sessions.reduce((t,s)=>t+s.m,0)/60},
+      found:{...found,books:books.length,sessions:sessions.length,hours:sessions.reduce((t,s)=>t+s.m,0)/60,first:sessions.length?sessions[0].d:null,last:sessions.length?sessions[sessions.length-1].d:null,dupes,samplesH:samplesMs/3.6e6}};
+  }
+  $("#setAudible").onclick=()=>$("#audibleFile").click();
+  $("#audibleFile").onchange=async e=>{
+    const picked=[...(e.target.files||[])]; e.target.value=""; if(!picked.length) return;
+    toast("Reading your Audible data…"); await new Promise(r=>setTimeout(r,60));
+    let files=[], result=null;
+    try{
+      for(const f of picked){
+        const z=await unzipText(f);
+        if(z) files.push(...z); else if(AUDIBLE_FILES.test(f.name)) files.push({name:f.name,text:await f.text()});
+      }
+      result=await fromAudible(files);
+    }catch(err){
+      if(err.kind==="inflate"){ await ask({title:"This browser can't open the zip file",msg:"Unzip it first (tap it in the Files app), then choose Library.csv and the Listening History files from inside it.",single:true}); return; }
+      console.warn("audible import",err); result=null;
+    }
+    if(!result||!(result.found.books||result.found.sessions)){
+      await ask({title:"That isn't an Audible data export",msg:"Choose the file Audible sends after Request Your Data (it may be called File_000), or Library.csv and Listening History.csv from inside it.",single:true}); return; }
+    $("#toast").classList.remove("show");
+    const f=result.found, yr=d=>d?d.slice(0,4):"", span=f.first?(yr(f.first)===yr(f.last)?` in ${yr(f.first)}`:` from ${yr(f.first)} to ${yr(f.last)}`):"";
+    const parts=[f.finished&&`${f.finished} finished`,f.listening&&`${f.listening} listening`,f.want&&`${f.want} to listen to`].filter(Boolean).join(", ");
+    if(!await ask({title:"Import from Audible?",msg:`Found ${plural(f.books,"book","books")}${parts?` (${parts})`:""} and ${Math.round(f.hours).toLocaleString()} hours of listening${span}. They're added to what's here; nothing is replaced${SYNC.email?", and they sync to your account":""}.`,ok:"Import"})) return;
+    const checked=cleanBackup(backupState(result.backup));
+    if(!checked){ toast("Couldn't read that export"); return; }
+    mergeAndReload(checked.st,{skipped:"",empty:"Everything in that Audible export is already here",prefix:"Imported from Audible"});
+  };
+
   /* gentle reminder: two weeks since the last backup, once there's a week of listening history */
   function renderBackupNudge(){
     const now=Date.now(), since=d=>d?now-Date.parse(d):Infinity, day=864e5;
@@ -2993,6 +3150,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
       <p><b>Listening you log</b> with the + button is dated. It counts toward everything: your totals, rank, streaks, goals and every medal.</p>
       <p><b>Hours from the past</b>, imported from apps like Audible or Libby, count toward your lifetime total, rank and time milestones, but never toward streaks or live medals.</p>
       <p><b>Your data</b> is saved on this device first, so the app works offline, then synced to your account so it's on every device you sign in on. Settings › Account shows when it last synced. A backup from Settings › Data is an optional extra copy.</p>
+      <p><b>Your Audible history</b> can come in too. On Amazon, go to Your Account › Request Your Data, choose Audible and submit. When the email arrives (it can take a few days), download the file, then in Earmark choose Settings › Data › Import from Audible and pick it (it may be called File_000). Your books, what you've finished and every day you listened are added, and sync to your account. Audible's export has no time of day, and podcasts and samples are left out. Importing the same file again adds nothing.</p>
       <p><b>Finishing a book</b> adds the rest of its length (its length minus the time you logged to it) to your lifetime total, rank and hour medals. That part isn't counted toward charts, streaks or today, because it wasn't listened to today. Moving the book back to Listening takes it off again; time you logged always stays.</p>
       <p><b>Book hours</b> are the length you give a book on your shelf. They add to your lifetime total. Books without a date finished are backlog: they count toward totals and book medals, never toward streaks.</p>
       <h3>Medals</h3>
