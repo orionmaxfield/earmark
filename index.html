@@ -1952,7 +1952,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
       else {
         const j=res.ok&&/json/.test(res.headers.get("content-type")||"")?await res.json().catch(()=>null):null;
         if(!j||j.unavailable) throw new Error("search unavailable");   // signed out, or no source could be reached
-        const found=rankBooks((j.results||[]).map(fromServer),q);
+        const all=(j.results||[]).map(fromServer), found=j.byAsin?all:rankBooks(all,q);   // a book found by its ASIN shares no words with it
         remember(k,found); return found;
       }
     }
@@ -1997,7 +1997,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
       try{
         results=await searchBooks(text,ctl.signal);
         if(q.value.trim()!==text) return;
-        say(results.length?"":"No matches. Try the author's name, or add it by hand.");
+        say(results.length?"":"No matches. Try the author's name or the book's Audible code (from its Audible link, like B08G9PRS1K), or add it by hand.");
         list.innerHTML=results.map((r,i)=>`<button class="bsrow" type="button" role="listitem" data-i="${i}">${thumb(r)}<span class="bsmeta"><b>${esc(r.t)}</b><small>${esc([r.author,r.year,lengthLabel(r)].filter(Boolean).join(" · ")||"Unknown author")}</small></span></button>`).join("");
       }catch(e){ if(e.name!=="AbortError") say(navigator.onLine?FAIL_MSG:OFFLINE_MSG); }
     }
