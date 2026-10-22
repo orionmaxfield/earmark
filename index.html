@@ -3452,19 +3452,22 @@ html.locked .toast.show{transform:translate(-50%,0)}
       return b;
     }).filter(Boolean);
   }
-  /* lengths by title and author from Earmark's server, 20 at a time, finished books first; it stops after a while
-     and the import goes ahead with what it has */
+  /* lengths by title and author from Earmark's server, 20 at a time, finished books first. Books the server had no
+     room to look for come back to be sent again. It stops after a while and the import goes ahead with what it has */
   async function matchTitles(books,onProgress){
     const out=new Map(); if(!canRemember()||!books.length) return out;
-    const stop=Date.now()+45000;
-    for(let i=0;i<books.length&&Date.now()<stop;i+=20){
-      const part=books.slice(i,i+20);
+    const stop=Date.now()+45000, queue=[...books]; let done=0;
+    while(queue.length&&Date.now()<stop){
+      const part=queue.splice(0,20);
       try{
         const res=await fetch("api/books/match",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({items:part.map(b=>({t:b.t,author:b.author,isbn:b.isbn}))}),credentials:"same-origin",redirect:"manual"});
         if(!res.ok) break;
-        ((await res.json()).books||[]).forEach((c,k)=>{ if(c&&part[k]) out.set(part[k],c); });
+        const j=await res.json(), again=(j.retry||[]).filter(k=>part[k]).map(k=>part[k]);
+        (j.books||[]).forEach((c,k)=>{ if(c&&part[k]) out.set(part[k],c); });
+        if(again.length===part.length) break;   // no progress: stop rather than ask again
+        queue.unshift(...again); done+=part.length-again.length;
       }catch(e){ break; }
-      if(onProgress) onProgress(Math.min(books.length,i+20),books.length);
+      if(onProgress) onProgress(done,books.length);
     }
     return out;
   }
