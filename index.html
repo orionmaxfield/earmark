@@ -298,6 +298,7 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
 .rvopt{display:flex;gap:12px;align-items:flex-start;margin-top:12px;cursor:pointer}
 .rvopt b{display:block;font-size:15px}
 .rvopt small{display:block;color:var(--ink-2);font-size:13px;line-height:1.45;margin-top:2px}
+.rvopt .rvfx{color:var(--ink);font-weight:600;margin-top:6px}
 .rvgroup{margin-top:16px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);box-shadow:var(--sh-1);overflow:hidden}
 .rvhead{display:flex;align-items:center;gap:8px;padding:8px 8px 8px 16px;min-height:56px}
 .rvhead label{flex:1;display:flex;gap:12px;align-items:center;min-width:0;cursor:pointer}
@@ -3270,7 +3271,11 @@ html.locked .toast.show{transform:translate(-50%,0)}
     const sessions=incoming.filter(x=>!logged.has(x.d)).map(x=>x.book&&toShelf.has(x.book)?Object.assign({},x,{book:toShelf.get(x.book)}):x);
     const keptDays=new Set(incoming.filter(x=>logged.has(x.d)).map(x=>x.d)).size;
     const extra=[opts.extra,keptDays?`${plural(keptDays,"day","days")} you already logged in Earmark keep${keptDays===1?"s":""} what you logged.`:""].filter(Boolean).join(" ");
-    REVIEW=Object.assign({},opts,{items,sessions,extra,on:items.map(it=>it._lane!=="have"),open:{},pastH,swapOn:true,printOn:true});
+    // finished books here without a date that the import can date
+    const dateN=items.filter(it=>it._lane==="have"&&it.finished&&isDone(it._here)&&!it._here.finished).length;
+    REVIEW=Object.assign({},opts,{items,sessions,extra,dateN,on:items.map(it=>it._lane!=="have"),open:{},pastH,swapOn:false,printOn:true});
+    // the typed total is swapped out by default only when the import brings at least as many hours
+    if(pastH>0){ REVIEW.gain0=reviewGain(); REVIEW.swapOn=REVIEW.gain0>=pastH-1e-6; }
     renderReview(); go("s-review");
   }
   function reviewRow(it,i,pick){
@@ -3283,7 +3288,11 @@ html.locked .toast.show{transform:translate(-50%,0)}
     const by={}; R.items.forEach((it,i)=>(by[it._lane]=by[it._lane]||[]).push(i));
     const have=(by.have||[]).length, sH=R.sessions.reduce((t,x)=>t+x.m,0)/60, days=new Set(R.sessions.map(x=>x.d)).size;
     let h=`<div class="card rvsum"><b>${esc(R.title)}</b><span>${plural(R.items.length,"book","books")} found${have?`, ${have.toLocaleString()} already in Earmark`:""}${days?`, and ${plural(days,"day","days")} of listening (${esc(hm(sH))})`:""}. Nothing is saved until you tap Add.</span>${R.extra?`<span class="rvx">${esc(R.extra)}</span>`:""}</div>`;
-    if(R.pastH>0) h+=`<label class="card rvopt"><input type="checkbox" id="rvSwap"${R.swapOn?" checked":""}><span><b>Replace the ${esc(hm(R.pastH))} ${esc(R.swap)} total you added before</b><small>${esc(R.swapWhy||"These books stand in for it, so the same hours aren't counted twice.")}</small></span></label>`;
+    if(R.pastH>0){
+      const why=R.gain0>=R.pastH-1e-6?R.swapWhy||"These books stand in for it, so the same hours aren't counted twice."
+        :`This import adds ${hm(R.gain0)}, less than the ${hm(R.pastH)} you typed in, so it isn't ticked: your typed total probably includes listening this import doesn't have. Tick it to count only what's imported.`;
+      h+=`<label class="card rvopt"><input type="checkbox" id="rvSwap"${R.swapOn?" checked":""}><span><b>Replace the ${esc(hm(R.pastH))} ${esc(R.swap)} total you added before</b><small>${esc(why)}</small><small class="rvfx" id="rvFx"></small></span></label>`;
+    }
     const nPrint=R.items.filter(it=>it.print&&it._lane!=="have").length;
     if(nPrint) h+=`<label class="card rvopt"><input type="checkbox" id="rvPrint"${R.printOn?" checked":""}><span><b>Include ${plural(nPrint,"book that isn't an audiobook edition","books that aren't audiobook editions")}</b><small>${esc(R.from)} lists ${nPrint===1?"it":"them"} as print or ebook. Lengths come from the audiobook where there is one.</small></span></label>`;
     LANES.forEach(([lane,title,note])=>{
@@ -3298,15 +3307,29 @@ html.locked .toast.show{transform:translate(-50%,0)}
     reviewCount();
   }
   function reviewPicks(){ const R=REVIEW, pick=R.items.filter((it,i)=>R.on[i]&&it._lane!=="have"); return {add:pick.filter(it=>it._lane!=="update"),upd:pick.filter(it=>it._lane==="update")}; }
+  /* the hours the import adds with what's ticked, by the lifetime total's own rule: its listening, plus each finished
+     book's length beyond the listening logged to it (so a book here that gains sessions gives up that much length) */
+  function reviewGain(){
+    const R=REVIEW, {add,upd}=reviewPicks(), addIds=new Set(add.map(it=>it.id)), updIds=new Set(upd.map(it=>it._here.id)), here=new Map(LIB.map(b=>[b.id,b]));
+    const rest=(h,min)=>h>0?Math.max(0,h-min/60):0, had=id=>(D.bookMin&&D.bookMin[id])||0, newMin={};
+    let gain=0;
+    R.sessions.forEach(x=>{ gain+=x.m/60; if(x.book&&(addIds.has(x.book)||here.has(x.book))) newMin[x.book]=(newMin[x.book]||0)+x.m; });
+    add.forEach(it=>{ if(isDone(it)) gain+=rest(it.h,newMin[it.id]||0); });
+    upd.forEach(it=>{ const b=it._here; gain+=rest(b.h>0?b.h:it.h,had(b.id)+(newMin[b.id]||0)); });
+    Object.entries(newMin).forEach(([id,m])=>{ const b=here.get(id); if(b&&!updIds.has(id)&&isDone(b)) gain+=rest(b.h,had(id)+m)-rest(b.h,had(id)); });
+    return gain;
+  }
   function reviewCount(){
-    const R=REVIEW, {add,upd}=reviewPicks(), sess=R.sessions.length, b=$("#rvAdd");
-    b.disabled=!add.length&&!upd.length&&!sess;
+    const R=REVIEW, {add,upd}=reviewPicks(), sess=R.sessions.length, swap=R.pastH>0&&R.swapOn, b=$("#rvAdd");
+    if(R.pastH>0) $("#rvFx").textContent=`Your total goes from ${hm(ST.total)} to ${hm(Math.max(0,ST.total+reviewGain()-(swap?R.pastH:0)))}.`;
+    b.disabled=!add.length&&!upd.length&&!sess&&!R.dateN&&!swap;
     b.textContent=add.length?`Add ${plural(add.length,"book","books")}${upd.length?` and update ${upd.length}`:""}${sess?" and the listening":""}`
-      :upd.length?`Update ${plural(upd.length,"book","books")}${sess?" and add the listening":""}`:sess?"Add the listening":"Nothing new to add";
+      :upd.length?`Update ${plural(upd.length,"book","books")}${sess?" and add the listening":""}`:sess?"Add the listening"
+      :R.dateN?`Add finish dates to ${plural(R.dateN,"book","books")}`:swap?`Replace the ${R.swap} total`:"Nothing new to add";
   }
   $("#rvBody").addEventListener("change",e=>{
     const R=REVIEW, x=e.target; if(!R) return;
-    if(x.id==="rvSwap"){ R.swapOn=x.checked; return; }
+    if(x.id==="rvSwap"){ R.swapOn=x.checked; reviewCount(); return; }
     if(x.id==="rvPrint"){ R.printOn=x.checked; R.items.forEach((it,i)=>{ if(it.print&&it._lane!=="have") R.on[i]=x.checked; }); renderReview(); return; }
     if(x.classList.contains("rvall")){ const lane=x.closest(".rvgroup").dataset.lane; R.items.forEach((it,i)=>{ if(it._lane===lane) R.on[i]=x.checked; }); renderReview(); return; }
     if(x.dataset.i==null) return;
