@@ -299,6 +299,9 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
 .lkhave{display:flex;align-items:center;gap:12px;margin-top:12px;padding:10px 12px;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--line-2)}
 .lkhave .bscov{width:46px;height:68px}
 .lkhave .addbtn{margin-left:auto}
+.lkshot{display:block;margin:6px 0 0 -4px}
+#lkLinkRow[hidden]{display:none}
+.lkshot[hidden]{display:none}
 .srow .sl small{display:block;margin-top:2px;color:var(--ink-3);font-size:13px;line-height:1.4}
 .sgnote .linkbtn{min-height:0;padding:0}
 /* the review screen: an import, checked before anything is saved */
@@ -1199,6 +1202,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
       <button class="opt" data-form="f-live"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span><b>Log today's listening</b><small>Keeps your streak alive and counts toward daily achievements.</small></span></button>
       <button class="opt" data-form="f-book"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h12a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3z"/><path d="M4 17a3 3 0 0 1 3-3h12"/></svg></span><span><b>Finished a book</b><small>Puts it on your shelf. Add its hours, or skip them if they're already logged.</small></span></button>
       <button class="opt" data-form="f-link"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg></span><span><b>Paste a link</b><small>A book's link from Audible's Share button or address bar.</small></span></button>
+      <button class="opt" data-form="f-link" id="optShot"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M9.5 8h5M9.5 11.5h5M9.5 15h3"/></svg></span><span><b>Add from screenshot</b><small>A screenshot of the book's page in Audible or any book app.</small></span></button>
       <button class="opt" data-form="f-quick"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M13 3 5 13h6l-1 8 8-10h-6z"/></svg></span><span><b>Quick start from Audible</b><small>Your lifetime total from the Audible app, in one step.</small></span></button>
       <button class="opt" data-form="f-past"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 8v4l2 2"/></svg></span><span><b>Add hours from the past</b><small>Audible, Libby, Libro.fm… Counts toward your total and rank only.</small></span></button>
     </div>
@@ -1214,10 +1218,12 @@ html.locked .toast.show{transform:translate(-50%,0)}
       <div class="added" id="sheetAddedList" aria-live="polite"></div>
       <p class="note">Hours you enter count toward your total. Leave them blank if they're already logged.</p>
       <button class="cta" data-done="book">Done</button><button class="ghost" data-back>Back</button></div>
-    <div class="form" id="f-link"><h2 style="margin:0">Paste a link</h2>
-      <p class="note" style="margin-top:4px">Copy a book's link in Audible (the Share button, or the address bar) and paste it here.</p>
-      <div class="field lkfield"><input id="lkIn" type="url" inputmode="url" placeholder="https://www.audible.com/pd/…" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Audible link"><button class="addbtn" id="lkPaste" type="button">Paste</button></div>
+    <div class="form" id="f-link"><h2 style="margin:0" id="lkTitle">Paste a link</h2>
+      <p class="note" style="margin-top:4px" id="lkIntro">Copy a book's link in Audible (the Share button, or the address bar) and paste it here.</p>
+      <input type="file" id="shotFile" accept="image/*" hidden>
+      <div class="field lkfield" id="lkLinkRow"><input id="lkIn" type="url" inputmode="url" placeholder="https://www.audible.com/pd/…" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Audible link"><button class="addbtn" id="lkPaste" type="button">Paste</button></div>
       <p class="lksay" id="lkSay" aria-live="polite"></p>
+      <button class="linkbtn lkshot" id="lkShotBtn" type="button">Add from a screenshot instead</button>
       <div id="lkHave" hidden></div>
       <div id="lkFind" hidden>
         <label class="flabel" for="lkQ">Find it by title or author</label>
@@ -1235,6 +1241,8 @@ html.locked .toast.show{transform:translate(-50%,0)}
         <div class="field"><input id="lkA" autocapitalize="words" placeholder="Optional" autocomplete="off"></div>
         <label class="flabel" for="lkN">Narrator</label>
         <div class="field"><input id="lkN" autocapitalize="words" placeholder="Optional" autocomplete="off"></div>
+        <label class="flabel" for="lkS">Series</label>
+        <div class="field"><input id="lkS" autocapitalize="words" placeholder="Optional" autocomplete="off"><label style="flex:0 0 112px"><input id="lkSn" type="number" inputmode="decimal" min="0" step="any" placeholder="#" aria-label="Book number in series"><span>book</span></label></div>
         <label class="flabel" for="lkH">Length</label>
         <div class="field"><label><input id="lkH" type="number" inputmode="numeric" min="0" placeholder="0"><span>hours</span></label><label><input id="lkM" type="number" inputmode="numeric" min="0" max="59" placeholder="0" aria-label="Minutes"><span>min</span></label></div>
         <div id="lkDateRow" hidden><label class="flabel" for="lkD">Finished</label><div class="field"><input id="lkD" type="date"></div></div>
@@ -1922,7 +1930,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
   const estHours=(pages,words)=>{ const h=words>0?words/WORDS_PER_HOUR:pages>0?pages/PAGES_PER_HOUR:0; return h>0?Math.max(.5,Math.round(h*2)/2):null; };
   // an exact runtime, in hours (only from books Earmark already has; no free source gives audiobook lengths)
   const exactHours=r=>r&&r.minutes>0?Math.round(r.minutes/60*100)/100:null;
-  const srcName=r=>({library:"Earmark's library"})[r.src]||"the catalog";
+  const srcName=r=>({library:"Earmark's library",screenshot:"your screenshot"})[r.src]||"the catalog";
   const lengthLabel=r=>{ const x=exactHours(r); if(x!=null) return hm(x); const e=estHours(r.pages,r.words); return e!=null?`about ${fmtH(e)} (estimate)`:""; };
   const estBasis=r=>r.words>0?`${r.words.toLocaleString()} words (about ${WORDS_PER_HOUR.toLocaleString()} words an hour)`:`${r.pages.toLocaleString()} pages (about ${PAGES_PER_HOUR} pages an hour)`;
   async function openLibrary(q,signal){
@@ -2009,7 +2017,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
   }
   // keep a book's cover on the device so the shelf works offline (the service worker serves it)
   function saveCover(url){
-    if(!url||!("caches" in window)) return;
+    if(!url||!/^https?:/.test(url)||!("caches" in window)) return;   // a cover from a screenshot is in the book itself
     caches.open("earmark-covers").then(c=>c.match(url).then(hit=>hit||fetch(url,{mode:"no-cors"}).then(r=>c.put(url,r)))).catch(()=>{});
   }
   function pruneCovers(){
@@ -2057,7 +2065,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
      added it), a few at a time; search results are already there */
   const rememberQueue=[]; let rememberTimer=null;
   const bookFacts=b=>({t:b.t,author:b.author||null,narrator:b.narrator||null,series:b.series||null,num:b.num||null,
-    minutes:b.h>0&&!b.hEst?Math.round(b.h*60):null,cover:b.cover||null,asin:b.asin||(/^[A-Z0-9]{10}$/.test(b.srcKey||"")?b.srcKey:null),isbn:b.isbn||null});
+    minutes:b.h>0&&!b.hEst?Math.round(b.h*60):null,cover:/^https:\/\//.test(b.cover||"")?b.cover:null,asin:b.asin||(/^[A-Z0-9]{10}$/.test(b.srcKey||"")?b.srcKey:null),isbn:b.isbn||null});
   const canRemember=()=>bookApi&&/^https?:$/.test(location.protocol);
   // an import: sent now, in batches, and waited for (at most a few seconds) before the page reloads
   async function rememberNow(books,kind){
@@ -3613,7 +3621,13 @@ html.locked .toast.show{transform:translate(-50%,0)}
   }
   let LK=null, lkStat="listening", lkTimer=null;
   const lkSay=t=>{ $("#lkSay").textContent=t||""; };
-  function lkClear(){ LK=null; $("#lkIn").value=""; lkSay(""); ["#lkHave","#lkFind","#lkForm"].forEach(x=>{ $(x).hidden=true; }); $("#lkRes").innerHTML=""; $("#lkQ").value=""; }
+  function lkMode(m){
+    const shot=m==="shot";
+    $("#lkTitle").textContent=shot?"Add from screenshot":"Paste a link";
+    $("#lkIntro").textContent=shot?"Choose a screenshot of the book's page in Audible or any book app. Earmark reads the details for you to check. The screenshot isn't kept.":"Copy a book's link in Audible (the Share button, or the address bar) and paste it here.";
+    $("#lkLinkRow").hidden=shot; $("#lkShotBtn").textContent=shot?"Choose a screenshot":"Add from a screenshot instead";
+  }
+  function lkClear(){ shotDrop(); lkMode("link"); LK=null; $("#lkIn").value=""; lkSay(""); ["#lkHave","#lkFind","#lkForm"].forEach(x=>{ $(x).hidden=true; }); $("#lkRes").innerHTML=""; $("#lkQ").value=""; }
   function lkOpen(text){ openSheet(); $("#menu").style.display="none"; $("#f-link").classList.add("show"); lkClear(); $("#lkIn").value=text; lkRun(text); }
   async function lkRun(text){
     const run=LK={}; ["#lkHave","#lkFind","#lkForm"].forEach(x=>{ $(x).hidden=true; }); $("#lkRes").innerHTML=""; $("#lkAsk").hidden=true;
@@ -3658,11 +3672,16 @@ html.locked .toast.show{transform:translate(-50%,0)}
     $("#lkT").value=r?r.t:(sh.title||link.words||$("#lkQ").value.trim()||"");
     $("#lkA").value=r&&r.author?r.author:(sh.author||"");
     $("#lkN").value=sh.narrator||(r&&r.narrator)||"";
+    $("#lkS").value=(r&&r.series)||""; $("#lkSn").value=(r&&r.num)||"";
     const x=r?exactHours(r):null, H=x!=null?Math.floor(x):0, M=x!=null?Math.round((x-H)*60):0;
     $("#lkH").value=x!=null?(M===60?H+1:H):""; $("#lkM").value=x!=null?(M===60?0:M):"";
     const pk=$("#lkPick"); pk.hidden=!r;
-    if(r){ pk.innerHTML=`${thumb(r)}<span class="bsmeta"><b>${esc(r.t)}</b><small>${esc([r.author,r.year].filter(Boolean).join(" · "))}</small></span><button class="linkmini" type="button" id="lkChange">Change</button>`; $("#lkChange").onclick=()=>{ $("#lkForm").hidden=true; $("#lkFind").hidden=false; }; }
-    $("#lkNote").textContent=x!=null?`Length from ${srcName(r)}.`:"Earmark can't get the length or narrator from Audible. Add them if you know them (they're on the book's page in Audible), or leave them blank.";
+    if(r){ const shot=r.src==="screenshot";
+      pk.innerHTML=`${thumb(r)}<span class="bsmeta"><b>${esc(r.t)}</b><small>${esc(shot?(r.cover?"Cover "+(r.coverFrom==="screenshot"?"cropped from your screenshot":"from "+r.coverFrom):"No cover found"):[r.author,r.year].filter(Boolean).join(" · "))}</small></span>${shot&&r.cover?`<button class="linkmini" type="button" id="lkNoCover">No cover</button>`:`<button class="linkmini" type="button" id="lkChange">Change</button>`}`;
+      if($("#lkChange")) $("#lkChange").onclick=()=>{ $("#lkForm").hidden=true; $("#lkFind").hidden=false; };
+      if($("#lkNoCover")) $("#lkNoCover").onclick=()=>{ r.cover=null; r.coverFrom=null; lkForm(r); }; }
+    $("#lkNote").textContent=r&&r.src==="screenshot"?`Read from your screenshot${r.lengthText?` (length shown as “${r.lengthText}”)`:""}. Check the details, then add. The screenshot itself isn't kept.`
+      :x!=null?`Length from ${srcName(r)}.`:"Earmark can't get the length or narrator from Audible. Add them if you know them (they're on the book's page in Audible), or leave them blank.";
     $("#lkD").max=dayKey(new Date()); lkSetStat("listening");
   }
   function lkShowHave(b){
@@ -3690,11 +3709,70 @@ html.locked .toast.show{transform:translate(-50%,0)}
     const h=H||M?Math.round((H+M/60)*100)/100:null, isbn=link.isbn||(r&&r.isbn)||null;
     const here=onShelf(shelfIndex(),{id:"aud-"+link.asin,asin:link.asin,isbn,t,author});
     if(here){ lkShowHave(here); return; }
-    const extra={asin:link.asin||null,isbn,narrator:$("#lkN").value.trim()||null,cover:(r&&r.cover)||null,series:(r&&r.series)||null,num:(r&&r.num)||null,year:(r&&r.year)||null,pages:(r&&r.pages)||null};
+    const sn=parseFloat($("#lkSn").value), series=$("#lkS").value.trim()||null;
+    const extra={asin:link.asin||null,isbn,narrator:$("#lkN").value.trim()||null,cover:(r&&r.cover)||null,series,num:series&&sn>0?sn:null,year:(r&&r.year)||null,pages:(r&&r.pages)||null};
     if(lkStat!=="done") extra.status=lkStat;
     addBook(t,h,(r&&r.genre)||null,author,lkStat==="done"?($("#lkD").value||null):null,extra);
     closeSheet(); toast(`Added “${t}” to ${lkStat==="done"?"Finished":lkStat==="listening"?"Listening":"Want to listen"}`);
   };
+
+  /* ---- Add from screenshot: a picture of the book's page, read by Earmark's server (Claude Haiku) ----
+     The screenshot is shrunk here (1,568 px on its long side, which keeps it legible and cheap to read), sent once,
+     and dropped from memory as soon as it's been read. It's never saved on this device or the server. What it shows
+     fills the same form as Paste a link, for checking before anything is saved. The cover comes from Open Library or
+     Google Books by title and author; only when neither has one is the cover cut out of the screenshot, as a small
+     picture kept with the book. Each person can read 10 a day. */
+  const SHOT_EDGE=1568;
+  let SHOT=null;   // { canvas } while a screenshot is being read
+  function shotDrop(){ if(SHOT&&SHOT.canvas){ SHOT.canvas.width=SHOT.canvas.height=0; } SHOT=null; }
+  async function shotCanvas(file){
+    let img=null;
+    try{ img=await createImageBitmap(file); }
+    catch(e){ img=await new Promise((res,rej)=>{ const u=URL.createObjectURL(file), im=new Image(); im.onload=()=>{ URL.revokeObjectURL(u); res(im); }; im.onerror=()=>{ URL.revokeObjectURL(u); rej(e); }; im.src=u; }); }
+    const W=img.naturalWidth||img.width, H=img.naturalHeight||img.height, k=Math.min(1,SHOT_EDGE/Math.max(W,H));
+    const c=document.createElement("canvas"); c.width=Math.max(1,Math.round(W*k)); c.height=Math.max(1,Math.round(H*k));
+    c.getContext("2d").drawImage(img,0,0,c.width,c.height); if(img.close) img.close();
+    return c;
+  }
+  // the cover cut out of the screenshot, at most 360 px, as a small JPEG kept with the book
+  function shotCrop(c,box){
+    const k=Math.min(1,360/Math.max(box.width,box.height)), out=document.createElement("canvas");
+    out.width=Math.round(box.width*k); out.height=Math.round(box.height*k);
+    out.getContext("2d").drawImage(c,box.x,box.y,box.width,box.height,0,0,out.width,out.height);
+    const url=out.toDataURL("image/jpeg",0.82); out.width=out.height=0; return url;
+  }
+  function lkShowFind(q){ $("#lkFind").hidden=false; $("#lkForm").hidden=true; $("#lkQ").value=q||""; $("#lkQ").focus(); }
+  async function shotRead(file){
+    const run=LK={shot:true}; ["#lkHave","#lkFind","#lkForm"].forEach(x=>{ $(x).hidden=true; }); lkMode("shot");
+    lkSay("Reading your screenshot…");
+    let c; try{ c=await shotCanvas(file); }catch(e){ lkSay("Couldn't open that picture. Choose a screenshot (PNG or JPEG), or type the title."); lkShowFind(); return; }
+    shotDrop(); SHOT={canvas:c};
+    const image=c.toDataURL("image/jpeg",0.85).split(",")[1];
+    let res=null, j=null;
+    try{ res=await fetch("api/books/screenshot",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({image,mediaType:"image/jpeg",width:c.width,height:c.height}),credentials:"same-origin",redirect:"manual"}); j=await res.json().catch(()=>null); }catch(e){}
+    if(run!==LK){ return; }
+    if(!res||!res.ok||!j||!j.book){
+      shotDrop();
+      lkSay((j&&j.error)||(navigator.onLine?"Couldn't read the screenshot just now. Type the title instead.":"You're offline. Type the title instead."));
+      lkShowFind(); return;
+    }
+    const b=j.book, author=b.authors.join(", ");
+    const here=onShelf(shelfIndex(),{id:"",t:b.title,author});
+    if(here){ shotDrop(); lkShowHave(here); return; }
+    lkSay("Finding the cover…");
+    let m=null; try{ m=[...(await matchTitles([{t:b.title,author:b.authors[0]||null}])).values()][0]||null; }catch(e){}
+    if(run!==LK){ shotDrop(); return; }
+    const r={t:b.title,author,narrator:b.narrators.join(", "),minutes:b.minutes,lengthText:b.lengthText,series:b.series,num:b.num,src:"screenshot",
+      cover:null,coverFrom:null,isbn:(m&&m.isbn)||null,year:(m&&m.year)||null,genre:m&&m.subjects?genreOf(m.subjects)||null:null};
+    if(m&&m.cover){ r.cover=m.cover; r.coverFrom=m.src==="googlebooks"?"Google Books":"Open Library"; }
+    else if(b.cover){ try{ r.cover=shotCrop(c,b.cover); r.coverFrom="screenshot"; }catch(e){} }
+    shotDrop();   // the screenshot is gone from here on
+    lkForm(r);
+    if(j.left!=null&&j.left<=3) lkSay(`${plural(j.left,"screenshot","screenshots")} left to read today.`);
+  }
+  $("#shotFile").onchange=e=>{ const f=e.target.files&&e.target.files[0]; e.target.value=""; if(f) shotRead(f); };
+  $("#lkShotBtn").onclick=()=>{ lkMode("shot"); $("#shotFile").click(); };
+  $("#optShot").onclick=()=>{ $("#menu").style.display="none"; $("#f-link").classList.add("show"); lkClear(); lkMode("shot"); $("#shotFile").click(); };
 
   /* gentle reminder: two weeks since the last backup, once there's a week of listening history */
   function renderBackupNudge(){
@@ -3767,6 +3845,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
     <p>The site counts visits with privacy-friendly analytics that use no cookies and don't follow you around the web.</p>
     <p><b>Book lookups go through Earmark's server.</b> When you search for a book, paste a book's link, or an import needs a cover, Earmark's server asks Open Library or Google Books, so those services see Earmark's server and the book, never you. Earmark's server never collects anything from Audible's catalog or website. What's found goes into Earmark's shared book list: only facts about books (title, author, narrator, series, length, cover, ISBN and ASIN), never who looked them up or what's on anyone's shelf. Books you type in or import are kept there too, but never shown to anyone else.</p>
     <p><b>Imports are read on your device.</b> Files from Amazon, Goodreads, StoryGraph or Libby are opened on this device; only the books and listening you choose to add are saved to your account. The Audible bookmark runs on your own signed-in Audible page and hands your library list to Earmark in your browser. It never sees or asks for your Amazon or Audible password, and Earmark never will.</p>
+    <p><b>Screenshots you add are read, then deleted.</b> When you use Add from screenshot, the picture is shrunk on your device and sent once, through Earmark's server, to Anthropic's Claude to read the book's details. It isn't saved on your device or on Earmark's server, and Anthropic doesn't keep it after reading it or use it to train its models. Only the details you choose to add are saved. If no book database has a cover, the cover alone is cut from the screenshot and kept with that book. You can read up to 10 screenshots a day.</p>
     <p>Feedback forms are optional. What you write in them goes to the developer.</p>
     <p>A backup you export is your own file. It stays wherever you save it.</p>`;
   $("#privacyBody").innerHTML=$("#obPrivacy").innerHTML=PRIVACY;

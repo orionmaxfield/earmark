@@ -1,0 +1,8 @@
+{
+  "name": "earmark",
+  "private": true,
+  "description": "Earmark: Cloudflare Pages site and Pages Functions. The only dependency is Anthropic's SDK, used by functions/api/books/screenshot.js to read book screenshots.",
+  "dependencies": {
+    "@anthropic-ai/sdk": "1.2.0"
+  }
+}

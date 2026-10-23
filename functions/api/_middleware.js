@@ -1,4 +1,5 @@
 import { SCHEMA as BOOKS_SCHEMA } from "./books/_library.js";
+import { SCHEMA as USAGE_SCHEMA } from "./books/_usage.js";
 
 /* Every request under /api/ comes through here first.
 
@@ -34,7 +35,7 @@ const SCHEMA = [
 ];
 let schemaReady = null;   // once per worker instance
 function ensureSchema(db) {
-  if (!schemaReady) schemaReady = db.batch([...SCHEMA, ...BOOKS_SCHEMA].map(s => db.prepare(s))).catch(err => { schemaReady = null; throw err; });
+  if (!schemaReady) schemaReady = db.batch([...SCHEMA, ...BOOKS_SCHEMA, ...USAGE_SCHEMA].map(s => db.prepare(s))).catch(err => { schemaReady = null; throw err; });
   return schemaReady;
 }
 
