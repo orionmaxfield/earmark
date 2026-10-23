@@ -289,6 +289,16 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
 .qsteps{margin:8px 0 4px;padding-left:20px;color:var(--ink-2);font-size:var(--t-14);line-height:1.5}
 .qsteps b{color:var(--ink)}
 .qsor{margin-top:18px}
+/* paste a link */
+.lkfield{gap:8px}
+.lkfield input{min-width:0}
+.lksay{margin:10px 0 0;font-size:var(--t-14);color:var(--ink-2);line-height:1.45}
+.lksay:empty{display:none}
+.lkh{margin:14px 0 2px;font-weight:700}
+#lkRes .bsrow.lkon{background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--accent)}
+.lkhave{display:flex;align-items:center;gap:12px;margin-top:12px;padding:10px 12px;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--line-2)}
+.lkhave .bscov{width:46px;height:68px}
+.lkhave .addbtn{margin-left:auto}
 .srow .sl small{display:block;margin-top:2px;color:var(--ink-3);font-size:13px;line-height:1.4}
 .sgnote .linkbtn{min-height:0;padding:0}
 /* the review screen: an import, checked before anything is saved */
@@ -1188,6 +1198,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
       <div class="pend" id="pendMenu" hidden><div class="nt"><b class="pendText"></b><small>From your stopped timer</small></div><button class="lact go" type="button" data-pend="log">Log it</button><button class="lact" type="button" data-pend="discard">Discard</button></div>
       <button class="opt" data-form="f-live"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span><b>Log today's listening</b><small>Keeps your streak alive and counts toward daily achievements.</small></span></button>
       <button class="opt" data-form="f-book"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h12a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3z"/><path d="M4 17a3 3 0 0 1 3-3h12"/></svg></span><span><b>Finished a book</b><small>Puts it on your shelf. Add its hours, or skip them if they're already logged.</small></span></button>
+      <button class="opt" data-form="f-link"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg></span><span><b>Paste a link</b><small>A book's link from Audible's Share button or address bar.</small></span></button>
       <button class="opt" data-form="f-quick"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M13 3 5 13h6l-1 8 8-10h-6z"/></svg></span><span><b>Quick start from Audible</b><small>Your lifetime total from the Audible app, in one step.</small></span></button>
       <button class="opt" data-form="f-past"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 8v4l2 2"/></svg></span><span><b>Add hours from the past</b><small>Audible, Libby, Libro.fm… Counts toward your total and rank only.</small></span></button>
     </div>
@@ -1203,6 +1214,34 @@ html.locked .toast.show{transform:translate(-50%,0)}
       <div class="added" id="sheetAddedList" aria-live="polite"></div>
       <p class="note">Hours you enter count toward your total. Leave them blank if they're already logged.</p>
       <button class="cta" data-done="book">Done</button><button class="ghost" data-back>Back</button></div>
+    <div class="form" id="f-link"><h2 style="margin:0">Paste a link</h2>
+      <p class="note" style="margin-top:4px">Copy a book's link in Audible (the Share button, or the address bar) and paste it here.</p>
+      <div class="field lkfield"><input id="lkIn" type="url" inputmode="url" placeholder="https://www.audible.com/pd/…" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Audible link"><button class="addbtn" id="lkPaste" type="button">Paste</button></div>
+      <p class="lksay" id="lkSay" aria-live="polite"></p>
+      <div id="lkHave" hidden></div>
+      <div id="lkFind" hidden>
+        <label class="flabel" for="lkQ">Find it by title or author</label>
+        <div class="field"><input id="lkQ" type="search" autocapitalize="words" autocomplete="off" enterkeyhint="search" placeholder="Book title or author"></div>
+        <p class="lkh" id="lkAsk" hidden>Is this your book?</p>
+        <div class="bsres" id="lkRes" role="list"></div>
+        <button class="linkbtn" id="lkManual" type="button">None of these: type it in</button>
+      </div>
+      <div id="lkForm" hidden>
+        <div class="bspick" id="lkPick" hidden></div>
+        <div class="seg bkstat" id="lkStatus" role="group" aria-label="Shelf"><button type="button" data-v="listening">Listening</button><button type="button" data-v="done">Finished</button><button type="button" data-v="want">Want to listen</button></div>
+        <label class="flabel" for="lkT">Title</label>
+        <div class="field"><input id="lkT" autocapitalize="words" placeholder="Book title" autocomplete="off"></div>
+        <label class="flabel" for="lkA">Author</label>
+        <div class="field"><input id="lkA" autocapitalize="words" placeholder="Optional" autocomplete="off"></div>
+        <label class="flabel" for="lkN">Narrator</label>
+        <div class="field"><input id="lkN" autocapitalize="words" placeholder="Optional" autocomplete="off"></div>
+        <label class="flabel" for="lkH">Length</label>
+        <div class="field"><label><input id="lkH" type="number" inputmode="numeric" min="0" placeholder="0"><span>hours</span></label><label><input id="lkM" type="number" inputmode="numeric" min="0" max="59" placeholder="0" aria-label="Minutes"><span>min</span></label></div>
+        <div id="lkDateRow" hidden><label class="flabel" for="lkD">Finished</label><div class="field"><input id="lkD" type="date"></div></div>
+        <p class="note" id="lkNote"></p>
+        <button class="cta" id="lkAdd" type="button">Add to my shelf</button>
+      </div>
+      <button class="ghost" data-back>Back</button></div>
     <div class="form" id="f-quick"><h2 style="margin:0">Quick start from Audible</h2><ol class="qsteps"><li>Open the <b>Audible</b> app on your phone.</li><li>Tap <b>Profile</b>, then <b>Stats</b>.</li><li>Your listening time is at the top. If you can pick a period, choose <b>All time</b>.</li></ol><div class="field"><label><input id="qsH" type="text" inputmode="numeric" autocomplete="off" placeholder="0" aria-label="Hours"><span>hours</span></label><label><input id="qsM" type="number" inputmode="numeric" min="0" max="59" placeholder="0" aria-label="Minutes"><span>min</span></label></div><p class="note">Added to your lifetime total and rank, never to streaks. If you import your Audible history later, Earmark offers to swap this total for it, so nothing counts twice.</p><button class="cta" data-done="quick" id="qsBtn">Add my Audible total</button><button class="ghost" data-back>Back</button></div>
     <div class="form" id="f-past"><h2 style="margin:0">Hours from the past</h2><div class="field"><select id="pastSrc"><option>Audible</option><option>Libby</option><option>Libro.fm</option><option>Spotify</option><option>Other</option></select><label><input id="pastH" type="number" inputmode="decimal" min="0" placeholder="0"><span>hours</span></label></div><p class="note">No date attached. Adds to your lifetime total and rank, never to streaks.</p><button class="cta" data-done="past" id="pastBtn">Add hours</button><button class="ghost" data-back>Back</button></div>
   </div>
@@ -1990,13 +2029,18 @@ html.locked .toast.show{transform:translate(-50%,0)}
     let timer=null, ctl=null, results=[];
     const say=t=>{ status.textContent=t; };
     async function run(){
-      const text=q.value.trim(); list.innerHTML=""; results=[];
+      const typed=q.value.trim(); let text=typed; list.innerHTML=""; results=[];
       if(text.length<2){ say(""); return; }
+      // a pasted Audible link: search for the title it (or its message) gives, the same way Paste a link does
+      const links=linksIn(text);
+      if(links.length){ const link=links.map(readLink).find(l=>l&&l.kind==="book"), sh=readShare(text,links), w=sh.title?[sh.title,sh.author].filter(Boolean).join(" "):link&&(link.words||link.isbn);
+        if(!w){ say("That link doesn't include the book's title. Type the title instead."); return; }
+        text=w; }
       if(!navigator.onLine&&!searchMemo.has(text.toLowerCase().replace(/\s+/g," "))){ say(OFFLINE_MSG); return; }
       if(ctl) ctl.abort(); ctl=new AbortController(); say("Searching…");
       try{
         results=await searchBooks(text,ctl.signal);
-        if(q.value.trim()!==text) return;
+        if(q.value.trim()!==typed) return;   // typed on since
         say(results.length?"":"No matches. Try the author's name or the book's Audible code (from its Audible link, like B08G9PRS1K), or add it by hand.");
         list.innerHTML=results.map((r,i)=>`<button class="bsrow" type="button" role="listitem" data-i="${i}">${thumb(r)}<span class="bsmeta"><b>${esc(r.t)}</b><small>${esc([r.author,r.year,lengthLabel(r)].filter(Boolean).join(" · ")||"Unknown author")}</small></span></button>`).join("");
       }catch(e){ if(e.name!=="AbortError") say(navigator.onLine?FAIL_MSG:OFFLINE_MSG); }
@@ -2352,7 +2396,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
   dragDismiss($("#earned"),{mover:ebox,scroller:ebox,threshold:120,onClose:closeEarned,fade:p=>{ ebox.style.opacity=p==null?"":String(1-p*.9); }});
   function showMenu(){ $("#menu").style.display="block"; $$(".form").forEach(f=>f.classList.remove("show")); }
   $("#n-plus").onclick=openSheet; scrim.onclick=closePanel;
-  $$(".opt").forEach(o=>o.onclick=()=>{ $("#menu").style.display="none"; $("#"+o.dataset.form).classList.add("show"); if(o.dataset.form==="f-live") renderLiveForm(); });
+  $$(".opt").forEach(o=>o.onclick=()=>{ $("#menu").style.display="none"; $("#"+o.dataset.form).classList.add("show"); if(o.dataset.form==="f-live") renderLiveForm(); if(o.dataset.form==="f-link") lkClear(); });
   // the logging sheet, ready for a book (from a Log button, or the timer)
   let fromTimer=false;   // the form holds the stopped timer's time: logging it splits at midnight and clears it
   function openLive(bookId,mins,timer=false){
@@ -3606,6 +3650,9 @@ html.locked .toast.show{transform:translate(-50%,0)}
   try{ if(navigator.storage&&navigator.storage.persist) navigator.storage.persisted().then(p=>p||navigator.storage.persist()).catch(()=>{}); }catch(e){}
   try{ const flash=sessionStorage.getItem("earmark.flash"); if(flash){ sessionStorage.removeItem("earmark.flash"); setTimeout(()=>toast(flash),1700); } }catch(e){}
   if(new URLSearchParams(location.search).get("import")==="audible") awaitAudibleLibrary();
+  { const add=new URLSearchParams(location.search).get("add");   // ?add=<a link or shared text>: opens Paste a link with it
+    if(add){ try{ const u=new URL(location.href); u.searchParams.delete("add"); history.replaceState(history.state,"",u.pathname+u.search+u.hash); }catch(e){}
+      if(ST.onboarded) setTimeout(()=>lkOpen(add),400); else pendingReview=()=>lkOpen(add); } }
 
   /* ---- sync: the same data on every device signed in with the same email ----
      Cloudflare Access signs everyone in; the server reads the verified email and uses it as the account.
