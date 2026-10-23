@@ -22,3 +22,7 @@ export async function takeSlot(db, email, kind, perPerson, perDay) {
 export async function giveBack(db, email, kind) {
   await db.prepare("UPDATE usage SET n = MAX(0, n - 1) WHERE email = ?1 AND day = ?2 AND kind = ?3").bind(email, today(), kind).run();
 }
+export async function usedToday(db, email, kind) {
+  const row = await db.prepare("SELECT n FROM usage WHERE email = ?1 AND day = ?2 AND kind = ?3").bind(email, today(), kind).first();
+  return row ? row.n : 0;
+}

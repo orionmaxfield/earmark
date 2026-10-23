@@ -301,6 +301,23 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
 .lkhave .addbtn{margin-left:auto}
 .lkshot{display:block;margin:6px 0 0 -4px}
 #lkLinkRow[hidden]{display:none}
+#optShot[hidden],#impShotsHead[hidden],#impShotsGroup[hidden]{display:none}
+/* books in pictures */
+.ssdry{margin-top:12px;border-color:rgba(255,196,0,.4)}
+.ssdry b{display:block}
+.ssdry span{color:var(--ink-2);font-size:var(--t-14)}
+.ssrow{display:flex;align-items:flex-start;gap:10px;padding:10px 12px 10px 16px;border-bottom:1px solid var(--line)}
+.ssrow:last-child{border-bottom:0}
+.ssrow>input[type=checkbox]{margin-top:12px!important}
+.ssrow .rvthumb{margin-top:4px}
+.ssf{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.ssf input{width:100%;min-height:38px;padding:6px 10px;border-radius:var(--r-sm);border:1px solid var(--line-2);background:var(--well);color:var(--ink);font:inherit;font-size:15px}
+.ssf input.ssa{font-size:14px;color:var(--ink-2)}
+.ssmeta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;color:var(--ink-3);font-size:13px}
+.ssmeta select{min-height:32px;border-radius:var(--r-sm);border:1px solid var(--line-2);background:var(--surface-2);color:var(--ink);font:inherit;font-size:13px;padding:0 6px}
+.ssdup{color:#FFC94D;font-weight:600}
+.ssrow.dup .ssf input{opacity:.6}
+.sserr{margin:8px 0 0;color:#FF9494;font-size:var(--t-14)}
 .lkshot[hidden]{display:none}
 .srow .sl small{display:block;margin-top:2px;color:var(--ink-3);font-size:13px;line-height:1.4}
 .sgnote .linkbtn{min-height:0;padding:0}
@@ -1132,6 +1149,11 @@ html.locked .toast.show{transform:translate(-50%,0)}
     <button class="srow" id="setAudible" type="button"><span class="sl">Complete history<small>Every day you listened and when you finished each book, from Amazon's data request. Takes a few days to arrive.</small></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button>
   </div>
   <p class="sgnote">Amazon's data request: on Amazon, go to Account › Request Your Data, choose Audible, and confirm the email. When it arrives, choose the file here (it may be called File_000). Saved your library from the bookmark as a file instead? <button class="linkbtn" id="impLibFile" type="button">Choose that file</button>.</p>
+  <div class="sgh" id="impShotsHead">From pictures</div>
+  <div class="sgroup" id="impShotsGroup">
+    <button class="srow" id="impShots" type="button"><span class="sl">Screenshots or a photo of your books<small>Up to 5 pictures of a list or library (Audible, Libby, Kindle…) or of a bookshelf. You check every book before it's added.</small></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button>
+  </div>
+  <input type="file" id="shotsFile" accept="image/*" multiple hidden>
   <div class="sgh">From other apps</div>
   <div class="sgroup">
     <button class="srow" id="impOther" type="button"><span class="sl">Goodreads, StoryGraph or Libby<small>Your shelves and the dates you finished, from the file each app exports.</small></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button>
@@ -1140,6 +1162,13 @@ html.locked .toast.show{transform:translate(-50%,0)}
   <input type="file" id="audibleFile" multiple hidden>
   <input type="file" id="libraryFile" accept=".json,application/json" hidden>
   <input type="file" id="otherFile" accept=".csv,.json,text/csv,application/json" hidden>
+</section>
+
+<!-- BOOKS IN PICTURES: what screenshots or a shelf photo showed, checked and edited before anything is added -->
+<section class="screen" id="s-shots">
+  <div class="hdr"><button class="backbtn" data-nav-back aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m15 5-7 7 7 7"/></svg>Back</button><div class="title">Books in your pictures</div></div>
+  <div id="ssBody"></div>
+  <div class="rvbar"><button class="cta" id="ssAdd" type="button">Add</button><button class="ghost" id="ssCancel" type="button">Cancel</button></div>
 </section>
 
 <!-- REVIEW: an import, checked before anything is saved -->
@@ -3702,7 +3731,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
   $("#lkRes").addEventListener("click",e=>{ const b=e.target.closest(".bsrow"); if(b&&LK&&LK.cands) lkForm(LK.cands[+b.dataset.i]); });
   $("#lkManual").onclick=()=>lkForm(null);
   $$("#lkStatus button").forEach(x=>x.onclick=()=>lkSetStat(x.dataset.v));
-  $("#lkAdd").onclick=()=>{
+  $("#lkAdd").onclick=async()=>{
     const run=LK||{}, link=run.link||{}, r=run.pick;
     const t=$("#lkT").value.trim(); if(!t){ $("#lkNote").textContent="Add the book's title first."; $("#lkT").focus(); return; }
     const author=$("#lkA").value.trim()||null, H=Math.max(0,parseFloat($("#lkH").value)||0), M=Math.min(59,Math.max(0,parseFloat($("#lkM").value)||0));
@@ -3712,6 +3741,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
     const sn=parseFloat($("#lkSn").value), series=$("#lkS").value.trim()||null;
     const extra={asin:link.asin||null,isbn,narrator:$("#lkN").value.trim()||null,cover:(r&&r.cover)||null,series,num:series&&sn>0?sn:null,year:(r&&r.year)||null,pages:(r&&r.pages)||null};
     if(lkStat!=="done") extra.status=lkStat;
+    if(DRY_RUN&&run.shot){ closeSheet(); await ask({title:"Dry run: nothing was saved",msg:`On the live site this would add “${t}”${author?` by ${author}`:""} to ${lkStat==="done"?"Finished":lkStat==="listening"?"Listening":"Want to listen"}. Previews share the real account database, so books read from screenshots aren't saved here.`,single:true}); return; }
     addBook(t,h,(r&&r.genre)||null,author,lkStat==="done"?($("#lkD").value||null):null,extra);
     closeSheet(); toast(`Added “${t}” to ${lkStat==="done"?"Finished":lkStat==="listening"?"Listening":"Want to listen"}`);
   };
@@ -3725,11 +3755,11 @@ html.locked .toast.show{transform:translate(-50%,0)}
   const SHOT_EDGE=1568;
   let SHOT=null;   // { canvas } while a screenshot is being read
   function shotDrop(){ if(SHOT&&SHOT.canvas){ SHOT.canvas.width=SHOT.canvas.height=0; } SHOT=null; }
-  async function shotCanvas(file){
+  async function shotCanvas(file,edge=SHOT_EDGE){
     let img=null;
     try{ img=await createImageBitmap(file); }
     catch(e){ img=await new Promise((res,rej)=>{ const u=URL.createObjectURL(file), im=new Image(); im.onload=()=>{ URL.revokeObjectURL(u); res(im); }; im.onerror=()=>{ URL.revokeObjectURL(u); rej(e); }; im.src=u; }); }
-    const W=img.naturalWidth||img.width, H=img.naturalHeight||img.height, k=Math.min(1,SHOT_EDGE/Math.max(W,H));
+    const W=img.naturalWidth||img.width, H=img.naturalHeight||img.height, k=Math.min(1,edge/Math.max(W,H));
     const c=document.createElement("canvas"); c.width=Math.max(1,Math.round(W*k)); c.height=Math.max(1,Math.round(H*k));
     c.getContext("2d").drawImage(img,0,0,c.width,c.height); if(img.close) img.close();
     return c;
@@ -3773,6 +3803,101 @@ html.locked .toast.show{transform:translate(-50%,0)}
   $("#shotFile").onchange=e=>{ const f=e.target.files&&e.target.files[0]; e.target.value=""; if(f) shotRead(f); };
   $("#lkShotBtn").onclick=()=>{ lkMode("shot"); $("#shotFile").click(); };
   $("#optShot").onclick=()=>{ $("#menu").style.display="none"; $("#f-link").classList.add("show"); lkClear(); lkMode("shot"); $("#shotFile").click(); };
+
+  /* ---- Books in pictures: screenshots of a list or library (Audible, Libby, Kindle…) or a photo of a shelf ----
+     Up to 5 pictures, each shrunk here (2,048 px on its long side, at most 5 MB sent), read one at a time by
+     Earmark's server (Claude Haiku), then shown for checking: every book can be ticked, renamed, given its author
+     and a shelf, and books already on the shelf are flagged instead of added again. Nothing is added until Add, and
+     on a preview address nothing is added at all (dry run): previews share the real account database. */
+  const SHOTS_MAX=5, SHOTS_EDGE=2048, SHOTS_SEND_MAX=5*1024*1024, SHOTS_FILE_MAX=25*1024*1024;
+  // a preview deployment (branch.project.pages.dev, or localhost with ?dryrun=1) never writes imported books
+  const DRY_RUN=(()=>{ const h=location.hostname;
+    if(/^(localhost|127\.0\.0\.1)$/.test(h)) return new URLSearchParams(location.search).get("dryrun")==="1";
+    return /^[^.]+\.[^.]+\.pages\.dev$/i.test(h); })();
+  // whether reading pictures is set up on this server; the options stay hidden where it isn't (no key)
+  let shotState=null;
+  function shotAvailable(){
+    if(!shotState) shotState=(canRemember()?fetch("api/books/screenshot",{credentials:"same-origin",redirect:"manual"}).then(r=>r.ok?r.json():null).catch(()=>null):Promise.resolve(null))
+      .then(j=>{ const on=!!(j&&j.available); ["#optShot","#lkShotBtn","#impShotsHead","#impShotsGroup"].forEach(x=>{ $(x).hidden=!on; }); return j; });
+    return shotState;
+  }
+  ["#optShot","#lkShotBtn","#impShotsHead","#impShotsGroup"].forEach(x=>{ $(x).hidden=true; });
+  shotAvailable();
+  let SS=null;   // { items:[{title,author,format,progress,status,on,here,cover}], read, failed:[…], cost }
+  const ssStatus=p=>/finish|100\s*%/i.test(p||"")?"done":/left|\d\s*%|remaining/i.test(p||"")?"listening":"want";
+  async function shotsRead(files){
+    files=[...files];
+    const extra=files.length-SHOTS_MAX; if(extra>0) files=files.slice(0,SHOTS_MAX);
+    SS={items:[],read:0,failed:[],tokens:{input:0,output:0},skipped:extra>0?extra:0};
+    renderShots(`Reading picture 1 of ${files.length}…`); go("s-shots");
+    const seen=new Map();
+    for(let i=0;i<files.length;i++){
+      const f=files[i], name=`Picture ${i+1}`;
+      renderShots(`Reading picture ${i+1} of ${files.length}…`);
+      if(f.size>SHOTS_FILE_MAX){ SS.failed.push(`${name} is too large to open (25 MB at most).`); continue; }
+      let c=null;
+      try{ c=await shotCanvas(f,SHOTS_EDGE); }catch(e){ SS.failed.push(`${name} couldn't be opened. Use a PNG or JPEG.`); continue; }
+      const image=c.toDataURL("image/jpeg",0.85).split(",")[1], w=c.width, h=c.height;
+      const drop=()=>{ c.width=c.height=0; };   // the picture is dropped once its covers are cut out
+      if(image.length*3/4>SHOTS_SEND_MAX){ drop(); SS.failed.push(`${name} is too large to send (5 MB at most).`); continue; }
+      let res=null, j=null;
+      try{ res=await fetch("api/books/read-list",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({image,mediaType:"image/jpeg",width:w,height:h}),credentials:"same-origin",redirect:"manual"}); j=await res.json().catch(()=>null); }catch(e){}
+      if(!res||!res.ok||!j||!Array.isArray(j.books)){
+        drop();
+        SS.failed.push(`${name}: ${(j&&j.error)||(navigator.onLine?"couldn't be read just now.":"you're offline.")}`);
+        if(j&&/^limit|paused|not-configured/.test(j.reason||"")) break;   // the rest would fail the same way
+        continue;
+      }
+      SS.read++; if(j.usage){ SS.tokens.input+=j.usage.input||0; SS.tokens.output+=j.usage.output||0; }
+      j.books.forEach(b=>{ const k=titleKey(b.title)+"|"+surname(b.author);
+        let cover=null; if(b.cover) try{ cover=shotCrop(c,b.cover); }catch(e){}
+        const was=seen.get(k); if(was){ if(!was.cover&&cover) was.cover=cover; return; }
+        const it={title:b.title,author:b.author||"",format:b.format,progress:b.progress_or_hours,status:ssStatus(b.progress_or_hours),on:true,cover};
+        seen.set(k,it); SS.items.push(it); });
+      drop();
+    }
+    // a cover the picture didn't show (a spine, a list without pictures) is looked up by title
+    if(SS.items.some(x=>!x.cover)){ renderShots("Finding covers…"); const withCovers=await coversByTitle(SS.items.map(x=>({t:x.title,author:x.author,cover:x.cover})));
+      withCovers.forEach((b,i)=>{ SS.items[i].cover=b.cover||null; }); }
+    ssMarkDups(); renderShots("");
+  }
+  function ssMarkDups(){ const ix=shelfIndex(); SS.items.forEach(x=>{ x.here=onShelf(ix,{id:"",t:x.title,author:x.author})||null; if(x.here) x.on=false; }); }
+  function renderShots(busy){
+    const R=SS; if(!R) return;
+    const dups=R.items.filter(x=>x.here).length, est=(R.tokens.input*0.10+R.tokens.output*0.50)/1e6;
+    let h=`<div class="card rvsum"><b>${busy?esc(busy):plural(R.items.length,"book","books")+" found"}</b>${busy?"":`<span>${plural(R.read,"picture","pictures")} read${dups?`, ${dups} already on your shelf`:""}. Tick the books to add, and fix any title or author first.</span>`}${R.skipped?`<span class="rvx">Only the first ${SHOTS_MAX} pictures were read; ${plural(R.skipped,"picture was","pictures were")} left out.</span>`:""}${R.failed.map(t=>`<p class="sserr">${esc(t)}</p>`).join("")}</div>`;
+    if(DRY_RUN) h+=`<div class="card ssdry"><b>Dry run: nothing will be saved</b><span>This is a preview, which shares the real account database, so Add only shows what it would add.${R.read?` Reading cost about $${est.toFixed(4)} for ${plural(R.read,"picture","pictures")}.`:""}</span></div>`;
+    if(R.items.length) h+=`<section class="rvgroup">${R.items.map((x,i)=>`<div class="ssrow${x.here?" dup":""}"><input type="checkbox" data-i="${i}"${x.on?" checked":""}${x.here?" disabled":""} aria-label="Add ${esc(x.title)}"><span class="rvthumb">${x.cover?`<img src="${esc(x.cover)}" alt="" loading="lazy" onerror="this.remove()">`:""}</span><div class="ssf"><input class="sst" data-i="${i}" value="${esc(x.title)}" aria-label="Title" autocapitalize="words"><input class="ssa" data-i="${i}" value="${esc(x.author)}" placeholder="Author" aria-label="Author" autocapitalize="words"><div class="ssmeta">${x.here?`<span class="ssdup">On your shelf already</span>`:`<select class="sss" data-i="${i}" aria-label="Shelf"><option value="want"${x.status==="want"?" selected":""}>Want to listen</option><option value="listening"${x.status==="listening"?" selected":""}>Listening</option><option value="done"${x.status==="done"?" selected":""}>Finished</option></select>`}<span>${esc([x.format!=="unknown"?x.format:"",x.progress].filter(Boolean).join(" · "))}</span></div></div></div>`).join("")}</section>`;
+    else if(!busy) h+=`<p class="note">No books could be read from ${R.read?"these pictures":"the pictures"}. Try a closer screenshot, or add books by title.</p>`;
+    $("#ssBody").innerHTML=h; ssCount(busy);
+  }
+  function ssCount(busy){
+    const n=SS?SS.items.filter(x=>x.on&&!x.here).length:0, b=$("#ssAdd");
+    b.disabled=!!busy||!n; b.textContent=busy?"Reading…":!n?"Nothing to add":DRY_RUN?`Show what ${plural(n,"book","books")} would be added`:`Add ${plural(n,"book","books")}`;
+  }
+  $("#ssBody").addEventListener("change",e=>{ const x=e.target, i=+x.dataset.i; if(!SS||isNaN(i)) return; const it=SS.items[i];
+    if(x.type==="checkbox") it.on=x.checked; else if(x.classList.contains("sss")) it.status=x.value; ssCount(); });
+  $("#ssBody").addEventListener("input",e=>{ const x=e.target, i=+x.dataset.i; if(!SS||isNaN(i)) return;
+    if(x.classList.contains("sst")) SS.items[i].title=x.value; else if(x.classList.contains("ssa")) SS.items[i].author=x.value; });
+  $("#ssCancel").onclick=()=>{ SS=null; back(); };
+  $("#ssAdd").onclick=async()=>{
+    if(!SS) return;
+    ssMarkDups();   // titles may have been edited into a book that's already here
+    const pick=SS.items.filter(x=>x.on&&!x.here&&x.title.trim());
+    if(!pick.length){ renderShots(""); toast("Those books are already on your shelf"); return; }
+    if(DRY_RUN){
+      await ask({title:"Dry run: nothing was saved",msg:`On the live site this would add ${plural(pick.length,"book","books")}: ${pick.slice(0,6).map(x=>x.title.trim()).join(", ")}${pick.length>6?`, and ${pick.length-6} more`:""}.${SS.items.some(x=>x.here)?` ${plural(SS.items.filter(x=>x.here).length,"book was","books were")} skipped as already on the shelf.`:""}`,single:true});
+      return; }
+    const books=pick.map(x=>{ const b={id:uid(),t:x.title.trim(),author:x.author.trim()||null,series:null,num:null,h:null,added:new Date().toISOString(),finished:null,ph:true,genre:null,src:"screenshot",cover:x.cover||null};
+      if(x.status!=="done") b.status=x.status; return b; });
+    const checked=cleanBackup(backupState({books,sessions:[],pastHours:[]}));
+    if(!checked){ toast("Couldn't add those books"); return; }
+    $("#ssAdd").disabled=true; SS=null;
+    await rememberNow(books,"import");
+    mergeAndReload(checked.st,{empty:"Those books are already here",prefix:"Added from your pictures"});
+  };
+  $("#impShots").onclick=()=>$("#shotsFile").click();
+  $("#shotsFile").onchange=e=>{ const f=[...(e.target.files||[])]; e.target.value=""; if(f.length) whenSetUp(()=>shotsRead(f)); };
 
   /* gentle reminder: two weeks since the last backup, once there's a week of listening history */
   function renderBackupNudge(){
@@ -3845,7 +3970,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
     <p>The site counts visits with privacy-friendly analytics that use no cookies and don't follow you around the web.</p>
     <p><b>Book lookups go through Earmark's server.</b> When you search for a book, paste a book's link, or an import needs a cover, Earmark's server asks Open Library or Google Books, so those services see Earmark's server and the book, never you. Earmark's server never collects anything from Audible's catalog or website. What's found goes into Earmark's shared book list: only facts about books (title, author, narrator, series, length, cover, ISBN and ASIN), never who looked them up or what's on anyone's shelf. Books you type in or import are kept there too, but never shown to anyone else.</p>
     <p><b>Imports are read on your device.</b> Files from Amazon, Goodreads, StoryGraph or Libby are opened on this device; only the books and listening you choose to add are saved to your account. The Audible bookmark runs on your own signed-in Audible page and hands your library list to Earmark in your browser. It never sees or asks for your Amazon or Audible password, and Earmark never will.</p>
-    <p><b>Screenshots you add are read, then deleted.</b> When you use Add from screenshot, the picture is shrunk on your device and sent once, through Earmark's server, to Anthropic's Claude to read the book's details. It isn't saved on your device or on Earmark's server, and Anthropic doesn't keep it after reading it or use it to train its models. Only the details you choose to add are saved. If no book database has a cover, the cover alone is cut from the screenshot and kept with that book. You can read up to 10 screenshots a day.</p>
+    <p><b>Screenshots you add are read, then deleted.</b> When you add books from a screenshot or a photo, each picture is shrunk on your device and sent once, through Earmark's server, to Anthropic's Claude to read the book's details. It isn't saved on your device or on Earmark's server, and Anthropic doesn't keep it after reading it or use it to train its models. Only the details you choose to add are saved. A book's cover may be cut from the picture and kept with that book, and nothing else from the picture is kept. Nothing about you is sent with it. You can read up to 20 pictures a day.</p>
     <p>Feedback forms are optional. What you write in them goes to the developer.</p>
     <p>A backup you export is your own file. It stays wherever you save it.</p>`;
   $("#privacyBody").innerHTML=$("#obPrivacy").innerHTML=PRIVACY;

@@ -1,6 +1,7 @@
 import { json } from "../_middleware.js";
 import { askClaude } from "./_claude.js";
-import { takeSlot, giveBack } from "./_usage.js";
+import { readImage, claudeFailure, limits, limitReached, coverBox } from "./_shot.js";
+import { takeSlot, giveBack, usedToday } from "./_usage.js";
 
 /* POST /api/books/screenshot  { image: base64, mediaType, width, height }
    Reads a screenshot of a book's page (Audible's app, or any book app) with Claude Haiku and returns what it shows:
@@ -8,12 +9,10 @@ import { takeSlot, giveBack } from "./_usage.js";
    visible; anything not shown comes back empty, never guessed.
    The screenshot is never stored: it's held only while this request runs, and isn't logged. Anthropic doesn't keep
    images beyond the request or train on them.
-   Each person can read SCREENSHOT_PER_PERSON a day (default 10) and everyone together SCREENSHOT_PER_DAY (default
-   200), so the cost stays small; the monthly spend limit set at Anthropic is the last stop.
+   Pictures read here and by read-list.js count toward the same daily limits (see _shot.js).
+   GET says whether reading is set up, so the app can hide it where it isn't (Production has no key).
    Settings: ANTHROPIC_API_KEY (a secret, server-side only). Without it the feature says it isn't available yet. */
 const MODEL = "claude-haiku-5-5";
-const MAX_BASE64 = 3_000_000;   // about 2.2 MB; the app sends a JPEG of about 200–400 KB
-const TYPES = { "image/jpeg": [0xff, 0xd8, 0xff], "image/png": [0x89, 0x50, 0x4e, 0x47], "image/webp": [0x52, 0x49, 0x46, 0x46] };
 
 const SYSTEM = `You read a screenshot that someone took of one book's page in an audiobook or book app (often Audible) and report that book's details exactly as the page shows them.
 
@@ -64,48 +63,18 @@ function clean(o, w, h) {
   if (!o || !o.is_book_page) return null;
   const title = str(o.title); if (!title) return null;
   const num = typeof o.series_number === "number" && o.series_number > 0 && o.series_number < 1e4 ? o.series_number : null;
-  const b = o.cover_box;
-  let cover = null;
-  if (b && [b.x, b.y, b.width, b.height].every(Number.isFinite) && w > 0 && h > 0) {
-    const x = Math.max(0, Math.round(b.x)), y = Math.max(0, Math.round(b.y));
-    const cw = Math.min(w - x, Math.round(b.width)), ch = Math.min(h - y, Math.round(b.height));
-    if (cw >= 40 && ch >= 40) cover = { x, y, width: cw, height: ch };
-  }
+  const cover = coverBox(o.cover_box, w, h);
   const series = str(o.series, 200);
   return { title, subtitle: str(o.subtitle), authors: names(o.authors), narrators: names(o.narrators),
     lengthText: str(o.length_text, 60), minutes: lengthMinutes(o.length_text), series, num: series ? num : null, cover };
 }
 
-// a failed request to Claude → the answer for the app (the key itself is never in what's logged)
-export function claudeFailure(err) {
-  const s = err && err.status;
-  if (s === 401 || s === 403) {
-    console.error("screenshot: Anthropic refused the key", s);
-    return [{ error: "Reading screenshots isn't set up yet.", reason: "not-configured" }, 503];
-  }
-  if (s === 400 || s === 402 || s === 429) {   // includes a spend limit being reached
-    console.error("screenshot: Anthropic declined", s, err.type, String(err.message || "").slice(0, 120));
-    return [{ error: "Reading screenshots is paused for now. Type the title instead.", reason: "paused" }, 503];
-  }
-  console.error("screenshot: Anthropic unavailable", s, err && err.type);
-  return [{ error: "Couldn't read the screenshot just now. Try again, or type the title.", reason: "unavailable" }, 503];
-}
-
 export async function onRequestPost({ request, env, data }) {
   if (!env.ANTHROPIC_API_KEY) return json({ error: "Reading screenshots isn't set up yet.", reason: "not-configured" }, 503);
-  let body; try { body = await request.json(); } catch { return json({ error: "That request couldn't be read." }, 400); }
-  const image = typeof (body && body.image) === "string" ? body.image : "", mediaType = body && body.mediaType;
-  const w = Math.round(+body.width) || 0, h = Math.round(+body.height) || 0;
-  if (!TYPES[mediaType] || !image) return json({ error: "Send a JPEG, PNG or WebP image.", reason: "bad-image" }, 400);
-  if (image.length > MAX_BASE64) return json({ error: "That image is too large.", reason: "too-large" }, 413);
-  let head; try { head = Uint8Array.from(atob(image.slice(0, 16)), c => c.charCodeAt(0)); } catch { head = new Uint8Array(); }
-  if (!TYPES[mediaType].every((v, i) => head[i] === v)) return json({ error: "Send a JPEG, PNG or WebP image.", reason: "bad-image" }, 400);
-
-  const perPerson = +env.SCREENSHOT_PER_PERSON || 10, perDay = +env.SCREENSHOT_PER_DAY || 200;
+  const pic = await readImage(request); if (pic.error) return json(...pic.error);
+  const { image, mediaType, w, h } = pic, { perPerson, perDay } = limits(env);
   const slot = await takeSlot(env.DB, data.email, "screenshot", perPerson, perDay);
-  if (!slot.ok) return json(slot.all
-    ? { error: "Earmark has read as many screenshots as it can today. Try again tomorrow, or type the title.", reason: "limit-everyone" }
-    : { error: `You've read ${perPerson} screenshots today, the most for one day. Try again tomorrow, or type the title.`, reason: "limit-person", limit: perPerson }, 429);
+  if (!slot.ok) return json(...limitReached(slot, perPerson));
 
   let res;
   try {
@@ -132,4 +101,11 @@ export async function onRequestPost({ request, env, data }) {
   const book = clean(out, w, h);
   if (!book) return json({ error: "That doesn't look like a book's page. Take the screenshot on the book's page, or type the title.", reason: "not-a-book", left }, 422);
   return json({ book, left });
+}
+
+// GET: whether reading screenshots is set up here, and how many this person has left today
+export async function onRequestGet({ env, data }) {
+  if (!env.ANTHROPIC_API_KEY) return json({ available: false });
+  const { perPerson } = limits(env);
+  return json({ available: true, left: Math.max(0, perPerson - await usedToday(env.DB, data.email, "screenshot")), perPerson });
 }
