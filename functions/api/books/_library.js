@@ -2,8 +2,8 @@ import { plain, matchKey, relevant } from "./_match.js";
 
 /* Earmark's own book table: what's known about books (never about people), filled from every lookup, every book
    added by hand and every import, so the library grows. A book is one row, found by ASIN first, then ISBN, then
-   title and author. A better source fills in and corrects what a weaker one left (Audible and Audnexus over Open
-   Library and Google Books, over imports, over books typed in). Books that only came from people (typed in, or
+   title and author. A better source fills in and corrects what a weaker one left (Open Library and Google Books
+   over imports, over books typed in). Books that only came from people (typed in, or
    imported without a catalog confirming them) are kept but never shown in search, so a private title someone typed
    can't appear for anyone else; a catalog finding the same book later makes it visible. */
 export const SCHEMA = [
@@ -16,8 +16,11 @@ export const SCHEMA = [
   `CREATE INDEX IF NOT EXISTS books_asin ON books (asin)`,
   `CREATE INDEX IF NOT EXISTS books_isbn ON books (isbn)`,
   `CREATE INDEX IF NOT EXISTS books_match ON books (match_key)`,
+  // Audible's catalog and Audnexus are no longer asked (Audible's terms rule out collecting its listings), and what
+  // they gave earlier isn't kept. A no-op once they're gone.
+  `DELETE FROM books WHERE source IN ('audible', 'audnexus')`,
 ];
-export const RANK = { audible: 4, audnexus: 4, openlibrary: 2, googlebooks: 2, import: 1, manual: 0 };
+export const RANK = { openlibrary: 2, googlebooks: 2, import: 1, manual: 0 };
 const CONFIRMS = 2;   // rank from which a book is shown in search
 
 export const cleanAsin = v => (/^[A-Z0-9]{10}$/.test(String(v || "").trim().toUpperCase()) ? String(v).trim().toUpperCase() : null);

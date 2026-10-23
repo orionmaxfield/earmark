@@ -1,14 +1,14 @@
 import { json } from "../_middleware.js";
-import { configure, isDown, audibleSearch, openLibrarySearch, googleSearch } from "./_sources.js";
+import { configure, isDown, openLibrarySearch, googleSearch } from "./_sources.js";
 import { matchKey, plain } from "./_match.js";
 import { saveBooks, findBooks, fromRow, cleanIsbn } from "./_library.js";
 import { cached } from "./_cache.js";
 
 /* POST /api/books/match  { items: [{ t, author, isbn }] }  (at most 20)
    Books by title and author (and ISBN when there is one), for imports from Goodreads, StoryGraph and Libby, which
-   have no Audible ASIN. Each is looked for in Earmark's book table (confirmed books only), then in Audible's catalog
-   (an exact runtime), then Open Library, then Google Books (a page count, for an estimate). A result is taken only
-   when its title and author match, never just the first hit. Searches are cached like book search, and what's
+   have no Audible ASIN. Each is looked for in Earmark's book table (confirmed books only), then Open Library, then
+   Google Books (a cover, and a page count for an estimate). A result is taken only when its title and author
+   match, never just the first hit. Searches are cached like book search, and what's
    found is saved to the table.
    The answer lines up with the items: { books: [shape or null, …], retry: [indexes], sources }. Each request stays
    under the platform's limit on outside calls: a source is only tried while there's room for 3 more (cache read, the
@@ -34,25 +34,23 @@ export async function onRequestPost(ctx) {
   if (raw.length > MAX) return json({ error: `Ask for at most ${MAX} books at a time.` }, 413);
   const items = raw.map(x => ({ t: str(x && x.t, 200), author: str(x && x.author, 200), isbn: cleanIsbn(x && x.isbn) }));
   const keys = items.map(x => (x.t ? matchKey(x.t, x.author) : null));
-  const db = env.DB, out = items.map(() => null), sources = {}, save = { audible: [], openlibrary: [], googlebooks: [] }, retry = [];
+  const db = env.DB, out = items.map(() => null), sources = {}, save = { openlibrary: [], googlebooks: [] }, retry = [];
 
   const rows = (await findBooks(db, { isbns: items.map(x => x.isbn).filter(Boolean), keys: keys.filter(Boolean) })).filter(r => r.confirmed);
   items.forEach((x, i) => { const r = (x.isbn && rows.find(r => r.isbn === x.isbn)) || rows.find(r => r.match_key === keys[i]); if (r) out[i] = fromRow(r); });
 
-  // Audible for an exact runtime; when it doesn't have the book (and the table had nothing), a page count elsewhere
-  const CHAIN = [["audible", audibleSearch, 7], ["openlibrary", openLibrarySearch, 3], ["googlebooks", googleSearch, 3]];
+  const CHAIN = [["openlibrary", openLibrarySearch, 3], ["googlebooks", googleSearch, 3]];
   const meter = { calls: 0 };
   for (let i = 0; i < items.length; i++) {
     const x = items[i];
-    if (!x.t || (out[i] && out[i].minutes)) continue;
+    if (!x.t || out[i]) continue;   // the table already has it
     const q = `${titlePart(keys[i])} ${plain(String(x.author || "").split(",")[0])}`.trim().slice(0, 120);
     for (const [src, fn, days] of CHAIN) {
-      if (src !== "audible" && out[i]) break;   // the table already has this book; only an exact runtime would add to it
       if (isDown(src)) continue;
       if (meter.calls + PER_TRY > CALLS) { retry.push(i); break; }
       try {
         const b = best(await cached(ctx, src, fn, q, days, meter), x.t, x.author);
-        if (b) { out[i] = src === "audible" ? { ...(out[i] || {}), ...b } : b; save[src].push(b); sources[src] = (sources[src] || 0) + 1; break; }
+        if (b) { out[i] = b; save[src].push(b); sources[src] = (sources[src] || 0) + 1; break; }
       } catch (err) { sources[src + "Error"] = err.message; }
     }
   }

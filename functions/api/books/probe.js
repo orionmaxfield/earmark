@@ -1,9 +1,9 @@
 import { json } from "../_middleware.js";
-import { configure, audibleSearch, audibleByAsins, audnexusBook, openLibrarySearch, googleSearch } from "./_sources.js";
+import { configure, openLibrarySearch, googleSearch, openLibraryByIsbn, googleByIsbn } from "./_sources.js";
 
 /* GET /api/books/probe: tries each book source once, from Earmark's server, and reports what came back.
    For checking which sources this deployment can reach. Signed-in only, like everything under /api/. */
-const PHM = "B08G9PRS1K", MARTIAN = "B00B5HZGUG";   // Project Hail Mary, The Martian (Audible US)
+const ISBN = "9780593135204";   // Project Hail Mary
 
 async function trial(name, fn) {
   const t0 = Date.now();
@@ -21,11 +21,10 @@ async function trial(name, fn) {
 export async function onRequestGet({ env }) {
   configure(env);
   const checks = await Promise.all([
-    trial("Audnexus: book by ASIN (Project Hail Mary)", () => audnexusBook(PHM)),
-    trial("Audible catalog: search \"project hail mary\"", () => audibleSearch("project hail mary")),
-    trial("Audible catalog: two books by ASIN", () => audibleByAsins([PHM, MARTIAN])),
     trial("Open Library: search \"project hail mary\"", () => openLibrarySearch("project hail mary")),
     trial("Google Books: search \"project hail mary\"", () => googleSearch("project hail mary")),
+    trial("Open Library: by ISBN", () => openLibraryByIsbn(ISBN)),
+    trial("Google Books: by ISBN", () => googleByIsbn(ISBN)),
   ]);
   return json({ checkedAt: new Date().toISOString(), checks });
 }

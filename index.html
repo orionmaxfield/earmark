@@ -1881,9 +1881,9 @@ html.locked .toast.show{transform:translate(-50%,0)}
   }
   // a word count is the better guide when a source has one; otherwise the page count
   const estHours=(pages,words)=>{ const h=words>0?words/WORDS_PER_HOUR:pages>0?pages/PAGES_PER_HOUR:0; return h>0?Math.max(.5,Math.round(h*2)/2):null; };
-  // an exact runtime from Audible (or Audnexus), in hours
+  // an exact runtime, in hours (only from books Earmark already has; no free source gives audiobook lengths)
   const exactHours=r=>r&&r.minutes>0?Math.round(r.minutes/60*100)/100:null;
-  const srcName=r=>({audible:"Audible",audnexus:"Audible",library:"Earmark's library"})[r.src]||"the catalog";
+  const srcName=r=>({library:"Earmark's library"})[r.src]||"the catalog";
   const lengthLabel=r=>{ const x=exactHours(r); if(x!=null) return hm(x); const e=estHours(r.pages,r.words); return e!=null?`about ${fmtH(e)} (estimate)`:""; };
   const estBasis=r=>r.words>0?`${r.words.toLocaleString()} words (about ${WORDS_PER_HOUR.toLocaleString()} words an hour)`:`${r.pages.toLocaleString()} pages (about ${PAGES_PER_HOUR} pages an hour)`;
   async function openLibrary(q,signal){
@@ -1935,8 +1935,8 @@ html.locked .toast.show{transform:translate(-50%,0)}
       return {r,score};
     }).sort((x,y)=>y.score-x.score||(y.r.editions||0)-(x.r.editions||0)||(!!y.r.cover-!!x.r.cover)).slice(0,10).map(x=>x.r);
   }
-  /* book search goes through Earmark's server, which asks Audible's catalog (exact runtimes), then Open Library,
-     then Google Books. A copy of the app without Earmark's server (a 404 for /api/) asks Open Library and Google
+  /* book search goes through Earmark's server, which asks its own book table, then Open Library, then Google
+     Books (never Audible's catalog: its terms rule out collecting its listings). A copy of the app without Earmark's server (a 404 for /api/) asks Open Library and Google
      Books itself, as before. */
   let bookApi=true;
   // a server result → the app's shape: genre from its subjects, series from the title when the source has none
@@ -1952,7 +1952,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
       else {
         const j=res.ok&&/json/.test(res.headers.get("content-type")||"")?await res.json().catch(()=>null):null;
         if(!j||j.unavailable) throw new Error("search unavailable");   // signed out, or no source could be reached
-        const all=(j.results||[]).map(fromServer), found=j.byAsin?all:rankBooks(all,q);   // a book found by its ASIN shares no words with it
+        const all=(j.results||[]).map(fromServer), found=j.byId?all:rankBooks(all,q);   // a book found by its ISBN or ID shares no words with it
         remember(k,found); return found;
       }
     }
@@ -2022,33 +2022,11 @@ html.locked .toast.show{transform:translate(-50%,0)}
     for(let i=0;i<all.length;i+=500) sends.push(fetch("api/books/remember",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({kind,books:all.slice(i,i+500)}),credentials:"same-origin",redirect:"manual"}).catch(()=>{}));
     await Promise.race([Promise.all(sends),new Promise(r=>setTimeout(r,5000))]);
   }
-  /* books by Audible ASIN from Earmark's server (its book table, then Audible's catalog, then Audnexus): exact
-     runtimes, covers, narrators and series for imported books. 100 at a time; gives up quietly after a while, and
-     the import goes ahead with what it has */
-  async function lookupAsins(asins,onProgress){
-    const out=new Map(); if(!canRemember()||!asins.length) return out;
-    const stop=Date.now()+25000;
-    for(let i=0;i<asins.length&&Date.now()<stop;i+=100){
-      try{
-        const res=await fetch("api/books/lookup",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({asins:asins.slice(i,i+100)}),credentials:"same-origin",redirect:"manual"});
-        if(!res.ok) break;
-        Object.entries((await res.json()).books||{}).forEach(([a,b])=>out.set(a,b));
-      }catch(e){ break; }
-      if(onProgress) onProgress(Math.min(asins.length,i+100),asins.length);
-    }
-    return out;
-  }
-  // what the catalog knows fills in an imported book: its cover, exact length, narrator, series, and an author or
-  // length the import didn't have (wishlist items have neither)
-  function withCatalog(b,c){
-    if(!c) return b;
-    const x={...b,asin:c.asin||b.asin||null};
-    if(c.cover&&!b.cover) x.cover=c.cover;
-    if(c.minutes>0){ x.h=Math.round(c.minutes/60*100)/100; x.hEst=false; }
-    if(c.narrator&&!b.narrator) x.narrator=c.narrator;
-    if(c.series&&!b.series){ x.series=c.series; x.num=c.num||null; } else if(c.series&&b.series&&!b.num&&c.num) x.num=c.num;
-    if(c.author&&!b.author) x.author=c.author;
-    return x;
+  /* covers for imported books that have none, by title and author from Open Library or Google Books. Only a missing
+     cover (and ISBN) is filled in: an import's own lengths, and hours typed in, are never changed */
+  async function coversByTitle(books,onProgress){
+    const need=books.filter(b=>!b.cover&&b.t), got=await matchTitles(need,onProgress);
+    return books.map(b=>{ const c=got.get(b); if(!c) return b; const x=Object.assign({},b); if(c.cover) x.cover=c.cover; if(!x.isbn&&c.isbn) x.isbn=c.isbn; return x; });
   }
   // a book typed in: gathered for a couple of seconds, then sent
   function rememberBooks(books,kind){
@@ -3203,12 +3181,9 @@ html.locked .toast.show{transform:translate(-50%,0)}
     }
     if(!result||!(result.found.books||result.found.sessions)){
       await ask({title:"That isn't an Audible data export",msg:"Choose the file Audible sends after Request Your Data (it may be called File_000), or Library.csv and Listening History.csv from inside it.",single:true}); return; }
-    // match the books by ASIN, so they land with their covers and exact lengths
-    const asins=result.backup.books.map(b=>b.srcKey).filter(a=>/^[A-Z0-9]{10}$/.test(a||""));
-    if(asins.length){ toast("Matching your books with Audible…");
-      const cat=await lookupAsins(asins,(n,all)=>toast(`Matching your books with Audible… ${n} of ${all}`));
-      result.backup.books=result.backup.books.map(b=>withCatalog(b,cat.get(b.srcKey)));
-      result.found.matched=asins.filter(a=>cat.has(a)).length; }
+    // covers by title; the lengths are the export's own
+    toast("Finding covers…");
+    result.backup.books=await coversByTitle(result.backup.books,(n,all)=>toast(`Finding covers… ${n} of ${all}`));
     const f=result.found, yr=d=>d?d.slice(0,4):"", span=f.first?(yr(f.first)===yr(f.last)?`in ${yr(f.first)}`:`from ${yr(f.first)} to ${yr(f.last)}`):"";
     whenSetUp(()=>openReview({title:"Complete history from Audible",from:"Audible",items:result.backup.books,sessions:result.backup.sessions,swap:"Audible",
       swapWhy:"Your listening history covers every hour you listened, so the total you typed in isn't needed.",
@@ -3383,9 +3358,9 @@ html.locked .toast.show{transform:translate(-50%,0)}
   async function reviewAudibleLibrary(d){
     const items=libraryItems(d);
     if(!items||!items.length){ await ask({title:"That isn't an Audible library list",msg:"Use the Earmark bookmark on your Audible library page, or choose the earmark-audible-library file it saved.",single:true}); return; }
-    toast("Matching your books with Audible…");
-    const cat=await lookupAsins(items.map(b=>b.asin),(n,all)=>toast(`Matching your books with Audible… ${n} of ${all}`));
-    await openReview({title:"From your Audible library",from:"your Audible library",items:items.map(b=>withCatalog(b,cat.get(b.asin))),swap:"Audible"});
+    toast("Finding covers…");
+    const list=await coversByTitle(items,(n,all)=>toast(`Finding covers… ${n} of ${all}`));
+    await openReview({title:"From your Audible library",from:"your Audible library",items:list,swap:"Audible"});
   }
   const whenSetUp=f=>{ if(ST.onboarded) f(); else { pendingReview=f; toast("Finish setting up, then check your Audible books"); } };
   async function libraryFile(f){ let o=null; try{ o=JSON.parse(await f.text()); }catch(e){} whenSetUp(()=>reviewAudibleLibrary(o)); }
@@ -3594,7 +3569,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
     <p>Deleting your account (Settings › Account › Delete account) erases it from the server and from this device.</p>
     <p>Your email address is what you use to log in to the beta, and it's how your account is found.</p>
     <p>The site counts visits with privacy-friendly analytics that use no cookies and don't follow you around the web.</p>
-    <p><b>Book lookups go through Earmark's server.</b> When you search for a book, or an import needs a book's length and cover, Earmark's server asks Audible's catalog, Audnexus, Open Library or Google Books, so those services see Earmark's server and the book, never you. What's found goes into Earmark's shared book list: only facts about books (title, author, narrator, series, length, cover, ISBN and ASIN), never who looked them up or what's on anyone's shelf. Books you type in or import are kept there too, but never shown to anyone else.</p>
+    <p><b>Book lookups go through Earmark's server.</b> When you search for a book, paste a book's link, or an import needs a cover, Earmark's server asks Open Library or Google Books, so those services see Earmark's server and the book, never you. Earmark's server never collects anything from Audible's catalog or website. What's found goes into Earmark's shared book list: only facts about books (title, author, narrator, series, length, cover, ISBN and ASIN), never who looked them up or what's on anyone's shelf. Books you type in or import are kept there too, but never shown to anyone else.</p>
     <p><b>Imports are read on your device.</b> Files from Amazon, Goodreads, StoryGraph or Libby are opened on this device; only the books and listening you choose to add are saved to your account. The Audible bookmark runs on your own signed-in Audible page and hands your library list to Earmark in your browser. It never sees or asks for your Amazon or Audible password, and Earmark never will.</p>
     <p>Feedback forms are optional. What you write in them goes to the developer.</p>
     <p>A backup you export is your own file. It stays wherever you save it.</p>`;
