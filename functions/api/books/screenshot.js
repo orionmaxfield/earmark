@@ -1,6 +1,6 @@
 import { json } from "../_middleware.js";
 import { askClaude } from "./_claude.js";
-import { readImage, claudeFailure, limits, limitReached } from "./_shot.js";
+import { readImage, claudeFailure, limits, limitReached, coverBox } from "./_shot.js";
 import { takeSlot, giveBack, usedToday } from "./_usage.js";
 
 /* POST /api/books/screenshot  { image: base64, mediaType, width, height }
@@ -63,13 +63,7 @@ function clean(o, w, h) {
   if (!o || !o.is_book_page) return null;
   const title = str(o.title); if (!title) return null;
   const num = typeof o.series_number === "number" && o.series_number > 0 && o.series_number < 1e4 ? o.series_number : null;
-  const b = o.cover_box;
-  let cover = null;
-  if (b && [b.x, b.y, b.width, b.height].every(Number.isFinite) && w > 0 && h > 0) {
-    const x = Math.max(0, Math.round(b.x)), y = Math.max(0, Math.round(b.y));
-    const cw = Math.min(w - x, Math.round(b.width)), ch = Math.min(h - y, Math.round(b.height));
-    if (cw >= 40 && ch >= 40) cover = { x, y, width: cw, height: ch };
-  }
+  const cover = coverBox(o.cover_box, w, h);
   const series = str(o.series, 200);
   return { title, subtitle: str(o.subtitle), authors: names(o.authors), narrators: names(o.narrators),
     lengthText: str(o.length_text, 60), minutes: lengthMinutes(o.length_text), series, num: series ? num : null, cover };

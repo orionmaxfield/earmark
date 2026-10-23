@@ -20,6 +20,14 @@ export async function readImage(request) {
   return { image, mediaType, w, h };
 }
 
+// a cover's box from Claude, kept inside the picture → { x, y, width, height }, or null when it's missing or too small
+export function coverBox(b, w, h, min = 40) {
+  if (!b || ![b.x, b.y, b.width, b.height].every(Number.isFinite) || !(w > 0 && h > 0)) return null;
+  const x = Math.max(0, Math.round(b.x)), y = Math.max(0, Math.round(b.y));
+  const cw = Math.min(w - x, Math.round(b.width)), ch = Math.min(h - y, Math.round(b.height));
+  return cw >= min && ch >= min ? { x, y, width: cw, height: ch } : null;
+}
+
 export function limitReached(slot, perPerson) {
   return [slot.all
     ? { error: "Earmark has read as many screenshots as it can today. Try again tomorrow, or type the title.", reason: "limit-everyone" }

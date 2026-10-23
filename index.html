@@ -3837,20 +3837,27 @@ html.locked .toast.show{transform:translate(-50%,0)}
       if(f.size>SHOTS_FILE_MAX){ SS.failed.push(`${name} is too large to open (25 MB at most).`); continue; }
       let c=null;
       try{ c=await shotCanvas(f,SHOTS_EDGE); }catch(e){ SS.failed.push(`${name} couldn't be opened. Use a PNG or JPEG.`); continue; }
-      const image=c.toDataURL("image/jpeg",0.85).split(",")[1], w=c.width, h=c.height; c.width=c.height=0;   // the picture is dropped here
-      if(image.length*3/4>SHOTS_SEND_MAX){ SS.failed.push(`${name} is too large to send (5 MB at most).`); continue; }
+      const image=c.toDataURL("image/jpeg",0.85).split(",")[1], w=c.width, h=c.height;
+      const drop=()=>{ c.width=c.height=0; };   // the picture is dropped once its covers are cut out
+      if(image.length*3/4>SHOTS_SEND_MAX){ drop(); SS.failed.push(`${name} is too large to send (5 MB at most).`); continue; }
       let res=null, j=null;
       try{ res=await fetch("api/books/read-list",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({image,mediaType:"image/jpeg",width:w,height:h}),credentials:"same-origin",redirect:"manual"}); j=await res.json().catch(()=>null); }catch(e){}
       if(!res||!res.ok||!j||!Array.isArray(j.books)){
+        drop();
         SS.failed.push(`${name}: ${(j&&j.error)||(navigator.onLine?"couldn't be read just now.":"you're offline.")}`);
         if(j&&/^limit|paused|not-configured/.test(j.reason||"")) break;   // the rest would fail the same way
         continue;
       }
       SS.read++; if(j.usage){ SS.tokens.input+=j.usage.input||0; SS.tokens.output+=j.usage.output||0; }
-      j.books.forEach(b=>{ const k=titleKey(b.title)+"|"+surname(b.author); if(seen.has(k)) return; seen.set(k,1);
-        SS.items.push({title:b.title,author:b.author||"",format:b.format,progress:b.progress_or_hours,status:ssStatus(b.progress_or_hours),on:true}); });
+      j.books.forEach(b=>{ const k=titleKey(b.title)+"|"+surname(b.author);
+        let cover=null; if(b.cover) try{ cover=shotCrop(c,b.cover); }catch(e){}
+        const was=seen.get(k); if(was){ if(!was.cover&&cover) was.cover=cover; return; }
+        const it={title:b.title,author:b.author||"",format:b.format,progress:b.progress_or_hours,status:ssStatus(b.progress_or_hours),on:true,cover};
+        seen.set(k,it); SS.items.push(it); });
+      drop();
     }
-    if(SS.items.length){ renderShots("Finding covers…"); const withCovers=await coversByTitle(SS.items.map(x=>({t:x.title,author:x.author})));
+    // a cover the picture didn't show (a spine, a list without pictures) is looked up by title
+    if(SS.items.some(x=>!x.cover)){ renderShots("Finding covers…"); const withCovers=await coversByTitle(SS.items.map(x=>({t:x.title,author:x.author,cover:x.cover})));
       withCovers.forEach((b,i)=>{ SS.items[i].cover=b.cover||null; }); }
     ssMarkDups(); renderShots("");
   }
@@ -3963,7 +3970,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
     <p>The site counts visits with privacy-friendly analytics that use no cookies and don't follow you around the web.</p>
     <p><b>Book lookups go through Earmark's server.</b> When you search for a book, paste a book's link, or an import needs a cover, Earmark's server asks Open Library or Google Books, so those services see Earmark's server and the book, never you. Earmark's server never collects anything from Audible's catalog or website. What's found goes into Earmark's shared book list: only facts about books (title, author, narrator, series, length, cover, ISBN and ASIN), never who looked them up or what's on anyone's shelf. Books you type in or import are kept there too, but never shown to anyone else.</p>
     <p><b>Imports are read on your device.</b> Files from Amazon, Goodreads, StoryGraph or Libby are opened on this device; only the books and listening you choose to add are saved to your account. The Audible bookmark runs on your own signed-in Audible page and hands your library list to Earmark in your browser. It never sees or asks for your Amazon or Audible password, and Earmark never will.</p>
-    <p><b>Screenshots you add are read, then deleted.</b> When you add books from a screenshot or a photo, each picture is shrunk on your device and sent once, through Earmark's server, to Anthropic's Claude to read the book's details. It isn't saved on your device or on Earmark's server, and Anthropic doesn't keep it after reading it or use it to train its models. Only the details you choose to add are saved. If no book database has a cover, the cover alone is cut from the screenshot and kept with that book. Nothing about you is sent with it. You can read up to 20 pictures a day.</p>
+    <p><b>Screenshots you add are read, then deleted.</b> When you add books from a screenshot or a photo, each picture is shrunk on your device and sent once, through Earmark's server, to Anthropic's Claude to read the book's details. It isn't saved on your device or on Earmark's server, and Anthropic doesn't keep it after reading it or use it to train its models. Only the details you choose to add are saved. A book's cover may be cut from the picture and kept with that book, and nothing else from the picture is kept. Nothing about you is sent with it. You can read up to 20 pictures a day.</p>
     <p>Feedback forms are optional. What you write in them goes to the developer.</p>
     <p>A backup you export is your own file. It stays wherever you save it.</p>`;
   $("#privacyBody").innerHTML=$("#obPrivacy").innerHTML=PRIVACY;
