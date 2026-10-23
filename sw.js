@@ -8,7 +8,7 @@
      cached app when offline or on a very slow connection.
    - App files, icons and fonts: from the cache, refreshed in the background.
    - Book covers: the shelf's covers are kept on the device, so it works offline.
-   - Book search (Open Library, Google Books) and sync (/api/): always the network; the app says so when offline.
+   - Book search and sync (/api/, which asks Audible, Open Library and Google Books): always the network; the app says so when offline.
    A new version waits until the page's "Update available — tap to refresh" is tapped. */
 const SHELL = "earmark-shell-v1", RUNTIME = "earmark-runtime-v1", COVERS = "earmark-covers";
 const SCOPE = self.registration.scope;
@@ -72,7 +72,7 @@ self.addEventListener("fetch", e => {
   if (req.mode === "navigate") { e.respondWith(page(req)); return; }
   if (url.origin === self.location.origin) { e.respondWith(fromCache(req)); return; }
   if (/^fonts\.(googleapis|gstatic)\.com$/.test(url.hostname)) { e.respondWith(fromCache(req, RUNTIME)); return; }
-  if (/^covers\.openlibrary\.org$|^books\.google\.com$|^books\.googleusercontent\.com$/.test(url.hostname)) { e.respondWith(cover(req)); return; }
+  if (/^covers\.openlibrary\.org$|^books\.google\.com$|^books\.googleusercontent\.com$|^m\.media-amazon\.com$/.test(url.hostname)) { e.respondWith(cover(req)); return; }
   // everything else, such as book search, goes straight to the network
 });
 
