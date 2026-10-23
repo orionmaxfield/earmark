@@ -1,5 +1,5 @@
-import Anthropic from "@anthropic-ai/sdk";
 import { json } from "../_middleware.js";
+import { askClaude } from "./_claude.js";
 import { takeSlot, giveBack } from "./_usage.js";
 
 /* POST /api/books/screenshot  { image: base64, mediaType, width, height }
@@ -10,8 +10,7 @@ import { takeSlot, giveBack } from "./_usage.js";
    images beyond the request or train on them.
    Each person can read SCREENSHOT_PER_PERSON a day (default 10) and everyone together SCREENSHOT_PER_DAY (default
    200), so the cost stays small; the monthly spend limit set at Anthropic is the last stop.
-   Settings: ANTHROPIC_API_KEY (a secret, server-side only). ANTHROPIC_BASE_URL_TEST points at a stand-in for local
-   tests and is never set on Cloudflare. */
+   Settings: ANTHROPIC_API_KEY (a secret, server-side only). Without it the feature says it isn't available yet. */
 const MODEL = "claude-haiku-5-5";
 const MAX_BASE64 = 3_000_000;   // about 2.2 MB; the app sends a JPEG of about 200–400 KB
 const TYPES = { "image/jpeg": [0xff, 0xd8, 0xff], "image/png": [0x89, 0x50, 0x4e, 0x47], "image/webp": [0x52, 0x49, 0x46, 0x46] };
@@ -77,6 +76,21 @@ function clean(o, w, h) {
     lengthText: str(o.length_text, 60), minutes: lengthMinutes(o.length_text), series, num: series ? num : null, cover };
 }
 
+// a failed request to Claude → the answer for the app (the key itself is never in what's logged)
+export function claudeFailure(err) {
+  const s = err && err.status;
+  if (s === 401 || s === 403) {
+    console.error("screenshot: Anthropic refused the key", s);
+    return [{ error: "Reading screenshots isn't set up yet.", reason: "not-configured" }, 503];
+  }
+  if (s === 400 || s === 402 || s === 429) {   // includes a spend limit being reached
+    console.error("screenshot: Anthropic declined", s, err.type, String(err.message || "").slice(0, 120));
+    return [{ error: "Reading screenshots is paused for now. Type the title instead.", reason: "paused" }, 503];
+  }
+  console.error("screenshot: Anthropic unavailable", s, err && err.type);
+  return [{ error: "Couldn't read the screenshot just now. Try again, or type the title.", reason: "unavailable" }, 503];
+}
+
 export async function onRequestPost({ request, env, data }) {
   if (!env.ANTHROPIC_API_KEY) return json({ error: "Reading screenshots isn't set up yet.", reason: "not-configured" }, 503);
   let body; try { body = await request.json(); } catch { return json({ error: "That request couldn't be read." }, 400); }
@@ -93,10 +107,9 @@ export async function onRequestPost({ request, env, data }) {
     ? { error: "Earmark has read as many screenshots as it can today. Try again tomorrow, or type the title.", reason: "limit-everyone" }
     : { error: `You've read ${perPerson} screenshots today, the most for one day. Try again tomorrow, or type the title.`, reason: "limit-person", limit: perPerson }, 429);
 
-  const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY, baseURL: env.ANTHROPIC_BASE_URL_TEST || undefined, maxRetries: 1, timeout: 30000 });
   let res;
   try {
-    res = await client.messages.create({
+    res = await askClaude(env, {
       model: MODEL,
       max_tokens: 2000,
       system: SYSTEM,
@@ -109,17 +122,7 @@ export async function onRequestPost({ request, env, data }) {
   } catch (err) {
     // the call didn't happen or wasn't billed: the slot goes back
     await giveBack(env.DB, data.email, "screenshot").catch(() => {});
-    if (err instanceof Anthropic.AuthenticationError || err instanceof Anthropic.PermissionDeniedError) {
-      console.error("screenshot: Anthropic key refused", err.status);
-      return json({ error: "Reading screenshots isn't set up yet.", reason: "not-configured" }, 503);
-    }
-    if (err instanceof Anthropic.BadRequestError || err instanceof Anthropic.RateLimitError) {
-      // includes the monthly spend limit being reached
-      console.error("screenshot: Anthropic declined", err.status, err.message && err.message.slice(0, 120));
-      return json({ error: "Reading screenshots is paused for now. Type the title instead.", reason: "paused" }, 503);
-    }
-    console.error("screenshot: Anthropic unavailable", err && err.status);
-    return json({ error: "Couldn't read the screenshot just now. Try again, or type the title.", reason: "unavailable" }, 503);
+    return json(...claudeFailure(err));
   }
   const left = Math.max(0, perPerson - slot.mine);
   if (res.stop_reason === "refusal" || res.stop_reason === "max_tokens")
