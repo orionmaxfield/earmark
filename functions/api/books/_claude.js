@@ -3,6 +3,12 @@
    SDK. The key comes from the environment and goes only into the request header: it's never logged or returned.
    One retry when the service is overloaded or unreachable; none when a spend limit stops the request.
    ANTHROPIC_BASE_URL_TEST points at a stand-in for local tests and is never set on Cloudflare. */
+// text from Anthropic, made safe to log or show: the key (and anything shaped like a key) removed
+export function scrub(text, env) {
+  let t = String(text == null ? "" : text);
+  if (env && env.ANTHROPIC_API_KEY) t = t.split(env.ANTHROPIC_API_KEY).join("[key removed]");
+  return t.replace(/sk-ant-[A-Za-z0-9_-]{8,}/g, "[key removed]");
+}
 export class ClaudeError extends Error {
   constructor(status, type, message) { super(message); this.status = status; this.type = type; }
 }
@@ -16,11 +22,11 @@ export async function askClaude(env, body, { timeout = 30000, retries = 1 } = {}
         headers: { "content-type": "application/json", "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2026-10-21" } });
     } catch (err) {
       if (attempt < retries) continue;
-      throw new ClaudeError(0, "connection_error", err && err.name === "AbortError" ? "timed out" : "unreachable");
+      throw new ClaudeError(0, "connection_error", err && err.name === "AbortError" ? "timed out" : "unreachable");   // never err.message: it could carry request details
     } finally { clearTimeout(timer); }
     const data = await res.json().catch(() => null);
     if (res.ok && data) return data;
-    const type = (data && data.error && data.error.type) || "api_error", message = (data && data.error && data.error.message) || `HTTP ${res.status}`;
+    const type = scrub((data && data.error && data.error.type) || "api_error", env), message = scrub((data && data.error && data.error.message) || `HTTP ${res.status}`, env);
     const again = res.status === 529 || res.status >= 500 || (res.status === 429 && res.headers.get("retry-after"));
     if (again && attempt < retries) { await new Promise(r => setTimeout(r, 800)); continue; }
     throw new ClaudeError(res.status, type, message);
