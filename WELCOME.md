@@ -25,7 +25,7 @@ Open the link from your invite email and log in with your email address. That em
 
 ## 2. What to try
 
-- **Add your books from screenshots.** Tap **+ › Add books from screenshots** and choose screenshots of your library in Audible, Libby or Kindle, or a photo of your bookshelf. Earmark reads the books and their covers, and you check them before anything is added.
+- **Add your books from screenshots.** On the **Bookshelf** tab, tap **Add books › Books from screenshots** and choose screenshots of your library in Audible, Libby or Kindle, or a photo of your bookshelf. Earmark reads the books and their covers, and you check them before anything is added.
 - **Log your listening every day** with the + button. Your streak starts on day one.
 - **Rest days are on by default**, so a missed day here and there won't break your streak. You can turn them off in Settings.
 - **Add the books you've finished**, and the ones you're listening to now.
