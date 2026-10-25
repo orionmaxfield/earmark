@@ -151,7 +151,7 @@ svg[stroke="currentColor"]{stroke-width:1.75;stroke-linecap:round;stroke-linejoi
 /* one card style */
 .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:16px;box-shadow:var(--sh-1)}
 .card+.card{margin-top:12px}
-.rank .row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.rank .row{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:0 16px 12px}
 .rank .name{font-size:var(--t-24);font-weight:700;letter-spacing:-.01em}
 .rank .next{font-size:var(--t-14);color:var(--ink-2)}
 .bar{height:4px;border-radius:var(--r-pill);background:var(--well);margin-top:12px;overflow:hidden}
@@ -211,9 +211,7 @@ svg[stroke="currentColor"]{stroke-width:1.75;stroke-linecap:round;stroke-linejoi
 .seg{display:flex;gap:2px;border:1px solid var(--line);padding:2px;border-radius:var(--r-pill);font-size:var(--t-12)}
 .seg button{border:0;background:transparent;color:var(--ink-2);min-height:28px;padding:0 12px;border-radius:var(--r-pill);cursor:pointer;font-weight:600}
 .seg button.on{background:var(--surface-2);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line-2)}
-.bookcase{margin-top:12px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:16px 0 4px;box-shadow:var(--sh-1)}
-.row{display:flex;gap:12px;align-items:flex-end;overflow-x:auto;padding:0 16px 12px;scrollbar-width:none;scroll-snap-type:x proximity}
-.row::-webkit-scrollbar{display:none}
+.bookcase{margin-top:12px}
 .shelfline{height:1px;margin:0 16px 16px;background:var(--line-2)}
 .cover{flex:0 0 auto;width:74px;height:108px;border-radius:3px 6px 6px 3px;position:relative;scroll-snap-align:start;cursor:pointer;
   box-shadow:0 6px 12px -4px rgba(0,0,0,.45), inset 3px 0 0 rgba(255,255,255,.10), inset -1px 0 0 rgba(0,0,0,.25);
@@ -289,6 +287,7 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
 .qsteps{margin:8px 0 4px;padding-left:20px;color:var(--ink-2);font-size:var(--t-14);line-height:1.5}
 .qsteps b{color:var(--ink)}
 .qsor{margin-top:18px}
+.bkmore{display:block;margin:10px auto 0}
 /* add a book from a screenshot */
 .lksay{margin:10px 0 0;font-size:var(--t-14);color:var(--ink-2);line-height:1.45}
 .lksay:empty{display:none}
@@ -298,7 +297,7 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
 .lkhave .bscov{width:46px;height:68px}
 .lkhave .addbtn{margin-left:auto}
 .lkshot{display:block;margin:6px 0 0 -4px}
-#optShot[hidden],#optShots[hidden],#obShots[hidden],#obShotsOr[hidden],#impShotsHead[hidden],#impShotsGroup[hidden]{display:none}
+#addShot[hidden],#bkShots[hidden],#obShots[hidden],#obShotsOr[hidden],#impShotsHead[hidden],#impShotsGroup[hidden]{display:none}
 /* books in pictures */
 .ssdry{margin-top:12px;border-color:rgba(255,196,0,.4)}
 .ssdry b{display:block}
@@ -426,7 +425,17 @@ html.locked,html.locked body{overflow:hidden}
 .viewseg svg{width:18px;height:18px}
 .pillbtn{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 16px;border-radius:var(--r-pill);border:1px solid var(--line-2);background:transparent;color:var(--ink);font-size:var(--t-14);font-weight:600;cursor:pointer}
 .pillbtn svg{width:18px;height:18px}
+/* the bookshelf grid, the same on Home and the Bookshelf tab (shelfGrid()): 3 across on a phone, 4 when its box is
+   wide enough, wrapping down the page; never sideways. On Home only two rows show. */
+.shelfbox{container-type:inline-size}
 .shelfgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px 14px;padding:16px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);box-shadow:var(--sh-1)}
+.shelfgrid.rows2>:nth-child(n+7){display:none}
+@container (min-width:520px){
+  .shelfgrid{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .shelfgrid.rows2>:nth-child(n+7){display:flex}
+  .shelfgrid.rows2>:nth-child(n+9){display:none}
+}
+.shelfmore{display:block;margin:6px auto 0}
 .shelfgrid .cover{width:100%;height:auto;aspect-ratio:74/108}
 .shelfgrid .cover.ph b{font-size:12.5px}
 .shelflist{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);box-shadow:var(--sh-1);overflow:hidden}
@@ -1003,9 +1012,9 @@ html.locked .toast.show{transform:translate(-50%,0)}
   <div class="rail thin"></div>
 
   <div class="sec">
-    <div class="sechead"><h2>Your bookshelf</h2><button class="seeall" data-go="s-shelf">See all</button></div>
+    <div class="sechead"><h2>Your bookshelf</h2></div>
     <div class="shelfrow"><div class="seg" id="shelfSeg"><button class="on" data-shelf="month">Month</button><button data-shelf="year">Year</button><button data-shelf="all">All</button></div></div>
-    <div class="bookcase" id="bookcase"></div>
+    <div class="bookcase shelfbox" id="bookcase"></div>
   </div>
 
   <p class="proto">Beta · synced to your account · <a id="homeFeedback" href="#" target="_blank" rel="noopener">Send feedback</a></p>
@@ -1020,19 +1029,20 @@ html.locked .toast.show{transform:translate(-50%,0)}
       <button data-view="grid" aria-label="Grid view" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4" y="4" width="6" height="7" rx="1"/><rect x="14" y="4" width="6" height="7" rx="1"/><rect x="4" y="14" width="6" height="7" rx="1"/><rect x="14" y="14" width="6" height="7" rx="1"/></svg></button>
       <button data-view="list" aria-label="List view" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/></svg></button>
     </div>
-    <button class="pillbtn" data-go="s-add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 5v14M5 12h14"/></svg>Add books</button>
+    <button class="pillbtn" id="shelfAddBooks" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 5v14M5 12h14"/></svg>Add books</button>
   </div>
   <div class="shelfbar" id="shelfFilterBar">
     <div class="seg" id="shelfFilter" role="group" aria-label="Show books finished"><button data-f="month">Month</button><button data-f="year">Year</button><button data-f="all">All</button></div>
     <select id="shelfSort" class="sortsel" aria-label="Sort books"><option value="newest">Newest</option><option value="oldest">Oldest</option><option value="longest">Longest</option><option value="title">Title</option></select>
   </div>
-  <div id="shelfAll"></div>
+  <div class="shelfbox" id="shelfAll"></div>
 </section>
 
 <!-- ADD BOOKS (onboarding-style bulk add) -->
 <section class="screen" id="s-add">
   <div class="hdr"><button class="backbtn" data-nav-back aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m15 5-7 7 7 7"/></svg>Back</button><div class="title">Add books</div><div class="tag" id="addTag">Search for the books you've finished</div></div>
   <div class="addas"><div class="seg" id="addAs" role="group" aria-label="Add to"><button type="button" data-v="done" class="on">Finished</button><button type="button" data-v="listening">Listening</button><button type="button" data-v="want">Want to listen</button></div></div>
+  <button class="linkbtn lkshot" id="addShot" type="button">Add it from a screenshot of its page instead</button>
   <div class="bsearch" id="addSearch"></div>
   <div class="manual" id="addManual" hidden>
     <div class="field"><input id="addTitle" autocapitalize="words" placeholder="Book title" autocomplete="off" aria-label="Book title"></div>
@@ -1223,14 +1233,19 @@ html.locked .toast.show{transform:translate(-50%,0)}
   <div class="inner">
     <div class="handle"></div>
     <div id="menu">
-      <h2 style="margin:0 0 4px">Add hours</h2>
+      <h2 style="margin:0 0 4px">Add</h2>
       <div class="pend" id="pendMenu" hidden><div class="nt"><b class="pendText"></b><small>From your stopped timer</small></div><button class="lact go" type="button" data-pend="log">Log it</button><button class="lact" type="button" data-pend="discard">Discard</button></div>
-      <button class="opt" data-form="f-live"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span><b>Log today's listening</b><small>Keeps your streak alive and counts toward daily achievements.</small></span></button>
-      <button class="opt" data-form="f-book"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h12a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3z"/><path d="M4 17a3 3 0 0 1 3-3h12"/></svg></span><span><b>Finished a book</b><small>Puts it on your shelf. Add its hours, or skip them if they're already logged.</small></span></button>
-      <button class="opt" id="optShots"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="15" rx="2.5"/><path d="m3 16 5-5 4 4 3-3 6 6"/><circle cx="15.5" cy="9.5" r="1.5"/></svg></span><span><b>Add books from screenshots</b><small>Screenshots of your library in Audible, Libby or Kindle, or a photo of your bookshelf.</small></span></button>
-      <button class="opt" data-form="f-shot" id="optShot"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M9.5 8h5M9.5 11.5h5M9.5 15h3"/></svg></span><span><b>Add a book from a screenshot</b><small>A screenshot of one book's page in Audible or any book app.</small></span></button>
-      <button class="opt" data-form="f-quick"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M13 3 5 13h6l-1 8 8-10h-6z"/></svg></span><span><b>Quick start from Audible</b><small>Your lifetime total from the Audible app, in one step.</small></span></button>
-      <button class="opt" data-form="f-past"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 8v4l2 2"/></svg></span><span><b>Add hours from the past</b><small>Audible, Libby, Libro.fm… Counts toward your total and rank only.</small></span></button>
+      <button class="opt" data-form="f-live"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span><b>Log today's listening</b><small>Keeps your streak going.</small></span></button>
+      <button class="opt" data-form="f-book"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h12a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3z"/><path d="M4 17a3 3 0 0 1 3-3h12"/></svg></span><span><b>Finished a book</b><small>Puts it on your shelf, with its hours.</small></span></button>
+      <button class="opt" id="optAddBook"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/><path d="M11 8v6M8 11h6"/></svg></span><span><b>Add a book</b><small id="optAddBookSub">Search by title, or use a screenshot.</small></span></button>
+    </div>
+    <div id="booksMenu" style="display:none">
+      <h2 style="margin:0 0 4px">Add books</h2>
+      <button class="opt" id="bkShots"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="15" rx="2.5"/><path d="m3 16 5-5 4 4 3-3 6 6"/><circle cx="15.5" cy="9.5" r="1.5"/></svg></span><span><b>Books from screenshots</b><small>Your library, or a photo of your shelf.</small></span></button>
+      <button class="opt" data-form="f-past"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 8v4l2 2"/></svg></span><span><b>Hours from the past</b><small>Listening from before Earmark.</small></span></button>
+      <button class="opt" data-form="f-quick"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M13 3 5 13h6l-1 8 8-10h-6z"/></svg></span><span><b>Quick start from Audible</b><small>Your total from the Audible app.</small></span></button>
+      <button class="opt" id="bkFiles"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M12 18v-6M9 15l3 3 3-3"/></svg></span><span><b>Goodreads, StoryGraph or Libby</b><small>The file one of these apps exports.</small></span></button>
+      <button class="linkbtn bkmore" id="bkMore" type="button">More ways to import</button>
     </div>
     <div class="form" id="f-live"><h2 style="margin:0">Today's listening</h2><div class="timerbox" id="timerBox"></div><div class="field"><label><input type="number" inputmode="numeric" min="0" placeholder="0"><span>hours</span></label><label><input type="number" inputmode="numeric" min="0" max="59" placeholder="0"><span>min</span></label></div><div class="field" id="logBookRow" hidden><select id="logBook" aria-label="Book this time goes toward"></select></div><div class="field"><input id="noteIn" placeholder="Note, e.g. Scythe, chapters 18–20"></div><button class="cta" data-done="live" id="logBtn">Log time</button><button class="ghost" data-back>Back</button></div>
     <div class="form" id="f-book"><h2 style="margin:0">Finished a book</h2>
@@ -1415,7 +1430,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
   };
   /* ---- state: everything the app shows comes from here. A new account starts at zero. ---- */
   const KEY="earmark.state.v1";
-  const APP_VERSION="0.13.1";   // shown in Settings > About with a Beta tag
+  const APP_VERSION="0.14.0";   // shown in Settings > About with a Beta tag
   /* ---- beta settings: fill these in ---- */
   const FEEDBACK_URL="https://docs.google.com/forms/d/e/1FAIpQLSd0juSwRwq8oNXawAh7rJ79hCi84N0al5oX6bwg_KqX-gkqEw/viewform";   // "Send feedback"
   const FINAL_SURVEY_URL="https://docs.google.com/forms/d/e/1FAIpQLSfLebyfyRnXDIu-X4ERDeldCd_olUcJBbSbxtkAN0O6HENCbA/viewform";   // Settings > Help > Final thoughts survey
@@ -1785,20 +1800,21 @@ html.locked .toast.show{transform:translate(-50%,0)}
     if(b.ph) return `<div class="cover ph" style="--cloth:${coverTone(b.t)}"${tap}>${b.cover?`<img class="cimg" src="${esc(b.cover)}" alt="" loading="lazy" onerror="this.remove()">`:""}${b.h!=null?`<span class="hrs">${fmtH(b.h)}</span>`:""}<b>${esc(b.t)}</b>${b.author?`<small>${esc(b.author)}</small>`:""}</div>`;
     return `<div class="cover" style="background:linear-gradient(165deg,${b.c},#06162C)"><span class="hrs">${b.h}h</span><b>${b.t}</b><small>${b.a}</small></div>`;
   }
+  // the bookshelf grid, for Home (two rows: the rest is hidden by CSS, so it follows the number across) and the
+  // Bookshelf tab (every book)
+  const shelfGrid=(list,rows2)=>`<div class="shelfgrid${rows2?" rows2":""}">${(rows2?list.slice(0,8):list).map(b=>coverHTML(b)).join("")}</div>`;
   let shelfMode="month";
   function renderShelf(mode){
     shelfMode=mode;
     const order={month:0,year:1,all:2};
     const list=sortBooks(LIB.filter(b=>order[bucket(b)]<=order[mode]),"newest");
-    const perRow=mode==="month"?list.length:6, rows=[];
-    for(let i=0;i<list.length;i+=perRow) rows.push(list.slice(i,i+perRow));
     if(!list.length){
       $("#bookcase").innerHTML=LIB.some(isDone)
-        ? `<div class="shelf-empty">${I.book}<p>Nothing finished ${mode==="month"?"this month":"this year"} yet.</p><button type="button" data-go="s-shelf">See all books</button></div><div class="shelfline"></div>`
-        : `<div class="shelf-empty">${I.book}<p>Nothing on this shelf yet.</p><button type="button" data-go="s-add">Add a book</button></div><div class="shelfline"></div>`;
+        ? `<div class="card shelf-empty">${I.book}<p>Nothing finished ${mode==="month"?"this month":"this year"} yet.</p><button type="button" data-shelf-tab="done">See all books</button></div>`
+        : `<div class="card shelf-empty">${I.book}<p>Nothing on this shelf yet.</p><button type="button" data-go="s-add">Add a book</button></div>`;
       return;
     }
-    $("#bookcase").innerHTML=rows.map(r=>`<div class="row">${r.map(coverHTML).join("")}</div><div class="shelfline"></div>`).join("");
+    $("#bookcase").innerHTML=shelfGrid(list,true)+`<button class="seeall shelfmore" type="button" data-shelf-tab="done">See all ${list.length>1?list.length+" ":""}${mode==="month"?"this month":mode==="year"?"this year":list.length>1?"books":"on your shelf"}</button>`;
   }
   renderShelf("month");
   $$("#shelfSeg button").forEach(b=>b.onclick=()=>{ $$("#shelfSeg button").forEach(x=>x.classList.remove("on")); b.classList.add("on"); renderShelf(b.dataset.shelf); });
@@ -1840,7 +1856,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
     const list=sortBooks(LIB.filter(b=>order[bucket(b)]<=order[f]),ST.shelfSort);
     if(!list.length){ $("#shelfAll").innerHTML=`<div class="card shelf-empty">${I.book}<p>Nothing finished ${f==="month"?"this month":"this year"} yet.</p><button type="button" id="showAllBooks">Show all books</button></div>`; $("#showAllBooks").onclick=()=>{ ST.shelfFilter="all"; save(); renderShelfAll(); }; return; }
     $("#shelfAll").innerHTML=v==="grid"
-      ? `<div class="shelfgrid">${list.map(b=>coverHTML(b)).join("")}</div>`
+      ? shelfGrid(list)
       : `<div class="shelflist">${list.map(b=>`<button class="bookrow" data-book="${b.id}">${coverHTML(b,true)}<span class="meta"><b>${esc(b.t)}</b>${b.author?`<span class="au">${esc(b.author)}</span>`:""}<small>${[b.h!=null?hm(b.h):"",finishedLabel(b)].filter(Boolean).join(" · ")}</small></span>${I.chevR}</button>`).join("")}</div>`;
   }
   $$("#viewSeg button").forEach(b=>b.onclick=()=>{ ST.shelfView=b.dataset.view; save(); renderShelfAll(); });
@@ -2380,7 +2396,8 @@ html.locked .toast.show{transform:translate(-50%,0)}
     document.documentElement.classList.add("locked");
   }
   function closePanel(){ if(openP) openP.classList.remove("open"); openP=null; scrim.classList.remove("open"); scrim.style.opacity=""; document.documentElement.classList.remove("locked"); }
-  function openSheet(){ showMenu(); sheetEntry.reset(); fromTimer=false; renderPending(); openPanel(sheet); }
+  let sheetHome="menu";   // the menu the sheet opened on: "menu" (+) or "booksMenu" (Bookshelf › Add books)
+  function openSheet(home="menu"){ sheetHome=home; showMenu(); sheetEntry.reset(); fromTimer=false; renderPending(); openPanel(sheet); }
   function closeSheet(){ closePanel(); }
   /* drag down to dismiss — follows the finger, closes past ~30% of its height or on a quick flick,
      springs back otherwise; only starts when the content is scrolled to the top, like iOS sheets */
@@ -2423,9 +2440,13 @@ html.locked .toast.show{transform:translate(-50%,0)}
   [sheet,$("#bookSheet")].forEach(p=>dragDismiss(p,{scroller:p.querySelector(".inner"),onClose:closePanel,fade:scrimFade}));
   const ebox=$("#earned .ebox");
   dragDismiss($("#earned"),{mover:ebox,scroller:ebox,threshold:120,onClose:closeEarned,fade:p=>{ ebox.style.opacity=p==null?"":String(1-p*.9); }});
-  function showMenu(){ $("#menu").style.display="block"; $$(".form").forEach(f=>f.classList.remove("show")); }
-  $("#n-plus").onclick=openSheet; scrim.onclick=closePanel;
-  $$(".opt").forEach(o=>o.onclick=()=>{ $("#menu").style.display="none"; $("#"+o.dataset.form).classList.add("show"); if(o.dataset.form==="f-live") renderLiveForm(); if(o.dataset.form==="f-shot") lkClear(); });
+  function showMenu(){ ["menu","booksMenu"].forEach(m=>{ $("#"+m).style.display=m===sheetHome?"block":"none"; }); $$(".form").forEach(f=>f.classList.remove("show")); }
+  $("#n-plus").onclick=()=>openSheet(); scrim.onclick=closePanel;
+  $$(".opt[data-form]").forEach(o=>o.onclick=()=>{ $("#menu").style.display=$("#booksMenu").style.display="none"; $("#"+o.dataset.form).classList.add("show"); if(o.dataset.form==="f-live") renderLiveForm(); if(o.dataset.form==="f-shot") lkClear(); });
+  $("#optAddBook").onclick=()=>{ closeSheet(); go("s-add"); };
+  $("#shelfAddBooks").onclick=()=>openSheet("booksMenu");
+  $("#bkFiles").onclick=()=>{ closeSheet(); $("#otherFile").click(); };
+  $("#bkMore").onclick=()=>{ closeSheet(); go("s-import"); };
   // the logging sheet, ready for a book (from a Log button, or the timer)
   let fromTimer=false;   // the form holds the stopped timer's time: logging it splits at midnight and clears it
   function openLive(bookId,mins,timer=false){
@@ -3675,7 +3696,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
   }
   $("#shotFile").onchange=e=>{ const f=e.target.files&&e.target.files[0]; e.target.value=""; if(f) shotRead(f); };
   $("#lkShotBtn").onclick=()=>$("#shotFile").click();
-  $("#optShot").onclick=()=>{ $("#menu").style.display="none"; $("#f-shot").classList.add("show"); lkClear(); $("#shotFile").click(); };
+  $("#addShot").onclick=()=>{ openSheet(); $("#menu").style.display="none"; $("#f-shot").classList.add("show"); lkClear(); $("#shotFile").click(); };
 
   /* ---- Books in pictures: screenshots of a list or library (Audible, Libby, Kindle…) or a photo of a shelf ----
      Up to 5 pictures, each shrunk here (2,048 px on its long side, at most 5 MB sent), read one at a time by
@@ -3689,10 +3710,11 @@ html.locked .toast.show{transform:translate(-50%,0)}
     return /^[^.]+\.[^.]+\.pages\.dev$/i.test(h); })();
   // whether reading pictures is set up on this server; the options stay hidden where it isn't (no key)
   let shotState=null, SHOTS_ON=false;
-  const SHOT_IDS=["#optShots","#optShot","#lkShotBtn","#impShotsHead","#impShotsGroup","#obShots","#obShotsOr"];
+  const SHOT_IDS=["#bkShots","#addShot","#lkShotBtn","#impShotsHead","#impShotsGroup","#obShots","#obShotsOr"];
   function shotAvailable(){
     if(!shotState) shotState=(canRemember()?fetch("api/books/screenshot",{credentials:"same-origin",redirect:"manual"}).then(r=>r.ok?r.json():null).catch(()=>null):Promise.resolve(null))
-      .then(j=>{ const on=!!(j&&j.available); SHOTS_ON=on; SHOT_IDS.forEach(x=>{ $(x).hidden=!on; }); if(on&&current==="s-welcome") renderWelcome(); return j; });
+      .then(j=>{ const on=!!(j&&j.available); SHOTS_ON=on; SHOT_IDS.forEach(x=>{ $(x).hidden=!on; });
+        $("#optAddBookSub").textContent=on?"Search by title, or use a screenshot.":"Search by title, or type it in."; if(on&&current==="s-welcome") renderWelcome(); return j; });
     return shotState;
   }
   SHOT_IDS.forEach(x=>{ $(x).hidden=true; });
@@ -3771,7 +3793,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
     mergeAndReload(checked.st,{empty:"Those books are already here",prefix:"Added from your pictures"});
   };
   $("#impShots").onclick=$("#obShotsBtn").onclick=()=>$("#shotsFile").click();
-  $("#optShots").onclick=()=>{ closeSheet(); $("#shotsFile").click(); };
+  $("#bkShots").onclick=()=>{ closeSheet(); $("#shotsFile").click(); };
   $("#shotsFile").onchange=e=>{ const f=[...(e.target.files||[])]; e.target.value=""; if(!f.length) return;
     // picked during the orientation: it finishes there, and the pictures are read straight away
     if(!ST.onboarded&&ob.classList.contains("open")){ pendingReview=()=>shotsRead(f); obDone(); return; }
@@ -3828,7 +3850,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
       <p>From then on, open Earmark from its icon.</p>
       ${syncConnected()?`<p><b>Already started in Safari on iPhone?</b> There's nothing to move. Your history is saved to your account, so when you open the home-screen app and sign in, everything is there. If you'd like an extra safety copy first, go to Settings › Data › Export a backup.</p>`:""}
       <h3>What to try</h3>
-      <ul>${SHOTS_ON?`<li><b>Add your books from screenshots.</b> Tap + › Add books from screenshots and choose screenshots of your library in Audible, Libby or Kindle, or a photo of your bookshelf. Earmark reads the books and covers, and you check them before anything is added.</li>`:""}
+      <ul>${SHOTS_ON?`<li><b>Add your books from screenshots.</b> On the Bookshelf tab, tap Add books › Books from screenshots and choose screenshots of your library in Audible, Libby or Kindle, or a photo of your bookshelf. Earmark reads the books and covers, and you check them before anything is added.</li>`:""}
         <li>Log your listening every day with the + button. Your streak starts on day one.</li>
         <li>Rest days are on by default, so a missed day here and there won't break your streak. You can turn them off in Settings.</li>
         <li>Add the books you've finished, and the ones you're listening to now.</li>
