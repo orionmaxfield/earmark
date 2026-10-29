@@ -122,6 +122,8 @@ svg[stroke="currentColor"]{stroke-width:1.75;stroke-linecap:round;stroke-linejoi
 
 /* hero */
 .hero{text-align:center;padding:24px 0 24px;position:relative}
+.homeshelf{padding-top:4px}
+.herorest{padding-top:0}
 .hero .glow{position:absolute;left:50%;top:8px;width:300px;height:240px;transform:translateX(-50%);border-radius:50%;
   background:radial-gradient(closest-side,var(--hg,rgba(0,231,179,.10)),var(--hg2,rgba(0,231,179,.03)) 55%,transparent);pointer-events:none;transition:background var(--med) var(--ease)}
 .streakwrap{display:flex;align-items:center;justify-content:center;gap:24px;position:relative}
@@ -137,6 +139,7 @@ svg[stroke="currentColor"]{stroke-width:1.75;stroke-linecap:round;stroke-linejoi
 .box{padding:14px 8px 12px;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--line);box-shadow:var(--sh-1)}
 .box b{font-size:var(--t-24);font-weight:700;display:block;letter-spacing:-.02em;line-height:1.1}
 .box small{display:block;color:var(--ink-3);font-size:var(--t-12);font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-top:6px}
+.notes[hidden]{display:none}
 .notes{margin-top:12px;text-align:left;padding:12px 16px;border-radius:var(--r-md);border:1px solid var(--line);background:var(--surface);box-shadow:var(--sh-1)}
 .notes .lbl{font-size:var(--t-12);font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin-bottom:4px}
 .notes div{font-size:var(--t-14);line-height:1.5}
@@ -770,6 +773,8 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
 .bspick .linkmini{margin:0;align-self:flex-start}
 .bsest{margin-top:8px;color:var(--ink-3);font-size:13px;line-height:1.45}
 .cover .cimg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:inherit;z-index:0}
+.cover.hasimg>b,.cover.hasimg>small,.cover.hasimg:before,.cover.hasimg:after{display:none}
+.cover.hasimg .hrs{top:auto;bottom:5px;right:5px;font-size:9.5px;line-height:1.5;padding:0 5px;background:rgba(6,22,44,.72);box-shadow:0 0 0 1px rgba(255,255,255,.08)}
 .cover .hrs{z-index:1}
 .bkcover{display:flex;align-items:center;gap:14px;margin-top:12px}
 .bkcover .cover{width:56px;height:82px;flex:0 0 auto;padding:6px}
@@ -976,6 +981,15 @@ html.locked .toast.show{transform:translate(-50%,0)}
       <div class="goal"><div class="gl"><span>Weekly goal</span><b id="gWeek"></b></div><div class="bar"><i id="gWeekBar" style="width:0%"></i></div></div>
     </div>
     <div class="card bookgoal" id="bookGoal" hidden></div>
+  </div>
+
+  <div class="sec homeshelf">
+    <div class="sechead"><h2>Your bookshelf</h2></div>
+    <div class="shelfrow"><div class="seg" id="shelfSeg"><button data-shelf="month">Month</button><button data-shelf="year">Year</button><button data-shelf="all">All</button></div></div>
+    <div class="bookcase shelfbox" id="bookcase"></div>
+  </div>
+
+  <div class="hero herorest">
     <div class="card nudge" id="backupNudge" hidden>
       <div class="nic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19.5h14"/></svg></div>
       <div class="nt"><b>Save a backup of your listening history</b><small>An extra copy you keep, on top of your account.</small></div>
@@ -1009,13 +1023,6 @@ html.locked .toast.show{transform:translate(-50%,0)}
     </div>
   </div>
 
-  <div class="rail thin"></div>
-
-  <div class="sec">
-    <div class="sechead"><h2>Your bookshelf</h2></div>
-    <div class="shelfrow"><div class="seg" id="shelfSeg"><button class="on" data-shelf="month">Month</button><button data-shelf="year">Year</button><button data-shelf="all">All</button></div></div>
-    <div class="bookcase shelfbox" id="bookcase"></div>
-  </div>
 
   <p class="proto">Beta · synced to your account · <a id="homeFeedback" href="#" target="_blank" rel="noopener">Send feedback</a></p>
 </section>
@@ -1100,6 +1107,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
   <div class="sgroup">
     <button class="srow" id="setImport" type="button"><span class="sl">Add hours from the past</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button>
     <button class="srow" data-go="s-import" type="button"><span class="sl">Import books</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button>
+    <button class="srow" id="setCovers" type="button"><span class="sl">Find missing covers<small id="setCoversSub"></small></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button>
     <button class="srow" id="setExport" type="button"><span class="sl">Export a backup</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button>
     <button class="srow" id="setRestore" type="button"><span class="sl">Restore from backup</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button>
     <div class="srow static"><span class="sl">Last backup</span><span class="sv" id="setLastBackup">Never</span></div>
@@ -1430,7 +1438,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
   };
   /* ---- state: everything the app shows comes from here. A new account starts at zero. ---- */
   const KEY="earmark.state.v1";
-  const APP_VERSION="0.14.0";   // shown in Settings > About with a Beta tag
+  const APP_VERSION="0.15.0";   // shown in Settings > About with a Beta tag
   /* ---- beta settings: fill these in ---- */
   const FEEDBACK_URL="https://docs.google.com/forms/d/e/1FAIpQLSd0juSwRwq8oNXawAh7rJ79hCi84N0al5oX6bwg_KqX-gkqEw/viewform";   // "Send feedback"
   const FINAL_SURVEY_URL="https://docs.google.com/forms/d/e/1FAIpQLSfLebyfyRnXDIu-X4ERDeldCd_olUcJBbSbxtkAN0O6HENCbA/viewform";   // Settings > Help > Final thoughts survey
@@ -1763,7 +1771,8 @@ html.locked .toast.show{transform:translate(-50%,0)}
   function countShare(){ ST.shares++; save(); }
 
   /* streak medal + today's notes */
-  function renderNotes(){ $("#notes").innerHTML=`<div class="lbl">Today</div>`+(ST.notes.length?ST.notes.map(n=>`<div>${esc(n.t)}<span>${n.h!=null?hm(n.h):esc(n.m||"")}</span></div>`).join(""):`<div class="none">Nothing logged yet</div>`); }
+  // what was logged today, with its notes; nothing when nothing was (the stats row above already shows 0h today)
+  function renderNotes(){ $("#notes").hidden=!ST.notes.length; $("#notes").innerHTML=ST.notes.length?`<div class="lbl">Logged today</div>`+ST.notes.map(n=>`<div>${esc(n.t)}<span>${n.h!=null?hm(n.h):esc(n.m||"")}</span></div>`).join(""):""; }
 
   /* bookshelf */
   const C={red:"#2A3A52",teal:"#17485A",gold:"#1D4F55",green:"#1F4A4A",plum:"#2F3D5C",rust:"#22466B",navy:"#1B3556",moss:"#24425A",wine:"#2B3550",slate:"#33445C"};   // navy, teal and slate tones
@@ -1797,13 +1806,17 @@ html.locked .toast.show{transform:translate(-50%,0)}
     // Free-typed books have no cover art yet: render a cloth-bound hardback placeholder with the title only.
     // Covers on a shelf open the book editor; inside a list row the row itself is the button.
     const tap=inRow?"":` data-book="${b.id}" role="button" tabindex="0" aria-label="Edit ${esc(b.t)}"`;
-    if(b.ph) return `<div class="cover ph" style="--cloth:${coverTone(b.t)}"${tap}>${b.cover?`<img class="cimg" src="${esc(b.cover)}" alt="" loading="lazy" onerror="this.remove()">`:""}${b.h!=null?`<span class="hrs">${fmtH(b.h)}</span>`:""}<b>${esc(b.t)}</b>${b.author?`<small>${esc(b.author)}</small>`:""}</div>`;
+    // A real cover shows its own title, so only the hours badge goes on it; if the picture won't load, the spine's
+    // title and author come back
+    if(b.ph) return `<div class="cover ph${b.cover?" hasimg":""}" style="--cloth:${coverTone(b.t)}"${tap}>${b.cover?`<img class="cimg" src="${esc(b.cover)}" alt="" loading="lazy" onerror="this.parentNode.classList.remove('hasimg');this.remove()">`:""}${b.h!=null?`<span class="hrs">${fmtH(b.h)}</span>`:""}<b>${esc(b.t)}</b>${b.author?`<small>${esc(b.author)}</small>`:""}</div>`;
     return `<div class="cover" style="background:linear-gradient(165deg,${b.c},#06162C)"><span class="hrs">${b.h}h</span><b>${b.t}</b><small>${b.a}</small></div>`;
   }
   // the bookshelf grid, for Home (two rows: the rest is hidden by CSS, so it follows the number across) and the
   // Bookshelf tab (every book)
   const shelfGrid=(list,rows2)=>`<div class="shelfgrid${rows2?" rows2":""}">${(rows2?list.slice(0,8):list).map(b=>coverHTML(b)).join("")}</div>`;
-  let shelfMode="month";
+  // Home's Month / Year / All, kept on this device (not in the account's data); Year to start
+  const HOME_SHELF="earmark.homeShelf";
+  let shelfMode=(()=>{ try{ const v=localStorage.getItem(HOME_SHELF); return ["month","year","all"].includes(v)?v:"year"; }catch(e){ return "year"; } })();
   function renderShelf(mode){
     shelfMode=mode;
     const order={month:0,year:1,all:2};
@@ -1814,10 +1827,13 @@ html.locked .toast.show{transform:translate(-50%,0)}
         : `<div class="card shelf-empty">${I.book}<p>Nothing on this shelf yet.</p><button type="button" data-go="s-add">Add a book</button></div>`;
       return;
     }
-    $("#bookcase").innerHTML=shelfGrid(list,true)+`<button class="seeall shelfmore" type="button" data-shelf-tab="done">See all ${list.length>1?list.length+" ":""}${mode==="month"?"this month":mode==="year"?"this year":list.length>1?"books":"on your shelf"}</button>`;
+    // two rows of 3, or of 4 where the grid is wide enough (the same 520px as its CSS)
+    const shown=($("#bookcase").clientWidth>=520?4:3)*2, more=list.length>shown;
+    $("#bookcase").innerHTML=shelfGrid(list,true)+(more?`<button class="seeall shelfmore" type="button" data-shelf-tab="done">See all ${list.length.toLocaleString()} ${mode==="month"?"this month":mode==="year"?"this year":"books"}</button>`:"");
   }
-  renderShelf("month");
-  $$("#shelfSeg button").forEach(b=>b.onclick=()=>{ $$("#shelfSeg button").forEach(x=>x.classList.remove("on")); b.classList.add("on"); renderShelf(b.dataset.shelf); });
+  $$("#shelfSeg button").forEach(b=>b.classList.toggle("on",b.dataset.shelf===shelfMode));
+  renderShelf(shelfMode);
+  $$("#shelfSeg button").forEach(b=>b.onclick=()=>{ $$("#shelfSeg button").forEach(x=>x.classList.remove("on")); b.classList.add("on"); try{ localStorage.setItem(HOME_SHELF,b.dataset.shelf); }catch(e){} renderShelf(b.dataset.shelf); });
 
   /* bookshelf screen — the whole library, newest first, as a grid of three or a list */
   const GENRE_LABEL=Object.fromEntries(GENRES);
@@ -2997,6 +3013,42 @@ html.locked .toast.show{transform:translate(-50%,0)}
   /* settings: every change saves and updates the app straight away */
   function refreshAll(){ derive(); save(); applyMotion(); renderHero(); renderGoals(); renderNotes(); renderShelf(shelfMode); renderShelfAll(); recomputeMedals(true); renderInsights(); renderNow(); if(current==="s-stats") renderStats(false); }
   function applyMotion(){ const r=ST.settings.reduceMotion, h=document.documentElement; h.classList.toggle("rm-on",r==="on"); h.classList.toggle("rm-off",r==="off"); }
+  /* Find missing covers: books with no cover are looked up by title and author through Earmark's server (its own
+     book table, then Open Library and Google Books, all free), finished books first. Nothing changes until the
+     person agrees, and then only the cover of each book that had none. A run stops after a while; the next run
+     carries on with the rest. */
+  async function findCovers(){
+    const btn=$("#setCovers"); if(btn.disabled) return;
+    const rank=b=>isDone(b)?0:b.status==="listening"?1:2;
+    const need=LIB.filter(b=>!b.cover&&b.t).sort((a,b)=>rank(a)-rank(b));
+    if(!need.length){ toast("Every book already has a cover"); return; }
+    if(!canRemember()||!navigator.onLine){ toast("Finding covers needs a connection. Try again when you're online."); return; }
+    btn.disabled=true;
+    const found=[], stop=Date.now()+90000, queue=need.map(b=>({b,t:b.t,author:b.author||null,isbn:b.isbn||null}));
+    let looked=0;
+    try{
+      toast(`Looking for covers… 0 of ${need.length.toLocaleString()}`);
+      while(queue.length&&Date.now()<stop){
+        const part=queue.splice(0,20);
+        const res=await fetch("api/books/match",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({items:part.map(x=>({t:x.t,author:x.author,isbn:x.isbn}))}),credentials:"same-origin",redirect:"manual"}).catch(()=>null);
+        if(!res||!res.ok) break;
+        const j=await res.json().catch(()=>null); if(!j) break;
+        const again=new Set((j.retry||[]).filter(k=>part[k]));
+        (j.books||[]).forEach((c,k)=>{ if(part[k]&&!again.has(k)&&c&&/^https:\/\//.test(c.cover||"")) found.push({id:part[k].b.id,t:part[k].t,cover:c.cover}); });
+        if(again.size===part.length) break;   // no room on the server this time
+        queue.unshift(...[...again].map(k=>part[k])); looked+=part.length-again.size;
+        toast(`Looking for covers… ${looked.toLocaleString()} of ${need.length.toLocaleString()}`);
+      }
+    } finally { btn.disabled=false; }
+    const left=need.length-looked, rest=left>0?` ${plural(left,"book wasn't","books weren't")} looked up this time. Run it again for ${left===1?"it":"them"}.`:"";
+    if(!found.length){ await ask({title:"No covers found",msg:`Earmark looked up ${plural(looked,"book","books")} without a cover and found none.${rest}`,single:true}); return; }
+    const names=found.slice(0,4).map(x=>x.t).join(", ")+(found.length>4?`, and ${(found.length-4).toLocaleString()} more`:"");
+    if(!await ask({title:`Found ${plural(found.length,"cover","covers")}`,msg:`For ${names}. Only the cover is added; nothing else about these books changes.${rest}`,ok:`Add ${plural(found.length,"cover","covers")}`})) return;
+    let n=0;
+    found.forEach(x=>{ const b=LIB.find(y=>y.id===x.id); if(b&&!b.cover){ b.cover=x.cover; saveCover(x.cover); n++; } });
+    if(n) afterBooksChanged();
+    renderSettings(); toast(`${plural(n,"cover","covers")} added`);
+  }
   function renderSettings(){
     const S=ST.settings;
     $("#setName").value=ST.user.name; if(SY.ready) renderSyncState(true);
@@ -3005,6 +3057,8 @@ html.locked .toast.show{transform:translate(-50%,0)}
     const sw=$("#setShowGoals"); sw.classList.toggle("on",!!S.showGoals); sw.setAttribute("aria-checked",!!S.showGoals);
     $$(".sseg").forEach(seg=>{ const k=seg.dataset.set, v=k in S?S[k]:ST[k]; seg.querySelectorAll("button").forEach(b=>{ b.classList.toggle("on",b.dataset.v===v); b.setAttribute("aria-pressed",b.dataset.v===v); }); });
     $("#setLastBackup").textContent=ST.lastBackup?fmtDay(ST.lastBackup):"Never";
+    const noCover=LIB.filter(b=>!b.cover).length;
+    $("#setCoversSub").textContent=noCover?`${plural(noCover,"book has","books have")} no cover. Earmark looks them up by title.`:"Every book has a cover.";
     $("#setVersion").innerHTML=`${APP_VERSION}<span class="betatag">Beta</span>`; $("#setFounding").hidden=!BY.fl.lv;
   }
   $("#setName").addEventListener("input",e=>{ ST.user.name=e.target.value; save(); });
@@ -3020,6 +3074,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
     if(k in ST.settings) ST.settings[k]=v; else ST[k]=v;
     refreshAll(); renderSettings();
   });
+  $("#setCovers").onclick=findCovers;
   $("#setImport").onclick=()=>{ openSheet(); $("#menu").style.display="none"; $("#f-past").classList.add("show"); };
   /* backups: a readable summary plus the whole saved state, stamped with BACKUP_VERSION */
   function exportBackup(){
