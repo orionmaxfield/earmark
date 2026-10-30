@@ -181,6 +181,9 @@ svg[stroke="currentColor"]{stroke-width:1.75;stroke-linecap:round;stroke-linejoi
 .seeall{background:transparent;border:0;min-height:44px;padding:0 8px;border-radius:var(--r-sm);color:var(--accent);font-size:var(--t-14);font-weight:600;cursor:pointer}
 .medals{display:flex;gap:12px;overflow-x:auto;padding:8px 2px 12px;scrollbar-width:none}
 .medals::-webkit-scrollbar{display:none}
+.homemedals{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;overflow:visible}
+.homemedals .medalwrap{width:auto}
+.nextup[hidden]{display:none}
 .medalwrap{flex:0 0 auto;width:96px;text-align:center;cursor:pointer;border-radius:var(--r-sm);padding:4px 0}
 .medal{width:76px;height:76px;margin:0 auto 10px;border-radius:50%;position:relative;display:grid;place-items:center}
 /* ring (:before) sits under the matte centre (:after); no negative z-index so it survives any stacking context */
@@ -317,6 +320,9 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
 .ssrow:last-child{border-bottom:0}
 .ssrow>input[type=checkbox]{margin-top:12px!important}
 .ssrow .rvthumb{margin-top:4px}
+.shelfsearch{margin:4px 0 10px}
+.shelfcount{margin:-4px 0 10px;color:var(--ink-3);font-size:var(--t-14)}
+.shelfcount[hidden]{display:none}
 .dupgroup{margin-top:14px}
 .duprow .ssf b{display:block;font-size:var(--t-14);line-height:1.3}
 .duprow .ssf small{display:block;color:var(--ink-3);font-size:var(--t-12);margin-top:2px}
@@ -1030,8 +1036,8 @@ html.locked .toast.show{transform:translate(-50%,0)}
 
   <div class="sec">
     <div class="sechead"><h2>Achievements</h2><button class="seeall" id="seeAllMedals" data-go="s-badges">See all</button></div>
-    <div class="medals" id="homeMedals"></div>
-    <div class="nextup">
+    <div class="medals homemedals" id="homeMedals"></div>
+    <div class="nextup" hidden>
       <div class="card" id="closest"></div>
       <div class="card" id="random"></div>
     </div>
@@ -1044,6 +1050,8 @@ html.locked .toast.show{transform:translate(-50%,0)}
 <!-- BOOKSHELF: every book, as a grid of three or a list one by one -->
 <section class="screen" id="s-shelf">
   <div class="hdr"><button class="backbtn" data-nav-back aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m15 5-7 7 7 7"/></svg>Back</button><div class="title">Bookshelf</div><div class="tag" id="shelfSum">No books yet</div></div>
+  <div class="field shelfsearch"><input id="shelfQ" type="search" placeholder="Search your shelf" aria-label="Search your shelf by title, author or series" autocomplete="off" autocapitalize="off" enterkeyhint="search"></div>
+  <p class="shelfcount" id="shelfCount" aria-live="polite" hidden></p>
   <div class="seg shelftabs" id="shelfTabs" role="tablist" aria-label="Shelves"><button type="button" role="tab" data-tab="done">Finished</button><button type="button" role="tab" data-tab="listening">Listening</button><button type="button" role="tab" data-tab="want">Want to listen</button></div>
   <div class="shelfbar">
     <div class="seg viewseg" id="viewSeg" role="group" aria-label="Shelf view">
@@ -1460,7 +1468,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
   };
   /* ---- state: everything the app shows comes from here. A new account starts at zero. ---- */
   const KEY="earmark.state.v1";
-  const APP_VERSION="0.17.0";   // shown in Settings > About with a Beta tag
+  const APP_VERSION="0.18.0";   // shown in Settings > About with a Beta tag
   /* ---- beta settings: fill these in ---- */
   const FEEDBACK_URL="https://docs.google.com/forms/d/e/1FAIpQLSd0juSwRwq8oNXawAh7rJ79hCi84N0al5oX6bwg_KqX-gkqEw/viewform";   // "Send feedback"
   const FINAL_SURVEY_URL="https://docs.google.com/forms/d/e/1FAIpQLSfLebyfyRnXDIu-X4ERDeldCd_olUcJBbSbxtkAN0O6HENCbA/viewform";   // Settings > Help > Final thoughts survey
@@ -1704,8 +1712,8 @@ html.locked .toast.show{transform:translate(-50%,0)}
   $("#wallSearch").addEventListener("input",e=>{ wallQuery=e.target.value; renderWall(); });
   function renderMedals(){
     // home strip: the most recent level-ups first, then families still to start
-    const got=MEDALS.filter(m=>m.lv).sort((a,b)=>atOf(b,b.lv).localeCompare(atOf(a,a.lv))||b.lv-a.lv), strip=got.slice(0,5);
-    for(const m of MEDALS) if(strip.length<5&&!m.lv&&!m.single&&!m.soon) strip.push(m);
+    const got=MEDALS.filter(m=>m.lv).sort((a,b)=>atOf(b,b.lv).localeCompare(atOf(a,a.lv))||b.lv-a.lv), strip=got.slice(0,4);   // one row on a phone
+    for(const m of MEDALS) if(strip.length<4&&!m.lv&&!m.single&&!m.soon) strip.push(m);
     $("#homeMedals").innerHTML=strip.map(m=>medalHTML(m)).join("");
     $("#wsMedals").textContent=got.length; $("#wsMedalsOf").textContent=`of ${MEDALS.length}`;
     $("#wsLevels").textContent=MEDALS.reduce((t,m)=>t+m.lv,0); $("#wsLevelsOf").textContent=`of ${MEDALS.reduce((t,m)=>t+nLv(m),0)}`;
@@ -1885,13 +1893,20 @@ html.locked .toast.show{transform:translate(-50%,0)}
   const SHELF_F="earmark.shelfFilter";
   const shelfF=()=>{ try{ const v=localStorage.getItem(SHELF_F); if(["month","year","all"].includes(v)) return v; }catch(e){} return "year"; };
   const setShelfF=v=>{ try{ localStorage.setItem(SHELF_F,v); }catch(e){} };
+  // the Bookshelf tab's search: every word in the title, author or series; it looks through the whole shelf (not just
+  // this month or year)
+  const shelfQ=()=>plain($("#shelfQ").value).split(" ").filter(Boolean);
+  const shelfHit=(b,ws)=>{ const hay=" "+plain([b.t,b.author,b.series].filter(Boolean).join(" ")); return ws.every(w=>hay.includes(" "+w)||hay.includes(w)); };
+  function shelfCount(n,of){ const c=$("#shelfCount"); c.hidden=of==null; if(of!=null) c.textContent=`${n.toLocaleString()} of ${of.toLocaleString()}`; }
   function renderShelfAll(){
-    const tab=["done","listening","want"].includes(ST.shelfTab)?ST.shelfTab:"done";
+    const tab=["done","listening","want"].includes(ST.shelfTab)?ST.shelfTab:"done", ws=shelfQ();
     $$("#shelfTabs button").forEach(b=>{ const on=b.dataset.tab===tab; b.classList.toggle("on",on); b.setAttribute("aria-selected",on); });
     $("#shelfFilterBar").hidden=$("#viewSeg").hidden=tab!=="done";
     if(tab!=="done"){
-      const list=LIB.filter(b=>b.status===tab), name=tab==="want"?"Want to listen":"Listening";
-      $("#shelfSum").textContent=list.length?plural(list.length,"book","books")+(tab==="want"?" to listen to":" in progress"):name;
+      const all=LIB.filter(b=>b.status===tab), list=ws.length?all.filter(b=>shelfHit(b,ws)):all, name=tab==="want"?"Want to listen":"Listening";
+      $("#shelfSum").textContent=all.length?plural(all.length,"book","books")+(tab==="want"?" to listen to":" in progress"):name;
+      shelfCount(list.length,ws.length?all.length:null);
+      if(ws.length&&!list.length){ $("#shelfAll").innerHTML=`<div class="card shelf-empty"><p>No books on this shelf match “${esc($("#shelfQ").value.trim())}”.</p></div>`; return; }
       $("#shelfAll").innerHTML=list.length?`<div class="lcard">${list.map(b=>openRow(b,tab==="want"?"start":"finish")).join("")}</div>`
         :`<div class="card shelf-empty">${I.book}<p>${tab==="want"?"Books you want to listen to will wait here.":"Nothing in progress. Start a book from Want to listen, or add one."}</p><button type="button" data-go="s-add">Add a book</button></div>`;
       return;
@@ -1904,14 +1919,17 @@ html.locked .toast.show{transform:translate(-50%,0)}
     const f=shelfF(), order={month:0,year:1,all:2};
     $$("#shelfFilter button").forEach(b=>b.classList.toggle("on",b.dataset.f===f));
     $("#shelfSort").value=ST.shelfSort||"newest";
+    shelfCount(0,null);
     if(!DONE.length){ $("#shelfAll").innerHTML=`<div class="card shelf-empty">${I.book}<p>No finished books yet.</p><button type="button" data-go="s-add">Add a book</button></div>`; return; }
-    const list=sortBooks(LIB.filter(b=>order[bucket(b)]<=order[f]),ST.shelfSort);
+    const list=ws.length?sortBooks(DONE.filter(b=>shelfHit(b,ws)),ST.shelfSort):sortBooks(LIB.filter(b=>order[bucket(b)]<=order[f]),ST.shelfSort);
+    if(ws.length){ shelfCount(list.length,DONE.length); if(!list.length){ $("#shelfAll").innerHTML=`<div class="card shelf-empty"><p>No finished books match “${esc($("#shelfQ").value.trim())}”.</p></div>`; return; } }
     if(!list.length){ $("#shelfAll").innerHTML=`<div class="card shelf-empty">${I.book}<p>Nothing finished ${f==="month"?"this month":"this year"} yet.</p><button type="button" id="showAllBooks">Show all books</button></div>`; $("#showAllBooks").onclick=()=>{ setShelfF("all"); renderShelfAll(); }; return; }
     $("#shelfAll").innerHTML=v==="grid"
       ? shelfGrid(list)
       : `<div class="shelflist">${list.map(b=>`<button class="bookrow" data-book="${b.id}">${coverHTML(b,true)}<span class="meta"><b>${esc(b.t)}</b>${b.author?`<span class="au">${esc(b.author)}</span>`:""}<small>${[b.h!=null?hm(b.h):"",finishedLabel(b)].filter(Boolean).join(" · ")}</small></span>${I.chevR}</button>`).join("")}</div>`;
   }
   $$("#viewSeg button").forEach(b=>b.onclick=()=>{ ST.shelfView=b.dataset.view; save(); renderShelfAll(); });
+  $("#shelfQ").addEventListener("input",()=>renderShelfAll());
   $$("#shelfTabs button").forEach(b=>b.onclick=()=>{ ST.shelfTab=b.dataset.tab; save(); renderShelfAll(); });
   document.addEventListener("click",e=>{ const t=e.target.closest("[data-shelf-tab]"); if(t){ ST.shelfTab=t.dataset.shelfTab; save(); go("s-shelf"); } });
   /* moving a book between shelves keeps the lifetime total right */
@@ -2181,11 +2199,19 @@ html.locked .toast.show{transform:translate(-50%,0)}
   }
   /* the same book (title and first author) also waiting on Want to listen: offer once to take it off there. "Keep"
      is remembered on this device, so the same copy isn't asked about again. */
+  /* the same book, for duplicates: the full title (only "(Unabridged)"/"(Abridged)" and punctuation ignored) and the
+     author's surname (titles like Dr., PhD, MD ignored). Never the same when both have a series number and the
+     numbers differ, or when both are finished with lengths more than 2 minutes apart (different volumes; a reread
+     of the same audiobook has the same length). */
+  const NOT_NAME=new Set(["dr","doctor","prof","professor","mr","mrs","ms","mx","sir","dame","rev","phd","md","psyd","edd","dds","dphil","jr","sr","ii","iii","iv","rn","msw","lcsw","lmft","mba"]);
+  const authorLast=a=>{ const w=plain(String(a||"").split(/,|&|;|\s+and\s+/i)[0]).split(" ").filter(x=>x&&!NOT_NAME.has(x)); return w[w.length-1]||""; };
+  const dupKey=b=>plain(String(b.t||"").replace(/\s*\((?:un)?abridged\)/gi,""))+"|"+authorLast(b.author);
+  const sameCopy=(a,b)=>dupKey(a)===dupKey(b)&&!(a.num>0&&b.num>0&&a.num!==b.num)&&!(isDone(a)&&isDone(b)&&a.h>0&&b.h>0&&Math.abs(a.h-b.h)>2/60+1e-9);
   const DUP_KEEP="earmark.dupKeep";
   const dupKept=()=>{ try{ return new Set(JSON.parse(localStorage.getItem(DUP_KEEP)||"[]")); }catch(e){ return new Set(); } };
   async function offerWantDup(b){
     if(!b||b.status==="want"||!LIB.includes(b)) return;
-    const k=mKey(b.t,b.author), kept=dupKept(), others=LIB.filter(x=>x!==b&&x.status==="want"&&mKey(x.t,x.author)===k&&!kept.has(x.id));
+    const kept=dupKept(), others=LIB.filter(x=>x!==b&&x.status==="want"&&sameCopy(x,b)&&!kept.has(x.id));
     if(!others.length) return;
     await new Promise(r=>setTimeout(r,400));
     while($("#earned").classList.contains("open")) await new Promise(r=>setTimeout(r,300));   // after a finished book's celebration
@@ -2715,7 +2741,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
     const list=INSIGHTS.map(f=>f()).filter(Boolean), el=$("#insights");
     if(!list.length){ el.innerHTML=""; return; }
     const off=Math.floor(Math.random()*list.length), show=[];
-    for(let i=0;i<Math.min(2,list.length);i++) show.push(list[(off+i)%list.length]);
+    show.push(list[off]);   // one card on Home
     el.innerHTML=show.map(c=>`<div class="card up"><div class="ic">${c.ic}</div><div><b>${c.b}</b><small>${c.s}</small></div></div>`).join("");
   }
 
@@ -3161,8 +3187,15 @@ html.locked .toast.show{transform:translate(-50%,0)}
      ticked to start; two finished copies are marked "reread?" and left alone unless the person ticks one. */
   let DUPS=null;
   function dupGroups(){
-    const by=new Map(); LIB.forEach(b=>{ if(!b.t) return; const k=mKey(b.t,b.author); if(keyTitle(k).length<2) return; (by.get(k)||by.set(k,[]).get(k)).push(b); });
-    return [...by.values()].filter(g=>g.length>1);
+    const by=new Map(); LIB.forEach(b=>{ const k=dupKey(b); if(k.split("|")[0].length<2) return; (by.get(k)||by.set(k,[]).get(k)).push(b); });
+    const out=[];
+    by.forEach(list=>{ if(list.length<2) return;
+      // copies joined when they're the same book by the rules above (a copy can link two others)
+      const up=list.map((_,i)=>i), find=i=>up[i]===i?i:(up[i]=find(up[i]));
+      for(let i=0;i<list.length;i++) for(let j=i+1;j<list.length;j++) if(sameCopy(list[i],list[j])) up[find(i)]=find(j);
+      const sets=new Map(); list.forEach((b,i)=>{ const r=find(i); (sets.get(r)||sets.set(r,[]).get(r)).push(b); });
+      sets.forEach(g=>{ if(g.length>1) out.push(g); }); });
+    return out;
   }
   function openDups(){
     const groups=dupGroups();
