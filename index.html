@@ -141,6 +141,9 @@ svg[stroke="currentColor"]{stroke-width:1.75;stroke-linecap:round;stroke-linejoi
 .streakmedal .medal svg{width:26px;height:26px}
 .streakmedal small{display:block;font-size:var(--t-12);color:var(--ink-3);line-height:1.3;white-space:nowrap;letter-spacing:.04em;text-transform:uppercase;font-weight:600}
 .boxes{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:24px;position:relative}
+.boxes .box{position:relative}
+.boxes .box:after{content:"";position:absolute;top:10px;right:9px;width:6px;height:6px;border-top:1.5px solid var(--ink-3);border-right:1.5px solid var(--ink-3);transform:rotate(45deg)}
+.statslink{display:block;margin:6px auto 0;position:relative}
 .box{padding:14px 8px 12px;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--line);box-shadow:var(--sh-1)}
 .box b{font-size:var(--t-24);font-weight:700;display:block;letter-spacing:-.02em;line-height:1.1}
 .box small{display:block;color:var(--ink-3);font-size:var(--t-12);font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-top:6px}
@@ -178,6 +181,9 @@ svg[stroke="currentColor"]{stroke-width:1.75;stroke-linecap:round;stroke-linejoi
 .seeall{background:transparent;border:0;min-height:44px;padding:0 8px;border-radius:var(--r-sm);color:var(--accent);font-size:var(--t-14);font-weight:600;cursor:pointer}
 .medals{display:flex;gap:12px;overflow-x:auto;padding:8px 2px 12px;scrollbar-width:none}
 .medals::-webkit-scrollbar{display:none}
+.homemedals{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;overflow:visible}
+.homemedals .medalwrap{width:auto}
+.nextup[hidden]{display:none}
 .medalwrap{flex:0 0 auto;width:96px;text-align:center;cursor:pointer;border-radius:var(--r-sm);padding:4px 0}
 .medal{width:76px;height:76px;margin:0 auto 10px;border-radius:50%;position:relative;display:grid;place-items:center}
 /* ring (:before) sits under the matte centre (:after); no negative z-index so it survives any stacking context */
@@ -314,6 +320,13 @@ button:focus-visible,.medalwrap:focus-visible,.cover:focus-visible{outline:2px s
 .ssrow:last-child{border-bottom:0}
 .ssrow>input[type=checkbox]{margin-top:12px!important}
 .ssrow .rvthumb{margin-top:4px}
+.shelfsearch{margin:4px 0 10px}
+.shelfcount{margin:-4px 0 10px;color:var(--ink-3);font-size:var(--t-14)}
+.shelfcount[hidden]{display:none}
+.dupgroup{margin-top:14px}
+.duprow .ssf b{display:block;font-size:var(--t-14);line-height:1.3}
+.duprow .ssf small{display:block;color:var(--ink-3);font-size:var(--t-12);margin-top:2px}
+.reread{color:var(--accent);font-weight:600}
 .ssf{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
 .ssf input{width:100%;min-height:38px;padding:6px 10px;border-radius:var(--r-sm);border:1px solid var(--line-2);background:var(--well);color:var(--ink);font:inherit;font-size:15px}
 .ssf input.ssa{font-size:14px;color:var(--ink-2)}
@@ -976,6 +989,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
       <button class="box" type="button" data-stats="week"><b id="t2">0</b><small>hrs this week</small></button>
       <button class="box" type="button" data-stats="month"><b id="t3">0</b><small>hrs this month</small></button>
     </div>
+    <button class="seeall statslink" type="button" data-stats="week">See your stats</button>
     <div class="card pend" id="pendHome" hidden><div class="nt"><b class="pendText"></b><small>From your stopped timer</small></div><button class="lact go" type="button" data-pend="log">Log it</button><button class="lact" type="button" data-pend="discard">Discard</button></div>
     <div class="card nowcard" id="nowCard" hidden>
       <div class="sechead"><h2>Currently listening</h2><button class="seeall" type="button" data-shelf-tab="listening">See all</button></div>
@@ -1022,8 +1036,8 @@ html.locked .toast.show{transform:translate(-50%,0)}
 
   <div class="sec">
     <div class="sechead"><h2>Achievements</h2><button class="seeall" id="seeAllMedals" data-go="s-badges">See all</button></div>
-    <div class="medals" id="homeMedals"></div>
-    <div class="nextup">
+    <div class="medals homemedals" id="homeMedals"></div>
+    <div class="nextup" hidden>
       <div class="card" id="closest"></div>
       <div class="card" id="random"></div>
     </div>
@@ -1036,6 +1050,8 @@ html.locked .toast.show{transform:translate(-50%,0)}
 <!-- BOOKSHELF: every book, as a grid of three or a list one by one -->
 <section class="screen" id="s-shelf">
   <div class="hdr"><button class="backbtn" data-nav-back aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m15 5-7 7 7 7"/></svg>Back</button><div class="title">Bookshelf</div><div class="tag" id="shelfSum">No books yet</div></div>
+  <div class="field shelfsearch"><input id="shelfQ" type="search" placeholder="Search your shelf" aria-label="Search your shelf by title, author or series" autocomplete="off" autocapitalize="off" enterkeyhint="search"></div>
+  <p class="shelfcount" id="shelfCount" aria-live="polite" hidden></p>
   <div class="seg shelftabs" id="shelfTabs" role="tablist" aria-label="Shelves"><button type="button" role="tab" data-tab="done">Finished</button><button type="button" role="tab" data-tab="listening">Listening</button><button type="button" role="tab" data-tab="want">Want to listen</button></div>
   <div class="shelfbar">
     <div class="seg viewseg" id="viewSeg" role="group" aria-label="Shelf view">
@@ -1114,6 +1130,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
     <button class="srow" id="setImport" type="button"><span class="sl">Add hours from the past</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button>
     <button class="srow" data-go="s-import" type="button"><span class="sl">Import books</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button>
     <button class="srow" id="setCovers" type="button"><span class="sl">Find missing covers<small id="setCoversSub"></small></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button>
+    <button class="srow" id="setDups" type="button"><span class="sl">Check for duplicates<small id="setDupsSub"></small></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button>
     <button class="srow" id="setExport" type="button"><span class="sl">Export a backup</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button>
     <button class="srow" id="setRestore" type="button"><span class="sl">Restore from backup</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button>
     <div class="srow static"><span class="sl">Last backup</span><span class="sv" id="setLastBackup">Never</span></div>
@@ -1183,6 +1200,13 @@ html.locked .toast.show{transform:translate(-50%,0)}
   <p class="sgnote"><b>Goodreads:</b> on the website, My Books › Import and export › Export Library. <b>StoryGraph:</b> Manage Account › Manage Your Data › Export StoryGraph Library. <b>Libby:</b> Shelf › Timeline › Actions › Export Timeline, as a spreadsheet or data. Libby doesn't record finishing, so its books use the day you returned them.</p>
   <input type="file" id="audibleFile" multiple hidden>
   <input type="file" id="otherFile" accept=".csv,.json,text/csv,application/json" hidden>
+</section>
+
+<!-- DUPLICATES: books with the same title and author, side by side; the person picks what to remove -->
+<section class="screen" id="s-dups">
+  <div class="hdr"><button class="backbtn" data-nav-back aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m15 5-7 7 7 7"/></svg>Back</button><div class="title">Duplicates</div></div>
+  <div id="dupBody"></div>
+  <div class="rvbar"><button class="cta" id="dupRemove" type="button">Remove</button><button class="ghost" id="dupCancel" type="button">Cancel</button></div>
 </section>
 
 <!-- BOOKS IN PICTURES: what screenshots or a shelf photo showed, checked and edited before anything is added -->
@@ -1444,7 +1468,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
   };
   /* ---- state: everything the app shows comes from here. A new account starts at zero. ---- */
   const KEY="earmark.state.v1";
-  const APP_VERSION="0.16.0";   // shown in Settings > About with a Beta tag
+  const APP_VERSION="0.18.0";   // shown in Settings > About with a Beta tag
   /* ---- beta settings: fill these in ---- */
   const FEEDBACK_URL="https://docs.google.com/forms/d/e/1FAIpQLSd0juSwRwq8oNXawAh7rJ79hCi84N0al5oX6bwg_KqX-gkqEw/viewform";   // "Send feedback"
   const FINAL_SURVEY_URL="https://docs.google.com/forms/d/e/1FAIpQLSfLebyfyRnXDIu-X4ERDeldCd_olUcJBbSbxtkAN0O6HENCbA/viewform";   // Settings > Help > Final thoughts survey
@@ -1688,8 +1712,8 @@ html.locked .toast.show{transform:translate(-50%,0)}
   $("#wallSearch").addEventListener("input",e=>{ wallQuery=e.target.value; renderWall(); });
   function renderMedals(){
     // home strip: the most recent level-ups first, then families still to start
-    const got=MEDALS.filter(m=>m.lv).sort((a,b)=>atOf(b,b.lv).localeCompare(atOf(a,a.lv))||b.lv-a.lv), strip=got.slice(0,5);
-    for(const m of MEDALS) if(strip.length<5&&!m.lv&&!m.single&&!m.soon) strip.push(m);
+    const got=MEDALS.filter(m=>m.lv).sort((a,b)=>atOf(b,b.lv).localeCompare(atOf(a,a.lv))||b.lv-a.lv), strip=got.slice(0,4);   // one row on a phone
+    for(const m of MEDALS) if(strip.length<4&&!m.lv&&!m.single&&!m.soon) strip.push(m);
     $("#homeMedals").innerHTML=strip.map(m=>medalHTML(m)).join("");
     $("#wsMedals").textContent=got.length; $("#wsMedalsOf").textContent=`of ${MEDALS.length}`;
     $("#wsLevels").textContent=MEDALS.reduce((t,m)=>t+m.lv,0); $("#wsLevelsOf").textContent=`of ${MEDALS.reduce((t,m)=>t+nLv(m),0)}`;
@@ -1869,13 +1893,20 @@ html.locked .toast.show{transform:translate(-50%,0)}
   const SHELF_F="earmark.shelfFilter";
   const shelfF=()=>{ try{ const v=localStorage.getItem(SHELF_F); if(["month","year","all"].includes(v)) return v; }catch(e){} return "year"; };
   const setShelfF=v=>{ try{ localStorage.setItem(SHELF_F,v); }catch(e){} };
+  // the Bookshelf tab's search: every word in the title, author or series; it looks through the whole shelf (not just
+  // this month or year)
+  const shelfQ=()=>plain($("#shelfQ").value).split(" ").filter(Boolean);
+  const shelfHit=(b,ws)=>{ const hay=" "+plain([b.t,b.author,b.series].filter(Boolean).join(" ")); return ws.every(w=>hay.includes(" "+w)||hay.includes(w)); };
+  function shelfCount(n,of){ const c=$("#shelfCount"); c.hidden=of==null; if(of!=null) c.textContent=`${n.toLocaleString()} of ${of.toLocaleString()}`; }
   function renderShelfAll(){
-    const tab=["done","listening","want"].includes(ST.shelfTab)?ST.shelfTab:"done";
+    const tab=["done","listening","want"].includes(ST.shelfTab)?ST.shelfTab:"done", ws=shelfQ();
     $$("#shelfTabs button").forEach(b=>{ const on=b.dataset.tab===tab; b.classList.toggle("on",on); b.setAttribute("aria-selected",on); });
     $("#shelfFilterBar").hidden=$("#viewSeg").hidden=tab!=="done";
     if(tab!=="done"){
-      const list=LIB.filter(b=>b.status===tab), name=tab==="want"?"Want to listen":"Listening";
-      $("#shelfSum").textContent=list.length?plural(list.length,"book","books")+(tab==="want"?" to listen to":" in progress"):name;
+      const all=LIB.filter(b=>b.status===tab), list=ws.length?all.filter(b=>shelfHit(b,ws)):all, name=tab==="want"?"Want to listen":"Listening";
+      $("#shelfSum").textContent=all.length?plural(all.length,"book","books")+(tab==="want"?" to listen to":" in progress"):name;
+      shelfCount(list.length,ws.length?all.length:null);
+      if(ws.length&&!list.length){ $("#shelfAll").innerHTML=`<div class="card shelf-empty"><p>No books on this shelf match “${esc($("#shelfQ").value.trim())}”.</p></div>`; return; }
       $("#shelfAll").innerHTML=list.length?`<div class="lcard">${list.map(b=>openRow(b,tab==="want"?"start":"finish")).join("")}</div>`
         :`<div class="card shelf-empty">${I.book}<p>${tab==="want"?"Books you want to listen to will wait here.":"Nothing in progress. Start a book from Want to listen, or add one."}</p><button type="button" data-go="s-add">Add a book</button></div>`;
       return;
@@ -1888,14 +1919,17 @@ html.locked .toast.show{transform:translate(-50%,0)}
     const f=shelfF(), order={month:0,year:1,all:2};
     $$("#shelfFilter button").forEach(b=>b.classList.toggle("on",b.dataset.f===f));
     $("#shelfSort").value=ST.shelfSort||"newest";
+    shelfCount(0,null);
     if(!DONE.length){ $("#shelfAll").innerHTML=`<div class="card shelf-empty">${I.book}<p>No finished books yet.</p><button type="button" data-go="s-add">Add a book</button></div>`; return; }
-    const list=sortBooks(LIB.filter(b=>order[bucket(b)]<=order[f]),ST.shelfSort);
+    const list=ws.length?sortBooks(DONE.filter(b=>shelfHit(b,ws)),ST.shelfSort):sortBooks(LIB.filter(b=>order[bucket(b)]<=order[f]),ST.shelfSort);
+    if(ws.length){ shelfCount(list.length,DONE.length); if(!list.length){ $("#shelfAll").innerHTML=`<div class="card shelf-empty"><p>No finished books match “${esc($("#shelfQ").value.trim())}”.</p></div>`; return; } }
     if(!list.length){ $("#shelfAll").innerHTML=`<div class="card shelf-empty">${I.book}<p>Nothing finished ${f==="month"?"this month":"this year"} yet.</p><button type="button" id="showAllBooks">Show all books</button></div>`; $("#showAllBooks").onclick=()=>{ setShelfF("all"); renderShelfAll(); }; return; }
     $("#shelfAll").innerHTML=v==="grid"
       ? shelfGrid(list)
       : `<div class="shelflist">${list.map(b=>`<button class="bookrow" data-book="${b.id}">${coverHTML(b,true)}<span class="meta"><b>${esc(b.t)}</b>${b.author?`<span class="au">${esc(b.author)}</span>`:""}<small>${[b.h!=null?hm(b.h):"",finishedLabel(b)].filter(Boolean).join(" · ")}</small></span>${I.chevR}</button>`).join("")}</div>`;
   }
   $$("#viewSeg button").forEach(b=>b.onclick=()=>{ ST.shelfView=b.dataset.view; save(); renderShelfAll(); });
+  $("#shelfQ").addEventListener("input",()=>renderShelfAll());
   $$("#shelfTabs button").forEach(b=>b.onclick=()=>{ ST.shelfTab=b.dataset.tab; save(); renderShelfAll(); });
   document.addEventListener("click",e=>{ const t=e.target.closest("[data-shelf-tab]"); if(t){ ST.shelfTab=t.dataset.shelfTab; save(); go("s-shelf"); } });
   /* moving a book between shelves keeps the lifetime total right */
@@ -1907,8 +1941,8 @@ html.locked .toast.show{transform:translate(-50%,0)}
   document.addEventListener("click",e=>{
     const a=e.target.closest("[data-act]"); if(!a) return;
     const b=LIB.find(x=>x.id===a.dataset.id); if(!b) return;
-    if(a.dataset.act==="start"){ setStatus(b,"listening"); afterBooksChanged(); toast(`${b.t} moved to Currently listening`); }
-    if(a.dataset.act==="finish") finishBook(b);
+    if(a.dataset.act==="start"){ setStatus(b,"listening"); afterBooksChanged(); toast(`${b.t} moved to Currently listening`); offerWantDup(b); }
+    if(a.dataset.act==="finish"){ finishBook(b); offerWantDup(b); }
     if(a.dataset.act==="log") openLive(b.id);
   });
   $$("#shelfFilter button").forEach(b=>b.onclick=()=>{ setShelfF(b.dataset.f); renderShelfAll(); });
@@ -1945,8 +1979,15 @@ html.locked .toast.show{transform:translate(-50%,0)}
     if(!navigator.onLine){ $("#bkCoverMsg").textContent="You're offline, so covers can't be found right now."; return; }
     $("#bkCoverMsg").textContent="Looking for covers…";
     try{
-      coverHits=(await searchBooks(q)).filter(r=>r.cover).slice(0,8);
-      $("#bkCoverMsg").textContent=coverHits.length?"Tap a cover to use it.":"No covers found for this book.";
+      // the title and author, then the title alone (other editions); each cover once, this book's first
+      const t=$("#bkTitle").value.trim(), au=$("#bkAuthor").value.trim(), k=mKey(t,au), seen=new Set();
+      // every edition's cover (covers=1), for the title and author, then the title alone
+      const editions=async w=>{ const r=await fetch("api/books/search?covers=1&q="+encodeURIComponent(w.trim().toLowerCase()),{credentials:"same-origin",redirect:"manual",cache:"no-store"});
+        const j=r.ok&&/json/.test(r.headers.get("content-type")||"")?await r.json().catch(()=>null):null; if(!j||j.unavailable) throw new Error("search unavailable"); return (j.results||[]).map(fromServer); };
+      const lists=[await editions(q)]; if(au&&keyTitle(k).length>=2) lists.push(await editions(keyTitle(k)).catch(()=>[]));
+      const near=r=>{ const rk=mKey(r.t,r.author); return rk===k?0:keyTitle(rk)===keyTitle(k)?1:2; };
+      coverHits=lists.flat().filter(r=>/^https:\/\//.test(r.cover||"")&&!seen.has(r.cover)&&seen.add(r.cover)).map((r,i)=>[r,near(r),i]).sort((a,b)=>a[1]-b[1]||a[2]-b[2]).map(x=>x[0]).slice(0,6);
+      $("#bkCoverMsg").textContent=coverHits.length?`${coverHits.length>1?`${coverHits.length} covers found. `:""}Tap one to use it.`:"No covers found for this book.";
       $("#bkCovers").innerHTML=coverHits.map((r,i)=>`<button type="button" data-i="${i}" aria-label="${esc(r.t)}${r.author?" by "+esc(r.author):""}"><img src="${esc(r.cover)}" alt="" loading="lazy" onerror="this.parentNode.remove()"></button>`).join("");
     }catch(e){ $("#bkCoverMsg").textContent=FAIL_MSG.replace(", or add the book by hand","")+""; }
   };
@@ -1959,7 +2000,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
     const t=titleCase($("#bkTitle").value); if(!t){ $("#bkTitle").focus(); toast("A book needs a title"); return; }
     const H=Math.max(0,parseInt($("#bkH").value,10)||0), Mi=Math.min(59,Math.max(0,parseInt($("#bkM").value,10)||0));
     const len=H+Mi/60, h=len>0?len:null;
-    const before=ST.total, lenChanged=Math.abs((h||0)-(b.h||0))>1e-9, wasOpen=!isDone(b);
+    const before=ST.total, lenChanged=Math.abs((h||0)-(b.h||0))>1e-9, wasOpen=!isDone(b), wasStatus=isDone(b)?"done":b.status;
     b.t=t; b.author=titleCase($("#bkAuthor").value)||null; b.series=titleCase($("#bkSeries").value)||null;
     const num=parseInt($("#bkNum").value,10); b.num=num>0?num:null; b.genre=$("#bkGenre").value||null; b.h=h;
     if(bkStat==="done"){ delete b.status; b.finished=$("#bkDate").value||(wasOpen?dayKey(new Date()):null); }   // blank date = backlog: counts toward totals, never toward streaks
@@ -1967,6 +2008,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
     if(newCover!==undefined){ b.cover=newCover||null; saveCover(b.cover); }
     if(lenChanged) b.hEst=false;
     closePanel(); afterBooksChanged();   // recalculates the finish remainder and the total
+    const nowStatus=isDone(b)?"done":b.status; if(nowStatus!=="want"&&nowStatus!==wasStatus) offerWantDup(b);   // started or finished here
     const delta=ST.total-before;
     toast(Math.abs(delta)>1e-9?`Saved · ${delta>0?"+":"−"}${hm(Math.abs(delta))} on your total`:"Saved");
     if(wasOpen&&bkStat==="done") showFinished(b); else showPendingEarned();
@@ -2158,6 +2200,29 @@ html.locked .toast.show{transform:translate(-50%,0)}
     rememberQueue.push(...books);
     clearTimeout(rememberTimer); rememberTimer=setTimeout(()=>rememberNow(rememberQueue.splice(0),kind),2000);
   }
+  /* the same book (title and first author) also waiting on Want to listen: offer once to take it off there. "Keep"
+     is remembered on this device, so the same copy isn't asked about again. */
+  /* the same book, for duplicates: the full title (only "(Unabridged)"/"(Abridged)" and punctuation ignored) and the
+     author's surname (titles like Dr., PhD, MD ignored). Never the same when both have a series number and the
+     numbers differ, or when both are finished with lengths more than 2 minutes apart (different volumes; a reread
+     of the same audiobook has the same length). */
+  const NOT_NAME=new Set(["dr","doctor","prof","professor","mr","mrs","ms","mx","sir","dame","rev","phd","md","psyd","edd","dds","dphil","jr","sr","ii","iii","iv","rn","msw","lcsw","lmft","mba"]);
+  const authorLast=a=>{ const w=plain(String(a||"").split(/,|&|;|\s+and\s+/i)[0]).split(" ").filter(x=>x&&!NOT_NAME.has(x)); return w[w.length-1]||""; };
+  const dupKey=b=>plain(String(b.t||"").replace(/\s*\((?:un)?abridged\)/gi,""))+"|"+authorLast(b.author);
+  const sameCopy=(a,b)=>dupKey(a)===dupKey(b)&&!(a.num>0&&b.num>0&&a.num!==b.num)&&!(isDone(a)&&isDone(b)&&a.h>0&&b.h>0&&Math.abs(a.h-b.h)>2/60+1e-9);
+  const DUP_KEEP="earmark.dupKeep";
+  const dupKept=()=>{ try{ return new Set(JSON.parse(localStorage.getItem(DUP_KEEP)||"[]")); }catch(e){ return new Set(); } };
+  async function offerWantDup(b){
+    if(!b||b.status==="want"||!LIB.includes(b)) return;
+    const kept=dupKept(), others=LIB.filter(x=>x!==b&&x.status==="want"&&sameCopy(x,b)&&!kept.has(x.id));
+    if(!others.length) return;
+    await new Promise(r=>setTimeout(r,400));
+    while($("#earned").classList.contains("open")) await new Promise(r=>setTimeout(r,300));   // after a finished book's celebration
+    if(!LIB.includes(b)) return;
+    const ok=await ask({title:"Also on Want to listen",msg:`${b.t} is also on Want to listen. Remove it from there?`,ok:"Remove",cancel:"Keep"});
+    if(ok){ others.forEach(x=>{ const i=LIB.indexOf(x); if(i>=0) LIB.splice(i,1); }); afterBooksChanged(); toast(`Removed from Want to listen`); }
+    else { others.forEach(x=>kept.add(x.id)); try{ localStorage.setItem(DUP_KEEP,JSON.stringify([...kept])); }catch(e){} }
+  }
   function addBook(title,hours,genre,author,finished,extra={}){
     const entry=Object.assign({id:uid(),t:title,author:author||null,series:null,h:hours,c:CLOTH[clothN++%CLOTH.length],added:new Date().toISOString(),finished:finished||null,ph:true,genre:genre||null},extra);
     if(!extra.src) rememberBooks([entry],"manual");   // typed in (search results are already in the table)
@@ -2166,6 +2231,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
     derive(); save(); renderHero(); renderShelf(shelfMode); renderShelfAll(); renderNow(); renderGoals();   // a finished book's length counts toward the total
     recomputeMedals();                // genre-stretch medals may have moved
     renderInsights();
+    if(entry.status!=="want") offerWantDup(entry);
     return entry;
   }
   // dated: books from "Finished a book" are finished today; elsewhere the date is optional (blank = backlog)
@@ -2678,7 +2744,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
     const list=INSIGHTS.map(f=>f()).filter(Boolean), el=$("#insights");
     if(!list.length){ el.innerHTML=""; return; }
     const off=Math.floor(Math.random()*list.length), show=[];
-    for(let i=0;i<Math.min(2,list.length);i++) show.push(list[(off+i)%list.length]);
+    show.push(list[off]);   // one card on Home
     el.innerHTML=show.map(c=>`<div class="card up"><div class="ic">${c.ic}</div><div><b>${c.b}</b><small>${c.s}</small></div></div>`).join("");
   }
 
@@ -3067,9 +3133,13 @@ html.locked .toast.show{transform:translate(-50%,0)}
   const fillQueue=()=>noCover().filter(b=>!FILL.tried[b.id]).sort((a,b)=>fillRank(a)-fillRank(b));
   const fillWait=ms=>new Promise(r=>setTimeout(r,ms));
   let fillRunning=false;
-  function startFill(){
+  // books with no cover that no finished run on this device has tried yet (all of them before the first run)
+  const untried=()=>FILL?noCover().filter(b=>!FILL.tried[b.id]).length:noCover().length;
+  // onlyNew: just the books added since the last run (from Home's card); otherwise every book with no cover (Settings)
+  function startFill(onlyNew){
     if(!canRemember()){ toast("Finding covers needs Earmark's server. Try again when you're online."); return; }
-    FILL={on:true,tried:{},total:noCover().length,done:0,covers:0,lengths:0,started:new Date().toISOString()};
+    const keep=onlyNew===true&&FILL?FILL.tried:{};
+    FILL={on:true,tried:keep,total:onlyNew===true?untried():noCover().length,done:0,covers:0,lengths:0,started:new Date().toISOString()};
     try{ localStorage.setItem(FILL_CARD,"used"); }catch(e){}
     fillSave(); renderFill(); runFill();
   }
@@ -3110,15 +3180,59 @@ html.locked .toast.show{transform:translate(-50%,0)}
     let h="";
     if(running) h=`<div class="nt"><b>Finding covers… ${FILL.done.toLocaleString()} of ${FILL.total.toLocaleString()}</b><small>${FILL.covers?summary(FILL)+" ":""}You can keep using Earmark meanwhile.</small><div class="bar"><i style="width:${pct}%"></i></div></div><button class="nx" type="button" id="fillStop" aria-label="Stop finding covers">×</button>`;
     else if(FILL&&FILL.finished&&!FILL.shown) h=`<div class="nt"><b>${FILL.covers?"Covers found":"No more covers found"}</b><small>${FILL.covers?summary(FILL):`Earmark couldn't match the ${plural(missing,"book","books")} still without a cover.`}</small></div><button class="nbtn" type="button" id="fillOk">OK</button>`;
+    else if(seen!=="dismissed"&&FILL&&FILL.finished&&FILL.shown&&untried()>10) h=`<div class="nt"><b>${untried().toLocaleString()} books added since the last search have no cover. Find them?</b><small>Books the last search couldn't match are left out. Settings › Data › Find missing covers tries every book again.</small></div><div class="cbtns"><button class="nbtn" type="button" id="fillGoNew">Find covers</button><button class="linkbtn" type="button" id="fillNo">Not now</button></div>`;
     else if(!seen&&!FILL&&missing>10) h=`<div class="nt"><b>${missing.toLocaleString()} books have no cover. Find them?</b><small>Earmark looks each one up by title and author. Covers you already have stay as they are.</small></div><div class="cbtns"><button class="nbtn" type="button" id="fillGo">Find covers</button><button class="linkbtn" type="button" id="fillNo">Not now</button></div>`;
     card.hidden=!h; card.innerHTML=h;
-    if($("#fillGo")) $("#fillGo").onclick=startFill;
+    if($("#fillGo")) $("#fillGo").onclick=()=>startFill();
+    if($("#fillGoNew")) $("#fillGoNew").onclick=()=>startFill(true);
     if($("#fillNo")) $("#fillNo").onclick=()=>{ try{ localStorage.setItem(FILL_CARD,"dismissed"); }catch(e){} renderFill(); };
     if($("#fillStop")) $("#fillStop").onclick=stopFill;
     if($("#fillOk")) $("#fillOk").onclick=()=>{ FILL.shown=true; fillSave(); renderFill(); };
     const sub=$("#setCoversSub"); if(sub) sub.textContent=running?`Finding covers… ${FILL.done.toLocaleString()} of ${FILL.total.toLocaleString()}. Tap to stop.`
       :missing?`${plural(missing,"book has","books have")} no cover. Tap to look them all up.`:"Every book has a cover.";
   }
+  /* duplicates: books with the same title and first author. Ticked to start: a Want to listen copy when another copy
+     is listening or finished, or all but the oldest when every copy is on Want to listen. A finished copy is never
+     ticked to start; two finished copies are marked "reread?" and left alone unless the person ticks one. */
+  let DUPS=null;
+  function dupGroups(){
+    const by=new Map(); LIB.forEach(b=>{ const k=dupKey(b); if(k.split("|")[0].length<2) return; (by.get(k)||by.set(k,[]).get(k)).push(b); });
+    const out=[];
+    by.forEach(list=>{ if(list.length<2) return;
+      // copies joined when they're the same book by the rules above (a copy can link two others)
+      const up=list.map((_,i)=>i), find=i=>up[i]===i?i:(up[i]=find(up[i]));
+      for(let i=0;i<list.length;i++) for(let j=i+1;j<list.length;j++) if(sameCopy(list[i],list[j])) up[find(i)]=find(j);
+      const sets=new Map(); list.forEach((b,i)=>{ const r=find(i); (sets.get(r)||sets.set(r,[]).get(r)).push(b); });
+      sets.forEach(g=>{ if(g.length>1) out.push(g); }); });
+    return out;
+  }
+  function openDups(){
+    const groups=dupGroups();
+    if(!groups.length){ toast("No duplicates on your shelf"); return; }
+    const old=b=>Date.parse(b.added||"")||0;
+    DUPS=groups.map(g=>{ const wants=g.filter(b=>b.status==="want"), other=g.length>wants.length, keep=other?null:[...wants].sort((a,b)=>old(a)-old(b))[0];
+      return {books:g, tick:new Set(wants.filter(b=>b!==keep).map(b=>b.id)), reread:g.filter(isDone).length>1}; });
+    renderDups(); go("s-dups");
+  }
+  const dupWhere=b=>isDone(b)?"Finished":b.status==="listening"?"Listening":"Want to listen";
+  function renderDups(){
+    const day=d=>d?fmtDay(d):null;
+    $("#dupBody").innerHTML=`<div class="card rvsum"><b>${plural(DUPS.length,"book is","books are")} on your shelf more than once</b><span>Tick the copies to remove. A finished copy is only removed if you tick it.</span></div>`+
+      DUPS.map((g,gi)=>`<section class="rvgroup dupgroup">${g.books.map(b=>`<label class="ssrow duprow"><input type="checkbox" data-g="${gi}" data-id="${esc(b.id)}"${g.tick.has(b.id)?" checked":""} aria-label="Remove this copy of ${esc(b.t)}"><span class="rvthumb">${b.cover?`<img src="${esc(b.cover)}" alt="" loading="lazy" onerror="this.remove()">`:""}</span><span class="ssf"><b>${esc(b.t)}</b><small>${esc([dupWhere(b),b.h>0?hm(b.h)+(b.hEst?" (estimated)":""):"No length",isDone(b)?(b.finished?"finished "+day(b.finished):"no finish date"):b.added?"added "+day(b.added):null].filter(Boolean).join(" · "))}${g.reread&&isDone(b)?` · <span class="reread">reread?</span>`:""}</small></span></label>`).join("")}</section>`).join("");
+    dupCount();
+  }
+  function dupCount(){ const n=DUPS?DUPS.reduce((t,g)=>t+g.tick.size,0):0, b=$("#dupRemove"); b.disabled=!n; b.textContent=n?`Remove ${plural(n,"book","books")}`:"Nothing ticked"; }
+  $("#dupBody").addEventListener("change",e=>{ const x=e.target; if(!DUPS||x.type!=="checkbox") return; const g=DUPS[+x.dataset.g]; if(x.checked) g.tick.add(x.dataset.id); else g.tick.delete(x.dataset.id); dupCount(); });
+  $("#dupCancel").onclick=()=>{ DUPS=null; back(); };
+  $("#dupRemove").onclick=async()=>{
+    if(!DUPS) return;
+    const gone=DUPS.flatMap(g=>g.books.filter(b=>g.tick.has(b.id))); if(!gone.length) return;
+    const fin=gone.filter(isDone), hrs=fin.reduce((t,b)=>t+(b.h||0),0);
+    if(!await ask({title:`Remove ${plural(gone.length,"book","books")}?`,msg:`${gone.slice(0,3).map(b=>`${b.t} (${dupWhere(b)})`).join(", ")}${gone.length>3?`, and ${gone.length-3} more`:""}.${fin.length&&hrs?` ${hm(hrs)} comes off your lifetime total.`:""} This can't be undone.`,ok:"Remove",danger:true})) return;
+    gone.forEach(b=>{ const i=LIB.indexOf(b); if(i>=0) LIB.splice(i,1); });
+    DUPS=null; afterBooksChanged(); back(); renderSettings(); toast(`${plural(gone.length,"book","books")} removed`);
+  };
+  $("#setDups").onclick=openDups;
   async function findCovers(){
     if(FILL&&FILL.on){ if(await ask({title:"Stop finding covers?",msg:"Covers already found stay. You can start again any time.",ok:"Stop",cancel:"Keep going"})) stopFill(); return; }
     if(!noCover().length){ toast("Every book already has a cover"); return; }
@@ -3133,6 +3247,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
     $$(".sseg").forEach(seg=>{ const k=seg.dataset.set, v=k==="shelfFilter"?shelfF():k in S?S[k]:ST[k]; seg.querySelectorAll("button").forEach(b=>{ b.classList.toggle("on",b.dataset.v===v); b.setAttribute("aria-pressed",b.dataset.v===v); }); });
     $("#setLastBackup").textContent=ST.lastBackup?fmtDay(ST.lastBackup):"Never";
     renderFill();
+    const dg=dupGroups().length; $("#setDupsSub").textContent=dg?`${plural(dg,"book is","books are")} on your shelf more than once.`:"No duplicates on your shelf.";
     $("#setVersion").innerHTML=`${APP_VERSION}<span class="betatag">Beta</span>`; $("#setFounding").hidden=!BY.fl.lv;
   }
   $("#setName").addEventListener("input",e=>{ ST.user.name=e.target.value; save(); });
