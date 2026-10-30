@@ -11,7 +11,9 @@ import { cached } from "./_cache.js";
    is kept for a few days, so the same search doesn't reach it again.
    Audible's catalog is never asked (its terms rule out collecting its listings). A search that is an ISBN (an
    all-digit Audible ID is one) is looked up by ISBN; one that is an Audible ID (B0…) can only be answered from
-   Earmark's own table, since no free source knows Audible's IDs. */
+   Earmark's own table, since no free source knows Audible's IDs.
+   With covers=1 (the book editor's Find cover) every edition with a cover comes back, each cover once, instead of
+   one result per book, so there are several covers to choose from. */
 const CHAIN = [["openlibrary", openLibrarySearch, 3], ["googlebooks", googleSearch, 3]];   // days a search's answer is kept
 const ASIN = /^b0[a-z0-9]{8}$/, ISBN = /^(\d{9}[\dx]|97[89]\d{10})$/;
 async function byId(ctx, q, tried) {
@@ -33,7 +35,8 @@ async function byId(ctx, q, tried) {
 
 export async function onRequestGet(ctx) {
   configure(ctx.env);
-  const q = (new URL(ctx.request.url).searchParams.get("q") || "").trim().toLowerCase().replace(/\s+/g, " ").slice(0, 120);
+  const params = new URL(ctx.request.url).searchParams, covers = params.get("covers") === "1";
+  const q = (params.get("q") || "").trim().toLowerCase().replace(/\s+/g, " ").slice(0, 120);
   if (q.length < 2) return json({ results: [], source: null, tried: [] });
   const db = ctx.env.DB, tried = [];
   if (ASIN.test(q) || ISBN.test(q)) {
@@ -43,7 +46,7 @@ export async function onRequestGet(ctx) {
   }
   let own = [];
   try { own = await findInLibrary(db, q); tried.push({ src: "library", results: own.length }); } catch (err) { tried.push({ src: "library", error: err.message }); }
-  if (own.length >= 8) return json({ results: own.slice(0, 25), source: "library", tried });
+  if (own.length >= 8 && !covers) return json({ results: own.slice(0, 25), source: "library", tried });
   for (const [src, fn, days] of CHAIN) {
     if (isDown(src)) { tried.push({ src, skipped: true }); continue; }
     try {
@@ -57,6 +60,10 @@ export async function onRequestGet(ctx) {
       const merged = own.map(b => { const x = ids(b).map(k => byId.get(k)).find(Boolean); return x ? { ...x, ...Object.fromEntries(Object.entries(b).filter(([, v]) => v != null && v !== "")), fromLibrary: true } : b; });
       const have = new Set(own.flatMap(ids));
       const more = list.filter(b => !ids(b).some(k => have.has(k)));
+      if (covers) {   // every edition's cover, each once
+        const seen = new Set();
+        return json({ results: [...merged, ...list].filter(b => b.cover && !seen.has(b.cover) && seen.add(b.cover)).slice(0, 25), source: src, tried });
+      }
       return json({ results: [...merged, ...more].slice(0, 25), source: own.length ? `library+${src}` : src, tried });
     } catch (err) { tried.push({ src, error: err.message }); }
   }

@@ -1981,7 +1981,10 @@ html.locked .toast.show{transform:translate(-50%,0)}
     try{
       // the title and author, then the title alone (other editions); each cover once, this book's first
       const t=$("#bkTitle").value.trim(), au=$("#bkAuthor").value.trim(), k=mKey(t,au), seen=new Set();
-      const lists=[await searchBooks(q)]; if(au&&keyTitle(k).length>=2) lists.push(await searchBooks(keyTitle(k)).catch(()=>[]));
+      // every edition's cover (covers=1), for the title and author, then the title alone
+      const editions=async w=>{ const r=await fetch("api/books/search?covers=1&q="+encodeURIComponent(w.trim().toLowerCase()),{credentials:"same-origin",redirect:"manual",cache:"no-store"});
+        const j=r.ok&&/json/.test(r.headers.get("content-type")||"")?await r.json().catch(()=>null):null; if(!j||j.unavailable) throw new Error("search unavailable"); return (j.results||[]).map(fromServer); };
+      const lists=[await editions(q)]; if(au&&keyTitle(k).length>=2) lists.push(await editions(keyTitle(k)).catch(()=>[]));
       const near=r=>{ const rk=mKey(r.t,r.author); return rk===k?0:keyTitle(rk)===keyTitle(k)?1:2; };
       coverHits=lists.flat().filter(r=>/^https:\/\//.test(r.cover||"")&&!seen.has(r.cover)&&seen.add(r.cover)).map((r,i)=>[r,near(r),i]).sort((a,b)=>a[1]-b[1]||a[2]-b[2]).map(x=>x[0]).slice(0,6);
       $("#bkCoverMsg").textContent=coverHits.length?`${coverHits.length>1?`${coverHits.length} covers found. `:""}Tap one to use it.`:"No covers found for this book.";
@@ -3130,9 +3133,13 @@ html.locked .toast.show{transform:translate(-50%,0)}
   const fillQueue=()=>noCover().filter(b=>!FILL.tried[b.id]).sort((a,b)=>fillRank(a)-fillRank(b));
   const fillWait=ms=>new Promise(r=>setTimeout(r,ms));
   let fillRunning=false;
-  function startFill(){
+  // books with no cover that no finished run on this device has tried yet (all of them before the first run)
+  const untried=()=>FILL?noCover().filter(b=>!FILL.tried[b.id]).length:noCover().length;
+  // onlyNew: just the books added since the last run (from Home's card); otherwise every book with no cover (Settings)
+  function startFill(onlyNew){
     if(!canRemember()){ toast("Finding covers needs Earmark's server. Try again when you're online."); return; }
-    FILL={on:true,tried:{},total:noCover().length,done:0,covers:0,lengths:0,started:new Date().toISOString()};
+    const keep=onlyNew===true&&FILL?FILL.tried:{};
+    FILL={on:true,tried:keep,total:onlyNew===true?untried():noCover().length,done:0,covers:0,lengths:0,started:new Date().toISOString()};
     try{ localStorage.setItem(FILL_CARD,"used"); }catch(e){}
     fillSave(); renderFill(); runFill();
   }
@@ -3173,9 +3180,11 @@ html.locked .toast.show{transform:translate(-50%,0)}
     let h="";
     if(running) h=`<div class="nt"><b>Finding covers… ${FILL.done.toLocaleString()} of ${FILL.total.toLocaleString()}</b><small>${FILL.covers?summary(FILL)+" ":""}You can keep using Earmark meanwhile.</small><div class="bar"><i style="width:${pct}%"></i></div></div><button class="nx" type="button" id="fillStop" aria-label="Stop finding covers">×</button>`;
     else if(FILL&&FILL.finished&&!FILL.shown) h=`<div class="nt"><b>${FILL.covers?"Covers found":"No more covers found"}</b><small>${FILL.covers?summary(FILL):`Earmark couldn't match the ${plural(missing,"book","books")} still without a cover.`}</small></div><button class="nbtn" type="button" id="fillOk">OK</button>`;
+    else if(seen!=="dismissed"&&FILL&&FILL.finished&&FILL.shown&&untried()>10) h=`<div class="nt"><b>${untried().toLocaleString()} books added since the last search have no cover. Find them?</b><small>Books the last search couldn't match are left out. Settings › Data › Find missing covers tries every book again.</small></div><div class="cbtns"><button class="nbtn" type="button" id="fillGoNew">Find covers</button><button class="linkbtn" type="button" id="fillNo">Not now</button></div>`;
     else if(!seen&&!FILL&&missing>10) h=`<div class="nt"><b>${missing.toLocaleString()} books have no cover. Find them?</b><small>Earmark looks each one up by title and author. Covers you already have stay as they are.</small></div><div class="cbtns"><button class="nbtn" type="button" id="fillGo">Find covers</button><button class="linkbtn" type="button" id="fillNo">Not now</button></div>`;
     card.hidden=!h; card.innerHTML=h;
-    if($("#fillGo")) $("#fillGo").onclick=startFill;
+    if($("#fillGo")) $("#fillGo").onclick=()=>startFill();
+    if($("#fillGoNew")) $("#fillGoNew").onclick=()=>startFill(true);
     if($("#fillNo")) $("#fillNo").onclick=()=>{ try{ localStorage.setItem(FILL_CARD,"dismissed"); }catch(e){} renderFill(); };
     if($("#fillStop")) $("#fillStop").onclick=stopFill;
     if($("#fillOk")) $("#fillOk").onclick=()=>{ FILL.shown=true; fillSave(); renderFill(); };
