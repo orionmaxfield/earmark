@@ -3099,9 +3099,9 @@ html.locked .toast.show{transform:translate(-50%,0)}
   /* settings: every change saves and updates the app straight away */
   function refreshAll(){ derive(); save(); applyMotion(); renderHero(); renderGoals(); renderNotes(); renderShelf(shelfMode); renderShelfAll(); recomputeMedals(true); renderInsights(); renderNow(); if(current==="s-stats") renderStats(false); }
   /* a new day while the app stayed open (left on the home screen overnight): Today, the streak and this week / month
-     are worked out again, the same as on opening the app */
+     are worked out again and yesterday's "Logged today" notes are cleared, the same as on opening the app */
   let shownDay=dayKey(new Date());
-  function dayCheck(){ if(document.visibilityState!=="visible") return; const k=dayKey(new Date()); if(k===shownDay) return; shownDay=k; refreshAll(); }
+  function dayCheck(){ if(document.visibilityState!=="visible") return; const k=dayKey(new Date()); if(k===shownDay) return; shownDay=k; rollover(); refreshAll(); }
   document.addEventListener("visibilitychange",dayCheck); addEventListener("pageshow",dayCheck); setInterval(dayCheck,60*1000);
   function applyMotion(){ const r=ST.settings.reduceMotion, h=document.documentElement; h.classList.toggle("rm-on",r==="on"); h.classList.toggle("rm-off",r==="off"); }
   /* ---- Find missing covers: every book with no cover (finished, listening, want to listen), in the background ----
