@@ -2671,6 +2671,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
     return parts.filter(p=>p.m>0).map(p=>({at:new Date(p.a).toISOString(),d:dayKey(new Date(p.a)),m:p.m}));
   }
   function logListening(hours,note,book,span){
+    dayCheck();   // logged just after midnight, before the once-a-minute check: the new day starts first, so this note isn't cleared with yesterday's
     const now=new Date(), d=dayKey(now), prev=ST.lastLog;
     const welcome=!!prev&&prev!==d&&daysBetween(prev,d)>=8;   // a week or more away: welcome back
     // one session (split at midnight when timed across it): it counts once toward each day, the streak and the total, and the book's progress
@@ -3101,7 +3102,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
   /* a new day while the app stayed open (left on the home screen overnight): Today, the streak and this week / month
      are worked out again and yesterday's "Logged today" notes are cleared, the same as on opening the app */
   let shownDay=dayKey(new Date());
-  function dayCheck(){ if(document.visibilityState!=="visible") return; const k=dayKey(new Date()); if(k===shownDay) return; shownDay=k; rollover(); refreshAll(); }
+  function dayCheck(){ if(document.visibilityState!=="visible") return; const k=dayKey(new Date()); if(k===shownDay) return; shownDay=k; rollover(); $("#addDate").max=k; refreshAll(); }   // Add a book's "date finished" allows the new day too
   document.addEventListener("visibilitychange",dayCheck); addEventListener("pageshow",dayCheck); setInterval(dayCheck,60*1000);
   function applyMotion(){ const r=ST.settings.reduceMotion, h=document.documentElement; h.classList.toggle("rm-on",r==="on"); h.classList.toggle("rm-off",r==="off"); }
   /* ---- Find missing covers: every book with no cover (finished, listening, want to listen), in the background ----
