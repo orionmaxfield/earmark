@@ -1468,7 +1468,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
   };
   /* ---- state: everything the app shows comes from here. A new account starts at zero. ---- */
   const KEY="earmark.state.v1";
-  const APP_VERSION="0.18.0";   // shown in Settings > About with a Beta tag
+  const APP_VERSION="0.18.1";   // shown in Settings > About with a Beta tag
   /* ---- beta settings: fill these in ---- */
   const FEEDBACK_URL="https://docs.google.com/forms/d/e/1FAIpQLSd0juSwRwq8oNXawAh7rJ79hCi84N0al5oX6bwg_KqX-gkqEw/viewform";   // "Send feedback"
   const FINAL_SURVEY_URL="https://docs.google.com/forms/d/e/1FAIpQLSfLebyfyRnXDIu-X4ERDeldCd_olUcJBbSbxtkAN0O6HENCbA/viewform";   // Settings > Help > Final thoughts survey
@@ -1931,7 +1931,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
   $$("#viewSeg button").forEach(b=>b.onclick=()=>{ ST.shelfView=b.dataset.view; save(); renderShelfAll(); });
   $("#shelfQ").addEventListener("input",()=>renderShelfAll());
   $$("#shelfTabs button").forEach(b=>b.onclick=()=>{ ST.shelfTab=b.dataset.tab; save(); renderShelfAll(); });
-  document.addEventListener("click",e=>{ const t=e.target.closest("[data-shelf-tab]"); if(t){ ST.shelfTab=t.dataset.shelfTab; save(); go("s-shelf"); } });
+  document.addEventListener("click",e=>{ const t=e.target.closest("[data-shelf-tab]"); if(t){ ST.shelfTab=t.dataset.shelfTab; save(); $("#shelfQ").value=""; go("s-shelf"); } });   // "See all" shows all: a search left in the box is cleared
   /* moving a book between shelves keeps the lifetime total right */
   function setStatus(b,to){
     if(to==="done"){ if(!isDone(b)) b.finished=b.finished||dayKey(new Date()); delete b.status; }
@@ -3098,6 +3098,11 @@ html.locked .toast.show{transform:translate(-50%,0)}
 
   /* settings: every change saves and updates the app straight away */
   function refreshAll(){ derive(); save(); applyMotion(); renderHero(); renderGoals(); renderNotes(); renderShelf(shelfMode); renderShelfAll(); recomputeMedals(true); renderInsights(); renderNow(); if(current==="s-stats") renderStats(false); }
+  /* a new day while the app stayed open (left on the home screen overnight): Today, the streak and this week / month
+     are worked out again, the same as on opening the app */
+  let shownDay=dayKey(new Date());
+  function dayCheck(){ if(document.visibilityState!=="visible") return; const k=dayKey(new Date()); if(k===shownDay) return; shownDay=k; refreshAll(); }
+  document.addEventListener("visibilitychange",dayCheck); addEventListener("pageshow",dayCheck); setInterval(dayCheck,60*1000);
   function applyMotion(){ const r=ST.settings.reduceMotion, h=document.documentElement; h.classList.toggle("rm-on",r==="on"); h.classList.toggle("rm-off",r==="off"); }
   /* ---- Find missing covers: every book with no cover (finished, listening, want to listen), in the background ----
      One tap starts it. Each book is looked up through Earmark's server (/api/books/search: its own book table merged
@@ -4103,7 +4108,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
       <p>Your history is saved to your account and syncs to every phone or computer you sign in on with the same email. Backups are optional: Settings › Data › Export a backup saves a file you can keep as an extra copy.</p>`:`<h3>Your data</h3>
       <p>Your history is saved on this device, and it syncs to your account once you're connected (Settings › Account shows when). Settings › Data › Export a backup saves a file you can keep as an extra copy.</p>`}
       <h3>How long the test runs</h3>
-      <p>${end?`The beta runs until <b>${end}</b>.`:"The beta runs for a few weeks. We'll email you the end date."} Near the end, please fill in the short final survey in Settings › Help.</p>
+      <p>${end?(TEST_END_DATE<dayKey(new Date())?`The beta was planned to run until <b>${end}</b>. If you haven't yet, please fill in the short final survey in Settings › Help.`:`The beta runs until <b>${end}</b>. Near the end, please fill in the short final survey in Settings › Help.`):"The beta runs for a few weeks. We'll email you the end date. Near the end, please fill in the short final survey in Settings › Help."}</p>
       <h3>Send feedback</h3>
       <p>Found a bug, or have an idea? <a href="${FEEDBACK_URL}" target="_blank" rel="noopener">Send feedback</a> any time. It's also at the bottom of Home and in Settings › Help.</p>`;
   }
