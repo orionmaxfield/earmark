@@ -1862,13 +1862,13 @@ html.locked .toast.show{transform:translate(-50%,0)}
     const list=sortBooks(LIB.filter(b=>order[bucket(b)]<=order[mode]),"newest");
     if(!list.length){
       $("#bookcase").innerHTML=LIB.some(isDone)
-        ? `<div class="card shelf-empty">${I.book}<p>Nothing finished ${mode==="month"?"this month":"this year"} yet.</p><button type="button" data-shelf-tab="done">See all books</button></div>`
+        ? `<div class="card shelf-empty">${I.book}<p>Nothing finished ${mode==="month"?"this month":"this year"} yet.</p><button type="button" data-shelf-tab="done" data-shelf-f="all">See all books</button></div>`
         : `<div class="card shelf-empty">${I.book}<p>Nothing on this shelf yet.</p><button type="button" data-go="s-add">Add a book</button></div>`;
       return;
     }
     // two rows of 3, or of 4 where the grid is wide enough (the same 520px as its CSS)
     const shown=($("#bookcase").clientWidth>=520?4:3)*2, more=list.length>shown;
-    $("#bookcase").innerHTML=shelfGrid(list,true)+(more?`<button class="seeall shelfmore" type="button" data-shelf-tab="done">See all ${list.length.toLocaleString()} ${mode==="month"?"this month":mode==="year"?"this year":"books"}</button>`:"");
+    $("#bookcase").innerHTML=shelfGrid(list,true)+(more?`<button class="seeall shelfmore" type="button" data-shelf-tab="done" data-shelf-f="${mode}">See all ${list.length.toLocaleString()} ${mode==="month"?"this month":mode==="year"?"this year":"books"}</button>`:"");
   }
   $$("#shelfSeg button").forEach(b=>b.classList.toggle("on",b.dataset.shelf===shelfMode));
   renderShelf(shelfMode);
@@ -1896,7 +1896,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
   // the Bookshelf tab's search: every word in the title, author or series; it looks through the whole shelf (not just
   // this month or year)
   const shelfQ=()=>plain($("#shelfQ").value).split(" ").filter(Boolean);
-  const shelfHit=(b,ws)=>{ const hay=" "+plain([b.t,b.author,b.series].filter(Boolean).join(" ")); return ws.every(w=>hay.includes(" "+w)||hay.includes(w)); };
+  const shelfHit=(b,ws)=>{ const hay=plain([b.t,b.author,b.series].filter(Boolean).join(" ")); return ws.every(w=>hay.includes(w)); };
   function shelfCount(n,of){ const c=$("#shelfCount"); c.hidden=of==null; if(of!=null) c.textContent=`${n.toLocaleString()} of ${of.toLocaleString()}`; }
   function renderShelfAll(){
     const tab=["done","listening","want"].includes(ST.shelfTab)?ST.shelfTab:"done", ws=shelfQ();
@@ -1931,7 +1931,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
   $$("#viewSeg button").forEach(b=>b.onclick=()=>{ ST.shelfView=b.dataset.view; save(); renderShelfAll(); });
   $("#shelfQ").addEventListener("input",()=>renderShelfAll());
   $$("#shelfTabs button").forEach(b=>b.onclick=()=>{ ST.shelfTab=b.dataset.tab; save(); renderShelfAll(); });
-  document.addEventListener("click",e=>{ const t=e.target.closest("[data-shelf-tab]"); if(t){ ST.shelfTab=t.dataset.shelfTab; save(); $("#shelfQ").value=""; go("s-shelf"); } });   // "See all" shows all: a search left in the box is cleared
+  document.addEventListener("click",e=>{ const t=e.target.closest("[data-shelf-tab]"); if(t){ ST.shelfTab=t.dataset.shelfTab; save(); $("#shelfQ").value=""; if(t.dataset.shelfF) setShelfF(t.dataset.shelfF); go("s-shelf"); } });   // "See all" shows all: a search left in the box is cleared, and the Bookshelf opens on the same Month / Year / All the button named
   /* moving a book between shelves keeps the lifetime total right */
   function setStatus(b,to){
     if(to==="done"){ if(!isDone(b)) b.finished=b.finished||dayKey(new Date()); delete b.status; }
