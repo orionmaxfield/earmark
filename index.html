@@ -1468,7 +1468,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
   };
   /* ---- state: everything the app shows comes from here. A new account starts at zero. ---- */
   const KEY="earmark.state.v1";
-  const APP_VERSION="0.18.1";   // shown in Settings > About with a Beta tag
+  const APP_VERSION="0.18.2";   // shown in Settings > About with a Beta tag
   /* ---- beta settings: fill these in ---- */
   const FEEDBACK_URL="https://docs.google.com/forms/d/e/1FAIpQLSd0juSwRwq8oNXawAh7rJ79hCi84N0al5oX6bwg_KqX-gkqEw/viewform";   // "Send feedback"
   const FINAL_SURVEY_URL="https://docs.google.com/forms/d/e/1FAIpQLSfLebyfyRnXDIu-X4ERDeldCd_olUcJBbSbxtkAN0O6HENCbA/viewform";   // Settings > Help > Final thoughts survey
@@ -1500,6 +1500,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
   if(!ST.firstUseAt) ST.firstUseAt=ST.createdAt;   // first use on this device: decides Founding Listener   // books saved before editing existed get an id
   const pad=n=>String(n).padStart(2,"0");
   const dayKey=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  const futureDay=v=>!!v&&v>dayKey(new Date());   // a "finished" date after today: the date field's max is not enforced for typed dates or on every phone picker
   const parseDay=k=>{ const [y,m,d]=k.split("-").map(Number); return new Date(y,m-1,d); };
   const daysBetween=(a,b)=>Math.round((parseDay(b)-parseDay(a))/864e5);
   // the week starts on Sunday or Monday, from Settings
@@ -1998,7 +1999,8 @@ html.locked .toast.show{transform:translate(-50%,0)}
   $("#bkSave").onclick=()=>{
     const b=editing; if(!b) return;
     const t=titleCase($("#bkTitle").value); if(!t){ $("#bkTitle").focus(); toast("A book needs a title"); return; }
-    const H=Math.max(0,parseInt($("#bkH").value,10)||0), Mi=Math.min(59,Math.max(0,parseInt($("#bkM").value,10)||0));
+    if(bkStat==="done"&&futureDay($("#bkDate").value)){ $("#bkDate").focus(); toast("The finish date can't be in the future"); return; }
+    const H=Math.max(0,parseInt($("#bkH").value,10)||0), Mi=Math.max(0,parseInt($("#bkM").value,10)||0);   // 75 minutes carries into the hours
     const len=H+Mi/60, h=len>0?len:null;
     const before=ST.total, lenChanged=Math.abs((h||0)-(b.h||0))>1e-9, wasOpen=!isDone(b), wasStatus=isDone(b)?"done":b.status;
     b.t=t; b.author=titleCase($("#bkAuthor").value)||null; b.series=titleCase($("#bkSeries").value)||null;
@@ -2261,6 +2263,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
     }
     function submit(){
       const t=titleCase(tIn.value); if(!t){ tIn.focus(); return; }
+      if(dIn&&status()==="done"&&futureDay(dIn.value)){ dIn.focus(); toast("The finish date can't be in the future"); return; }
       const raw=hrIn.value.trim(), n=parseFloat(raw);
       const hours=raw!==""&&isFinite(n)&&n>0?n:null;   // blank or invalid → book only, no hours
       const shelfTo=status(), open=shelfTo!=="done";
@@ -2656,7 +2659,8 @@ html.locked .toast.show{transform:translate(-50%,0)}
     $("#rankTicks").innerHTML=next?`<span>${lo.toLocaleString()}</span><span>${fmtN(Math.max(0,hi-ST.total)).toLocaleString()} hours to go</span><span>${hi.toLocaleString()}</span>`:`<span>${lo.toLocaleString()}</span><span>Legend</span><span></span>`;
   }
   const hIn=$("#f-live input[type=number]:first-of-type"), mIn=$$("#f-live input[type=number]")[1];
-  function logLabel(){ const h=+hIn.value||0, m=+mIn.value||0; $("#logBtn").textContent=`Log ${h?h+"h ":""}${m?m+"m":""}`.trim()||"Log time"; }
+  const logMins=()=>Math.round(Math.max(0,+hIn.value||0)*60+Math.max(0,+mIn.value||0));   // 90 in minutes is an hour and a half
+  function logLabel(){ const m=logMins(); $("#logBtn").textContent=m>0?`Log ${hm(m/60)}`:"Log time"; }
   hIn.oninput=mIn.oninput=logLabel;
   $("#pastH").oninput=()=>{ const h=+$("#pastH").value||0; $("#pastBtn").textContent=h?`Add ${fmtN(h)} hours`:"Add hours"; };
   /* a real listening session: today, week, month, year, total, streak, best day, weekday pattern */
@@ -2687,8 +2691,11 @@ html.locked .toast.show{transform:translate(-50%,0)}
   $$("[data-done]").forEach(b=>b.onclick=()=>{
     const k=b.dataset.done;
     if(k==="live"){
-      const h=+hIn.value||0, m=+mIn.value||0, hours=h+m/60;
+      const hours=logMins()/60;
       if(hours<=0){ toast("Enter how long you listened"); return; }
+      // typed time can't take today past 24 hours (30 in the hours box is usually a slip for 30 minutes); a timer's span is real and splits by day
+      const todayM=D.dayMin[dayKey(new Date())]||0;
+      if(!(fromTimer&&ST.timerUnlogged)&&todayM+Math.round(hours*60)>1440){ toast(todayM?`That's over 24 hours today. ${hm(todayM/60)} is already logged.`:"A day only has 24 hours. Check the time."); (hours>24?hIn:mIn).focus(); return; }
       const bookId=$("#logBook").value||null, book=bookId&&LIB.find(x=>x.id===bookId);
       const u=fromTimer&&ST.timerUnlogged, welcome=logListening(hours,$("#noteIn").value.trim(),bookId,u?{start:u.start,end:u.end}:null);
       if(u){ ST.timerUnlogged=null; fromTimer=false; save(); renderPending(); }
@@ -2831,12 +2838,18 @@ html.locked .toast.show{transform:translate(-50%,0)}
     $("#stTable").innerHTML=`<table><thead><tr><th scope="col">${{day:"Day",week:"Week",month:"Month",year:"Year"}[R.tab]}</th><th scope="col">Listening</th></tr></thead><tbody>${R.units.filter(u=>!u.future).reverse().map(u=>`<tr><td>${u.long}</td><td>${u.v?hm(u.v):"—"}</td></tr>`).join("")}</tbody></table>`;
   }
   function renderStatSummary(R){
-    const live=R.units.filter(u=>!u.future), tot=live.reduce((t,u)=>t+u.v,0), unit=R.style==="heat"?"day":R.tab;
+    // averages and the trend start on the first day you listened: a new listener isn't averaged over months before they began
+    const first=D.cFirst?parseDay(D.cFirst):null, last=R.units[R.units.length-1].d;
+    const endOf=u=>R.tab==="year"?new Date(u.d.getFullYear(),11,31):R.tab==="month"?new Date(u.d.getFullYear(),u.d.getMonth()+1,0):R.tab==="week"?addDays(u.d,6):u.d;
+    const shown=R.units.filter(u=>!u.future), since=first?shown.filter(u=>endOf(u)>=first):shown, live=since.length?since:shown;
+    const noPrev=!!first&&(R.tab==="year"?new Date(last.getFullYear()-1,11,31):addDays(R.units[0].d,-1))<first;   // the period before ended before you started
+    const tot=shown.reduce((t,u)=>t+u.v,0), unit=R.style==="heat"?"day":R.tab;
     const best=live.reduce((b,u)=>u.v>(b?b.v:0)?u:b,null);
     const cur=R.tab==="year"?R.units[R.units.length-1].v:tot, diff=cur-R.prev;
     const AVG={day:"Daily average",week:"Weekly average",month:"Monthly average",year:"Yearly average"}, BEST={day:"Best day",week:"Best week",month:"Best month",year:"Best year"};
     let trend;
     if(cur===0&&R.prev===0) trend=`<div class="sttile"><small>Trend</small><b>—</b><span>Nothing to compare yet</span></div>`;
+    else if(noPrev&&R.prev===0) trend=`<div class="sttile"><small>Trend</small><b>—</b><span>No earlier listening to compare yet</span></div>`;
     else if(Math.abs(diff)<1/60) trend=`<div class="sttile"><small>Trend</small><b>About the same</b><span>${R.than.replace(/^than/,"as")}</span></div>`;
     else if(diff>0) trend=`<div class="sttile t-up"><small>Trend</small><b>${I.up}${hm(diff)} more</b><span>${R.than}</span></div>`;
     else trend=`<div class="sttile t-down"><small>Trend</small><b>${hm(-diff)} less</b><span>${R.than}</span></div>`;   // calm grey, never alarming
@@ -3878,7 +3891,8 @@ html.locked .toast.show{transform:translate(-50%,0)}
   $("#lkAdd").onclick=async()=>{
     const run=LK||{}, r=run.pick;
     const t=$("#lkT").value.trim(); if(!t){ $("#lkNote").textContent="Add the book's title first."; $("#lkT").focus(); return; }
-    const author=$("#lkA").value.trim()||null, H=Math.max(0,parseFloat($("#lkH").value)||0), M=Math.min(59,Math.max(0,parseFloat($("#lkM").value)||0));
+    if(lkStat==="done"&&futureDay($("#lkD").value)){ $("#lkNote").textContent="The finish date can't be in the future."; $("#lkD").focus(); return; }
+    const author=$("#lkA").value.trim()||null, H=Math.max(0,parseFloat($("#lkH").value)||0), M=Math.max(0,parseFloat($("#lkM").value)||0);   // 75 minutes carries into the hours
     const h=H||M?Math.round((H+M/60)*100)/100:null, isbn=(r&&r.isbn)||null;
     const here=onShelf(shelfIndex(),{id:"",isbn,t,author});
     if(here){ lkShowHave(here); return; }
