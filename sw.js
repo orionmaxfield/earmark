@@ -9,6 +9,8 @@
    - App files, icons and fonts: from the cache, refreshed in the background.
    - Book covers: the shelf's covers are kept on the device, so it works offline.
    - Book search and sync (/api/, which asks Audible, Open Library and Google Books): always the network; the app says so when offline.
+   - Streak reminders: when the phone lets this worker run while the app is closed (Periodic Background Sync,
+     installed Chrome/Android apps only), it shows today's reminder from the small plan the page saved.
    A new version waits until the page's "Update available — tap to refresh" is tapped. */
 const SHELL = "earmark-shell-v1", RUNTIME = "earmark-runtime-v1", COVERS = "earmark-covers";
 const SCOPE = self.registration.scope;
@@ -123,3 +125,61 @@ async function checkForUpdate(client) {
     if (before != null && client) client.postMessage({ type: "update-available" });
   } catch (err) {}
 }
+
+/* ---- streak reminders ----
+   The page works out who needs a reminder and when (index.html, RM.plan) and saves a short plan: one entry for
+   each of the next few days, {day:"2026-11-19", time:"20:00", title, body}. This worker only reads it. Nothing
+   is fetched and nothing is sent. */
+const REM_DB = "earmark-reminders", REM_TAG = "earmark-streak-reminder";
+const remKv = (mode, fn) => new Promise(res => {
+  try {
+    const r = indexedDB.open(REM_DB, 1);
+    r.onupgradeneeded = () => r.result.createObjectStore("kv");
+    r.onerror = r.onblocked = () => res(null);
+    r.onsuccess = () => {
+      const db = r.result;
+      try {
+        const tx = db.transaction("kv", mode), q = fn(tx.objectStore("kv"));
+        tx.oncomplete = () => { db.close(); res(q ? q.result : null); };
+        tx.onerror = tx.onabort = () => { db.close(); res(null); };
+      } catch (err) { db.close(); res(null); }
+    };
+  } catch (err) { res(null); }
+});
+/* REMINDER-PICK:START (the same rule as RM.pick in index.html; tests/reminders.test.js checks the two agree) */
+// the entry to show at this moment: its day's time has come (in the phone's timezone now), the day isn't over, and it wasn't shown
+function remPick(entries, now, shownDay) {
+  const at = (day, h, mi) => { const [y, m, d] = day.split("-").map(Number); return new Date(y, m - 1, d, h, mi, 0, 0); };
+  const e = (Array.isArray(entries) ? entries : []).find(x => {
+    if (!x || !/^\d{4}-\d{2}-\d{2}$/.test(x.day)) return false;
+    const t = /^(\d{1,2}):(\d{2})/.exec(String(x.time || "")), ok = t && +t[1] < 24 && +t[2] < 60, h = ok ? +t[1] : 20, mi = ok ? +t[2] : 0;
+    const end = at(x.day, 0, 0); end.setDate(end.getDate() + 1);
+    return now >= at(x.day, h, mi) && now < end;
+  });
+  return e && e.day !== shownDay ? e : null;
+}
+/* REMINDER-PICK:END */
+async function remindIfDue() {
+  if (!self.Notification || Notification.permission !== "granted") return;
+  const plan = await remKv("readonly", s => s.get("plan"));
+  if (!plan || !plan.on) return;
+  const shown = await remKv("readonly", s => s.get("shown"));
+  const e = remPick(plan.entries, new Date(), shown && shown.day);
+  if (!e) return;
+  // Earmark is open and in view: its own card on Home is the reminder
+  const open = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+  if (open.some(c => c.visibilityState === "visible")) return;
+  await remKv("readwrite", s => s.put({ day: e.day, at: Date.now() }, "shown"));
+  await self.registration.showNotification(String(e.title || "Keep your streak going"), { body: String(e.body || ""), icon: "icons/icon-192.png", tag: REM_TAG });
+}
+self.addEventListener("periodicsync", e => { if (e.tag === REM_TAG) e.waitUntil(remindIfDue()); });
+// tapping a reminder opens Earmark (or brings it forward if it is already open)
+self.addEventListener("notificationclick", e => {
+  e.notification.close();
+  e.waitUntil((async () => {
+    const open = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    const c = open.find(c => c.url.startsWith(SCOPE));
+    if (c && "focus" in c) return c.focus();
+    return self.clients.openWindow(SCOPE);
+  })());
+});

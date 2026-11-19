@@ -2,6 +2,28 @@
 
 Newest first. The version is shown in Settings > About.
 
+## 0.19.0 (Nov 18, 2026) - preview branch `earmark-0.19.0-preview`
+
+New: Streak reminders (Settings > Notifications). The "Coming soon" row is gone.
+- A switch and a time ("Remind me at", 8:00 PM unless you change it). Off until you turn it on.
+- One reminder a day at that time on your phone's clock, and only if today doesn't count toward your streak yet. It names the streak: "Keep your 12-day streak going. Nothing logged yet today. 5 minutes keeps it alive." If you've logged a little but not enough it says how close you are ("You've logged 2 minutes today. 3 more and today counts."), if a rest day is saved it says so, and with no streak it reads "Start a new streak today".
+- Turning it on first explains what it does in Earmark's own box, then your device asks about notifications. Not now leaves it off and the device is never asked.
+- Notifications blocked, or a browser that has none: the switch still works. The note under it says how to allow them, and the reminder shows as a card at the top of Home (with a Log button) when you open Earmark after your time. On iPhone in Safari the note says to add Earmark to the Home Screen first.
+- Where the reminder comes from: while Earmark is open, a card on Home. While it is in the background, a notification. When it is fully closed, a notification only where the phone lets Earmark wake up by itself (installed on Android or desktop Chrome); everywhere else, iPhone included, the card is waiting on Home the next time you open it.
+- "Send a test reminder" shows one right away so you can see what it looks like.
+- Turned on, or the time moved, after tonight's time has already passed: nothing pops up tonight; it starts with the next time.
+- Tapping the notification opens Earmark. The X on the card puts it away for the day.
+- The switch and time are kept on this device only (notification permission is per device). Nothing new is stored on the server or synced. Sign out and Reset all data forget them.
+
+Limits to know
+- A notification at the exact minute with the app fully closed, on every phone, needs server-sent push. That is not in this version.
+- A closed app is only told about listening logged on this device. If you logged on another device, a closed Android app can still remind you; opening Earmark corrects it.
+- A closed app keeps reminding for 7 days after it was last opened, then waits until you open it again.
+
+Checks: `node tests/reminders.test.js` (the reminder rules, in six timezones including daylight-saving days).
+
+Not changed: no database or sync changes, and the beta end date (still Nov 13, 2026).
+
 ## 0.18.3 (Nov 18, 2026) - preview branch `earmark-0.18.3-preview`
 
 Fixes

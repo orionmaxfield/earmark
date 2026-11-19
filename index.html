@@ -536,6 +536,7 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
 .sinput:focus-visible,.snum:focus-visible{outline:2px solid var(--accent);outline-offset:1px;border-radius:6px}
 .sseg{display:flex}
 .sseg button{flex:1;min-height:36px;font-size:var(--t-14)}
+.snum.stime{width:auto;min-width:118px;text-align:center;color-scheme:dark}
 .sgnote{margin:8px 4px 0;font-size:13px;color:var(--ink-3);line-height:1.45}
 .prose{margin-top:8px}
 .prose h3{font-size:var(--t-16);font-weight:700;margin:20px 0 4px}
@@ -733,6 +734,8 @@ svg.has-sel .stbar:not(.sel){opacity:.42}
 .nudge .nt small{display:block;color:var(--ink-2);font-size:var(--t-12);margin-top:2px;line-height:1.4}
 .nbtn{flex:0 0 auto;min-height:36px;padding:0 14px;border:0;border-radius:var(--r-pill);background:var(--grad);color:var(--accent-ink);font:inherit;font-size:var(--t-14);font-weight:700;cursor:pointer}
 .nx{flex:0 0 auto;width:44px;height:44px;border:0;background:transparent;color:var(--ink-3);font-size:22px;line-height:1;border-radius:50%;cursor:pointer}
+.nudge.streakn{margin:0 0 8px}
+.install+.nudge.streakn{margin-top:0}
 .install{position:relative;margin:0 0 8px;padding:16px 16px 14px;text-align:left}
 .install .nx{position:absolute;top:4px;right:4px}
 .install>b{display:block;font-size:var(--t-16);font-weight:700;padding-right:36px;line-height:1.35}
@@ -975,6 +978,11 @@ html.locked .toast.show{transform:translate(-50%,0)}
     <p id="installWhy">Keeps your history safe and opens like a real app.</p>
     <div id="installBody"></div>
   </div>
+  <div class="card nudge streakn" id="streakNudge" hidden>
+    <div class="nic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15zM10 20.5a2 2 0 0 0 4 0"/></svg></div>
+    <div class="nt"><b id="streakNudgeT"></b><small id="streakNudgeB"></small></div>
+    <button class="nbtn" id="streakNudgeLog" type="button">Log</button><button class="nx" id="streakNudgeX" type="button" aria-label="Dismiss">×</button>
+  </div>
 
   <div class="hero">
     <div class="glow"></div>
@@ -1140,8 +1148,13 @@ html.locked .toast.show{transform:translate(-50%,0)}
   <input type="file" id="restoreFile" accept=".json,application/json" hidden>
 
   <div class="sgh">Notifications</div>
-  <div class="sgroup"><div class="srow static"><span class="sl">Listening reminders</span><span class="sv">Coming soon</span></div></div>
-  <p class="sgnote">Gentle reminders to keep your streak going are on the way.</p>
+  <div class="sgroup">
+    <div class="srow static"><span class="sl">Streak reminders</span><button class="sw" id="setRemind" role="switch" aria-checked="false" aria-label="Streak reminders"></button></div>
+    <label class="srow static" id="setRemindTimeRow" hidden><span class="sl">Remind me at</span><span class="sv"><input id="setRemindTime" class="snum stime" type="time" value="20:00" aria-label="Reminder time"></span></label>
+    <button class="srow" id="setRemindAllow" type="button" hidden><span class="sl">Allow notifications</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button>
+    <button class="srow" id="setRemindTest" type="button" hidden><span class="sl">Send a test reminder</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m9 6 6 6-6 6"/></svg></button>
+  </div>
+  <p class="sgnote" id="setRemindNote">One gentle reminder a day to keep your streak going, only on days you haven't logged your listening yet.</p>
 
   <div class="sgh">Help &amp; feedback</div>
   <div class="sgroup">
@@ -1468,7 +1481,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
   };
   /* ---- state: everything the app shows comes from here. A new account starts at zero. ---- */
   const KEY="earmark.state.v1";
-  const APP_VERSION="0.18.3";   // shown in Settings > About with a Beta tag
+  const APP_VERSION="0.19.0";   // shown in Settings > About with a Beta tag
   /* ---- beta settings: fill these in ---- */
   const FEEDBACK_URL="https://docs.google.com/forms/d/e/1FAIpQLSd0juSwRwq8oNXawAh7rJ79hCi84N0al5oX6bwg_KqX-gkqEw/viewform";   // "Send feedback"
   const FINAL_SURVEY_URL="https://docs.google.com/forms/d/e/1FAIpQLSfLebyfyRnXDIu-X4ERDeldCd_olUcJBbSbxtkAN0O6HENCbA/viewform";   // Settings > Help > Final thoughts survey
@@ -1489,7 +1502,8 @@ html.locked .toast.show{transform:translate(-50%,0)}
     lastBackup:null,backupNudgeDismissed:null,installDismissed:null,
     settings:{...SETTINGS_DEFAULT}});
   function load(){ try{ const raw=localStorage.getItem(KEY); if(raw){ const o=JSON.parse(raw); return Object.assign(fresh(),o,{user:Object.assign({name:""},o.user||{}),keys:Object.assign({},fresh().keys,o.keys||{}),settings:Object.assign({},SETTINGS_DEFAULT,o.settings||{}),legacy:Object.assign({},fresh().legacy,o.legacy||{})}); } }catch(e){} return fresh(); }
-  function save(){ if(SY.leaving) return; try{ localStorage.setItem(KEY,JSON.stringify(ST)); }catch(e){} if(SY.ready) syncSoon(); }
+  let remHook=null, remForget=()=>{};   // streak reminders (set up further down): told about every saved change; forgotten when this device's data is cleared
+  function save(){ if(SY.leaving) return; try{ localStorage.setItem(KEY,JSON.stringify(ST)); }catch(e){} if(SY.ready) syncSoon(); if(remHook) remHook(); }
   const ST=load(), SY={ready:false,leaving:false};   // SY: sync, set up near the end. leaving: the saved data was just replaced or cleared and the page is reloading, so nothing is saved over it
   const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
   /* every book, session and past-hours entry has a permanent id, so it can sync; saved data from before gets one now */
@@ -3138,7 +3152,89 @@ html.locked .toast.show{transform:translate(-50%,0)}
       okB.onclick=()=>done(true); noB.onclick=()=>done(false);
     });
   }
-  const wipe=()=>{ SY.leaving=true; try{ localStorage.removeItem(KEY); localStorage.removeItem("earmark.sync.v1"); }catch(e){} location.reload(); };
+  const wipe=()=>{ SY.leaving=true; try{ localStorage.removeItem(KEY); localStorage.removeItem("earmark.sync.v1"); }catch(e){} remForget(); location.reload(); };
+
+  /* REMINDERS-PURE:START
+     Streak reminders: the rules, as plain functions. No page, no storage and no clock of their own (the time is
+     passed in), so tests/reminders.test.js runs this block in Node. Days are local calendar days ("2026-11-18")
+     and times are local wall-clock times ("20:00"), the same as the rest of the app, so the phone's timezone and
+     daylight saving are followed without any sums here. */
+  const RM=(()=>{
+    const DEFAULT_TIME="20:00", HORIZON=7;   // HORIZON: how many days ahead the plan for a closed app covers
+    const p2=n=>String(n).padStart(2,"0");
+    const key=d=>`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`;
+    const parse=k=>{ const [y,m,d]=k.split("-").map(Number); return new Date(y,m-1,d); };
+    const addDays=(k,n)=>{ const d=parse(k); d.setDate(d.getDate()+n); return key(d); };
+    const isDay=v=>typeof v==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(v);
+    // a time of day inside a 24-hour day, "HH:MM"; anything else falls back to 8:00 PM
+    const normTime=v=>{ const m=/^(\d{1,2}):(\d{2})(?::\d{2}(?:\.\d+)?)?$/.exec(String(v==null?"":v).trim()); return m&&+m[1]<24&&+m[2]<60?`${p2(+m[1])}:${m[2]}`:DEFAULT_TIME; };
+    const timeLabel=t=>{ const [h,mi]=normTime(t).split(":").map(Number); return `${h%12||12}:${p2(mi)} ${h<12?"AM":"PM"}`; };
+    // the moment the reminder is due on a day, in the device's own timezone
+    const fireAt=(day,time)=>{ const [y,m,d]=day.split("-").map(Number), [h,mi]=normTime(time).split(":").map(Number); return new Date(y,m-1,d,h,mi,0,0); };
+    /* what is kept on the device. on: reminders are on. time: "HH:MM". lastDay: the day the last reminder was shown
+       (one a day at most). hideDay: the day the Home card was dismissed. since: when reminders were turned on or the
+       time was changed; a time that had already passed by then waits for the next day instead of popping up at once. */
+    const normPrefs=o=>{ o=o&&typeof o==="object"?o:{}; return {on:o.on===true,time:normTime(o.time),lastDay:isDay(o.lastDay)?o.lastDay:null,hideDay:isDay(o.hideDay)?o.hideDay:null,since:Number.isFinite(o.since)&&o.since>0?o.since:0}; };
+    /* the streak as it stands on a day, from the days that count toward it. The same walk as derive(): today is never
+       a miss (it isn't over), every 7 streak days earn a rest day (2 saved at most), a missed day uses one. */
+    function streakOn(qualDays,today,restOn){
+      const qual=qualDays instanceof Set?qualDays:new Set(qualDays); let streak=0, restBank=0;
+      if(!qual.size) return {streak,restBank};
+      if(restOn){
+        let earn=0; const end=parse(today);
+        for(const d=parse([...qual].sort()[0]);d<=end;d.setDate(d.getDate()+1)){
+          const k=key(d);
+          if(qual.has(k)){ streak++; if(++earn>=7){ earn=0; restBank=Math.min(2,restBank+1); } }
+          else if(k===today){}
+          else if(streak>0&&restBank>0){ restBank--; }
+          else { streak=0; earn=0; }
+        }
+      } else {
+        const yd=addDays(today,-1); let c=qual.has(today)?today:qual.has(yd)?yd:null;
+        while(c&&qual.has(c)){ streak++; c=addDays(c,-1); }
+      }
+      return {streak,restBank};
+    }
+    const mins=n=>`${n} minute${n===1?"":"s"}`;
+    // the words. They name the streak, and say how little it takes.
+    function message({streak=0,todayMin=0,minQ=5,restBank=0}={}){
+      const had=Math.floor(todayMin), left=Math.max(1,Math.ceil(minQ-todayMin));
+      if(streak>0) return {title:`Keep your ${streak}-day streak going`,
+        body:had>0?`You've logged ${mins(had)} today. ${left} more and today counts.`
+          :restBank>0?`Nothing logged yet today. ${mins(minQ)} keeps it going without using a rest day.`
+          :`Nothing logged yet today. ${mins(minQ)} keeps it alive.`};
+      return {title:"Start a new streak today",
+        body:had>0?`You've logged ${mins(had)} today. ${left} more and day one is yours.`:`Log ${mins(minQ)} of listening and day one is yours.`};
+    }
+    const live=(P,now,todayMin,minQ)=>{ const f=fireAt(key(now),P.time); return P.on&&todayMin<minQ&&now>=f&&f.getTime()>=P.since; };
+    // is today's reminder due right now? Never once today counts toward the streak, and one a day at most.
+    function due(prefs,now,todayMin,minQ){ const P=normPrefs(prefs); return live(P,now,todayMin,minQ)&&P.lastDay!==key(now); }
+    // Home shows the reminder card from the reminder time until today counts, the day ends or it is dismissed
+    function cardOn(prefs,now,todayMin,minQ){ const P=normPrefs(prefs); return live(P,now,todayMin,minQ)&&P.hideDay!==key(now); }
+    // the next moment worth checking again: today's time if it is still ahead, otherwise tomorrow's
+    function nextCheck(prefs,now){ const P=normPrefs(prefs), today=key(now), t=fireAt(today,P.time); return now<t?t:fireAt(addDays(today,1),P.time); }
+    /* the plan the service worker follows while the app is closed: one entry for each of the next days that would
+       need a reminder if nothing more is logged, with the streak as it will stand that day (a missed day uses a rest
+       day or ends the streak). Opening the app writes a fresh plan, so it only ever runs on what was last known. */
+    function plan({prefs,now,qualDays=[],todayMin=0,minQ=5,restOn=true,horizon=HORIZON}){
+      const P=normPrefs(prefs), today=key(now), out=[]; if(!P.on) return out;
+      const qual=new Set(qualDays); if(todayMin>=minQ) qual.add(today); else qual.delete(today);
+      for(let i=0;i<horizon;i++){
+        const day=addDays(today,i);
+        if(i===0&&(todayMin>=minQ||P.lastDay===today||fireAt(today,P.time).getTime()<P.since)) continue;
+        const s=streakOn(qual,day,restOn), m=message({streak:s.streak,todayMin:i?0:todayMin,minQ,restBank:s.restBank});
+        out.push({day,time:P.time,streak:s.streak,title:m.title,body:m.body});
+      }
+      return out;
+    }
+    // from a plan, the entry to show at this moment: its day's time has come, the day isn't over, and it wasn't shown (sw.js carries the same rule)
+    function pick(entries,now,shownDay){
+      const e=(Array.isArray(entries)?entries:[]).find(x=>x&&isDay(x.day)&&now>=fireAt(x.day,x.time)&&now<parse(addDays(x.day,1)));
+      return e&&e.day!==shownDay?e:null;
+    }
+    return {DEFAULT_TIME,HORIZON,key,parse,addDays,normTime,timeLabel,fireAt,normPrefs,streakOn,message,due,cardOn,nextCheck,plan,pick};
+  })();
+  /* REMINDERS-PURE:END */
 
   /* settings: every change saves and updates the app straight away */
   function refreshAll(){ derive(); save(); applyMotion(); renderHero(); renderGoals(); renderNotes(); renderShelf(shelfMode); renderShelfAll(); recomputeMedals(true); renderInsights(); renderNow(); if(current==="s-stats") renderStats(false); }
@@ -3295,7 +3391,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
     const sw=$("#setShowGoals"); sw.classList.toggle("on",!!S.showGoals); sw.setAttribute("aria-checked",!!S.showGoals);
     $$(".sseg").forEach(seg=>{ const k=seg.dataset.set, v=k==="shelfFilter"?shelfF():k in S?S[k]:ST[k]; seg.querySelectorAll("button").forEach(b=>{ b.classList.toggle("on",b.dataset.v===v); b.setAttribute("aria-pressed",b.dataset.v===v); }); });
     $("#setLastBackup").textContent=ST.lastBackup?fmtDay(ST.lastBackup):"Never";
-    renderFill();
+    renderFill(); renderRemSettings();
     const dg=dupGroups().length; $("#setDupsSub").textContent=dg?`${plural(dg,"book is","books are")} on your shelf more than once.`:"No duplicates on your shelf.";
     $("#setVersion").innerHTML=`${APP_VERSION}<span class="betatag">Beta</span>`; $("#setFounding").hidden=!BY.fl.lv;
   }
@@ -4194,7 +4290,121 @@ html.locked .toast.show{transform:translate(-50%,0)}
       <p>Tap Today, This week or This month on Home to see your listening history. Charts show the listening you've logged. Imported past hours have no date, so they count toward your total but aren't charted.</p>`;
   }
 
-  renderBackupNudge(); renderInstall(); renderNow(); renderTimer(); renderPending(); pruneCovers(); renderFill();
+  /* ---- streak reminders (Settings > Notifications) ----
+     One reminder a day at the chosen time, only when today doesn't count toward the streak yet.
+     - Earmark open, or still running in the background: a timer and every return to the app check. In view, the
+       reminder is a card on Home; out of view, a notification.
+     - Earmark closed: the service worker shows the notification from a small plan saved for it (RM.plan), whenever
+       the phone lets it run. That is Periodic Background Sync, which only installed Chrome/Android apps have. No
+       other browser lets a closed web app wake itself (that takes push from a server), so there the card is
+       waiting on Home at the next open after the time.
+     The choice is kept on this device only, under its own key like the other device preferences: permission to
+     notify belongs to a device, and nothing new is synced or stored on the server. */
+  const REM_KEY="earmark.remind.v1", REM_DB="earmark-reminders", REM_TAG="earmark-streak-reminder";
+  const REM=RM.normPrefs((()=>{ try{ return JSON.parse(localStorage.getItem(REM_KEY)); }catch(e){ return null; } })());
+  const remSave=()=>{ if(SY.leaving) return; try{ localStorage.setItem(REM_KEY,JSON.stringify(REM)); }catch(e){} };
+  // a tiny store the page and the service worker both read: "plan" (written here) and "shown" (the day a reminder was last shown)
+  const remKv=(mode,fn)=>new Promise(res=>{
+    try{ const r=indexedDB.open(REM_DB,1); r.onupgradeneeded=()=>r.result.createObjectStore("kv"); r.onerror=r.onblocked=()=>res(null);
+      r.onsuccess=()=>{ const db=r.result; try{ const tx=db.transaction("kv",mode), q=fn(tx.objectStore("kv")); tx.oncomplete=()=>{ db.close(); res(q?q.result:null); }; tx.onerror=tx.onabort=()=>{ db.close(); res(null); }; }catch(e){ db.close(); res(null); } };
+    }catch(e){ res(null); } });
+  const remPerm=()=>"Notification" in window?Notification.permission:"unsupported";   // granted, denied, default (not asked yet) or unsupported
+  const remNow=()=>{ const now=new Date(), today=dayKey(now), minQ=Math.max(1,parseInt(ST.settings.streakMinMin,10)||5), dm=D.dayMin||{};
+    return {now,today,minQ,todayMin:dm[today]||0,qualDays:[...Object.keys(dm).filter(d=>dm[d]>=minQ),...ST.legacy.days],restOn:!!ST.settings.restDays}; };
+  // the streak is worked out for this moment, not taken from the last time the screen was drawn: a reminder can come due after midnight while the app sits in the background
+  const remMsg=(S,todayMin=S.todayMin)=>{ const q=new Set(S.qualDays); if(S.todayMin<S.minQ) q.delete(S.today); const s=RM.streakOn(q,S.today,S.restOn); return RM.message({streak:s.streak,todayMin,minQ:S.minQ,restBank:s.restBank}); };
+  async function remNotify(m){
+    const opt={body:m.body,icon:"icons/icon-192.png",tag:REM_TAG};
+    try{ const reg="serviceWorker" in navigator?await navigator.serviceWorker.getRegistration():null;
+      if(reg&&reg.active){ await reg.showNotification(m.title,opt); return true; } }catch(e){}
+    try{ const n=new Notification(m.title,opt); n.onclick=()=>{ try{ window.focus(); }catch(e){} n.close(); }; return true; }catch(e){ return false; }   // no service worker here: a plain notification
+  }
+  function renderRemCard(){
+    const S=remNow(), show=ST.onboarded&&RM.cardOn(REM,S.now,S.todayMin,S.minQ); $("#streakNudge").hidden=!show; if(!show) return;
+    const m=remMsg(S); $("#streakNudgeT").textContent=m.title; $("#streakNudgeB").textContent=m.body;
+  }
+  let remPlanWas=null;
+  function remPlanWrite(){
+    const S=remNow(), on=REM.on&&ST.onboarded, entries=on?RM.plan({prefs:REM,now:S.now,qualDays:S.qualDays,todayMin:S.todayMin,minQ:S.minQ,restOn:S.restOn}):[];
+    const sig=on+JSON.stringify(entries); if(sig===remPlanWas) return; remPlanWas=sig;
+    remKv("readwrite",s=>s.put({v:1,on,entries,madeAt:Date.now()},"plan"));
+  }
+  let remT=null, remBusy=false, remAgain=false;
+  async function remCheck(){
+    if(remBusy){ remAgain=true; return; } remBusy=true;
+    try{
+      clearTimeout(remT); renderRemCard();
+      if(REM.on&&ST.onboarded){
+        const shown=await remKv("readonly",s=>s.get("shown"));   // the service worker may have shown today's while the app was closed
+        if(shown&&typeof shown.day==="string"&&(!REM.lastDay||shown.day>REM.lastDay)){ REM.lastDay=shown.day; remSave(); }
+        const S=remNow();
+        if(RM.due(REM,S.now,S.todayMin,S.minQ)){
+          REM.lastDay=S.today; remSave(); remKv("readwrite",s=>s.put({day:S.today,at:Date.now()},"shown"));
+          const m=remMsg(S);
+          if(document.visibilityState!=="visible"){ if(remPerm()==="granted") remNotify(m); }
+          else if(current!=="s-home") toast(m.title);   // in view, the card on Home is the reminder; on another screen a short note points to it
+        }
+        renderRemCard();
+        remT=setTimeout(remCheck,Math.min(Math.max(1000,RM.nextCheck(REM,new Date())-Date.now()+500),2147483647));
+      }
+      remPlanWrite();
+    } finally { remBusy=false; if(remAgain){ remAgain=false; remCheck(); } }
+  }
+  let remSoonT=null; remHook=()=>{ clearTimeout(remSoonT); remSoonT=setTimeout(remCheck,300); };   // after any saved change (a log, the minimum to count a day, rest days)
+  document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible"){ remCheck(); remBgSync(); } else remPlanWrite(); });
+  addEventListener("pageshow",()=>remCheck());
+  /* Periodic Background Sync lets the service worker look at the plan while Earmark is closed. Only installed
+     Chrome/Android apps are given it; everywhere else this quietly does nothing. */
+  let remBg=false;
+  async function remBgSync(){
+    let bg=false;
+    try{ const reg="serviceWorker" in navigator?await navigator.serviceWorker.getRegistration():null;
+      if(reg&&"periodicSync" in reg){
+        if(REM.on&&remPerm()==="granted"){ await reg.periodicSync.register(REM_TAG,{minInterval:60*60*1000}); bg=true; }
+        else await reg.periodicSync.unregister(REM_TAG);
+      } }catch(e){}   // not installed, or the browser said no: the open-app check and the Home card still work
+    if(bg!==remBg){ remBg=bg; if(current==="s-settings") renderRemSettings(); }
+  }
+  const remAskPermission=()=>new Promise(res=>{   // the browser's own permission box; older Safari answers through a callback
+    let done=false; const fin=()=>{ if(!done){ done=true; res(remPerm()); } };
+    try{ const r=Notification.requestPermission(fin); if(r&&typeof r.then==="function") r.then(fin,fin); }catch(e){ fin(); } });
+  function renderRemSettings(){
+    const perm=remPerm(), on=REM.on, sw=$("#setRemind"), t=RM.timeLabel(REM.time), ti=$("#setRemindTime");
+    sw.classList.toggle("on",on); sw.setAttribute("aria-checked",on);
+    $("#setRemindTimeRow").hidden=!on; if(document.activeElement!==ti) ti.value=REM.time;
+    $("#setRemindAllow").hidden=!(on&&perm==="default"); $("#setRemindTest").hidden=!(on&&perm==="granted");
+    const home=`Until then, the reminder shows on Home when you open Earmark after ${t}.`;
+    $("#setRemindNote").textContent=!on?"One gentle reminder a day to keep your streak going, only on days you haven't logged your listening yet."
+      :perm==="granted"?`One reminder a day at ${t}, only if today doesn't count toward your streak yet. `+(remBg?"When Earmark is closed, your phone decides when it can check, so the reminder can come late.":"Notifications come while Earmark is open or in the background. If it's fully closed, the reminder is waiting on Home when you next open it.")
+      :perm==="denied"?`Notifications are blocked for Earmark on this device. To get them, allow notifications for Earmark in your ${isIOS?"iPhone's Settings":"phone or browser settings"}. ${home}`
+      :perm==="default"?`Notifications aren't allowed yet. ${home}`
+      :isIOS&&!isStandalone()?`On iPhone, notifications need Earmark on your Home Screen: tap Share, then Add to Home Screen, and turn this on there. ${home}`
+      :`This browser can't show notifications. ${home}`;
+  }
+  const remChanged=()=>{ remSave(); renderRemSettings(); remCheck(); remBgSync(); };
+  const remOnToast=p=>toast(p==="granted"?`Streak reminders are on for ${RM.timeLabel(REM.time)}`:p==="denied"?"Notifications are blocked. Reminders will show on Home.":"Streak reminders are on. They'll show on Home.");
+  $("#setRemind").onclick=async()=>{
+    if(REM.on){ REM.on=false; remChanged(); toast("Streak reminders are off"); return; }
+    if(remPerm()==="default"){
+      // say what is about to be asked, and why, before the browser's own box appears
+      if(!await ask({title:"Turn on streak reminders?",msg:`Earmark will remind you once a day at ${RM.timeLabel(REM.time)}, only on days you haven't logged your listening yet. Next, your ${isIOS?"iPhone":"device"} will ask if Earmark can send notifications.`,ok:"Continue",cancel:"Not now"})) return;
+      REM.on=true; REM.since=Date.now(); remChanged();
+      const p=await remAskPermission(); remChanged(); remOnToast(p); return;
+    }
+    REM.on=true; REM.since=Date.now(); remChanged(); remOnToast(remPerm());
+  };
+  $("#setRemindTime").addEventListener("change",e=>{ if(!/^\d{1,2}:\d{2}/.test(e.target.value)) return; const t=RM.normTime(e.target.value); if(t===REM.time) return; REM.time=t; REM.since=Date.now(); remChanged(); });
+  $("#setRemindTime").addEventListener("blur",renderRemSettings);
+  $("#setRemindAllow").onclick=async()=>{ const p=await remAskPermission(); remChanged(); if(p!=="default") remOnToast(p); };
+  $("#setRemindTest").onclick=async()=>{ const S=remNow(), m=remMsg(S);   // the real words for right now; if today already counts, say so instead of "nothing logged"
+    if(S.todayMin>=S.minQ) m.body="This is a test. Today already counts, so there's no reminder tonight.";
+    toast(await remNotify(m)?"Test reminder sent":"Couldn't show a notification on this device"); };
+  $("#streakNudgeLog").onclick=()=>openLive();
+  $("#streakNudgeX").onclick=()=>{ REM.hideDay=dayKey(new Date()); remSave(); renderRemCard(); };
+  // signing out or erasing this device's data also forgets its reminders
+  remForget=()=>{ try{ localStorage.removeItem(REM_KEY); }catch(e){} REM.on=false; clearTimeout(remT); return remKv("readwrite",s=>{ s.delete("shown"); return s.put({v:1,on:false,entries:[],madeAt:Date.now()},"plan"); }); };
+
+  renderBackupNudge(); renderInstall(); renderNow(); renderTimer(); renderPending(); pruneCovers(); renderFill(); remCheck(); remBgSync();
   // a cover search left running when Earmark was closed carries on, once the account has had a moment to sync
   if(FILL&&FILL.on) setTimeout(runFill,6000);
   addEventListener("online",()=>{ if(FILL&&FILL.on) runFill(); });
@@ -4501,6 +4711,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
     await syncNow();
     if(dirtyKeys().length&&!await ask({title:"Some changes haven't synced",msg:"Changes made on this device since the last sync will be lost if you sign out now.",ok:"Sign out anyway",danger:true})) return;
     SY.leaving=true; try{ localStorage.removeItem(KEY); localStorage.removeItem(SYNC_KEY); }catch(e){}
+    await remForget();
     location.href="/cdn-cgi/access/logout";
   };
   $("#setDelete").onclick=async()=>{
@@ -4541,7 +4752,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
     navigator.serviceWorker.addEventListener("message",e=>{ if(e.data&&e.data.type==="update-available") offerUpdate(()=>location.reload()); });
     navigator.serviceWorker.register("sw.js").then(reg=>{
       const waiting=w=>{ if(w&&navigator.serviceWorker.controller) offerUpdate(()=>w.postMessage("skip-waiting")); };
-      waiting(reg.waiting);
+      waiting(reg.waiting); remBgSync();
       reg.addEventListener("updatefound",()=>{ const w=reg.installing; if(w) w.addEventListener("statechange",()=>{ if(w.state==="installed") waiting(w); }); });
       const check=()=>{ reg.update().catch(()=>{}); if(navigator.serviceWorker.controller) navigator.serviceWorker.controller.postMessage("check-update"); };
       document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") check(); });
