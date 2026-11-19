@@ -2,10 +2,23 @@
 
 Newest first. The version is shown in Settings > About.
 
+## 0.18.3 (Nov 18, 2026) - preview branch `earmark-0.18.3-preview`
+
+Fixes
+- Timer: timer time now follows the same rule as typed time, a day holds 24 hours. If a timer's time doesn't fit beside what is already logged on a day, Earmark keeps what fits and a box says how much was left off and for which day ("Logged 10h of your timer. 1h 30m was left off..."). If nothing fits, the form stays open and the timer's time is still there to change or discard. Typing more than the timer ran (30 in the hours box) is stopped the same way as typed time.
+- Timer: a second timer can no longer replace time that isn't logged yet. Stopping a timer, closing the form, then starting and stopping another used to drop the first one's time without a word. Now the form shows "1h from your timer isn't logged yet" with a Log it button until it is logged or discarded.
+- Timer: after you stop a timer the form says "Timer stopped at 40m" instead of offering to start a timer again.
+- Genre: books picked from search already arrive with their genre from the book database (checked, and the old to-do note in the code is gone). A book with no genre now reads "No genre" in Edit book, and a genre this version doesn't know no longer shows as a blank box.
+- Quick start from Audible: minutes over 59 carry into the hours (100 hrs 75 mins adds 101h 15m) instead of being cut to 59. Same on the first-run setup page.
+
+Checked, nothing to change: the app has no browser alert, confirm or prompt boxes left; every question already uses Earmark's own box.
+
+Not changed: no database or sync changes, no new settings, the beta end date (still Nov 13, 2026).
+
 ## 0.18.2 (Nov 18, 2026) - preview branch `earmark-0.18.2-preview`
 
 Fixes
-- Logging: typed time can no longer take today past 24 hours. Typing 30 in the hours box (a slip for 30 minutes) used to log 30 hours at once and hand out several medals. Now the form stays open and says why. Timer time is unchanged.
+- Logging: typed time can no longer take today past 24 hours. Typing 30 in the hours box (a slip for 30 minutes) used to log 30 hours at once and hand out several medals. Now the form stays open and says why. Timer time is unchanged (0.18.3 gives the timer the same limit).
 - Logging: the button adds hours and minutes up, so 1 hour and 90 minutes reads "Log 2h 30m" instead of "Log 1h 90m".
 - Stats: averages start on the first day you listened. A listener three days in used to see "Daily average 10m over 14 days" and "Weekly average 11m over 12 weeks"; now it is "45m over 3 days" and "2h 15m over 1 week".
 - Stats: the Trend tile no longer compares with time before you started ("2h 15m more than the 12 months before", "more this year than 2025"). It shows "No earlier listening to compare yet" until there is an earlier period with listening in it.

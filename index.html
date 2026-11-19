@@ -1468,7 +1468,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
   };
   /* ---- state: everything the app shows comes from here. A new account starts at zero. ---- */
   const KEY="earmark.state.v1";
-  const APP_VERSION="0.18.2";   // shown in Settings > About with a Beta tag
+  const APP_VERSION="0.18.3";   // shown in Settings > About with a Beta tag
   /* ---- beta settings: fill these in ---- */
   const FEEDBACK_URL="https://docs.google.com/forms/d/e/1FAIpQLSd0juSwRwq8oNXawAh7rJ79hCi84N0al5oX6bwg_KqX-gkqEw/viewform";   // "Send feedback"
   const FINAL_SURVEY_URL="https://docs.google.com/forms/d/e/1FAIpQLSfLebyfyRnXDIu-X4ERDeldCd_olUcJBbSbxtkAN0O6HENCbA/viewform";   // Settings > Help > Final thoughts survey
@@ -1543,8 +1543,9 @@ html.locked .toast.show{transform:translate(-50%,0)}
       return x.replace(/[a-z]/,c=>c.toUpperCase()).replace(/-([a-z])/g,(m,c)=>"-"+c.toUpperCase());
     }).join(" ");
   }
-  /* genre options for the manual pick; keys are what each book's `genre` field holds.
-     TODO: once titles come from the book database, `genre` is filled automatically from its metadata. */
+  /* genre options; keys are what each book's `genre` field holds. A book picked from search (or matched on import) gets its
+     genre from the book database's subjects (genreOf); a book the database has no subjects for, or one typed in by hand,
+     simply has no genre until one is picked in Edit book. */
   const GENRES=[["fantasy","Fantasy"],["scifi","Science fiction"],["litfic","Literary fiction"],["mystery","Mystery & thriller"],["romance","Romance"],
     ["horror","Horror"],["western","Western"],["ya","Young adult"],["children","Children's"],["classic","Classic"],["humor","Humor"],
     ["nonfiction","Nonfiction"],["history","History"],["biography","Biography"],["memoir","Memoir"],["selfhelp","Self-help"],["business","Business"],
@@ -1807,7 +1808,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
 
   /* bookshelf */
   const C={red:"#2A3A52",teal:"#17485A",gold:"#1D4F55",green:"#1F4A4A",plum:"#2F3D5C",rust:"#22466B",navy:"#1B3556",moss:"#24425A",wine:"#2B3550",slate:"#33445C"};   // navy, teal and slate tones
-  $$("select.genre").forEach(sel=>sel.innerHTML=`<option value="">Genre (optional)</option>`+GENRES.map(([k,l])=>`<option value="${k}">${l}</option>`).join(""));
+  $$("select.genre").forEach(sel=>sel.innerHTML=`<option value="">${sel.id==="bkGenre"?"No genre":"Genre (optional)"}</option>`+GENRES.map(([k,l])=>`<option value="${k}">${l}</option>`).join(""));   // Edit book has its own "Genre" label, so its empty choice reads "No genre"
   const LIB=ST.books;   // the shelf is the saved library; a new account starts empty
   /* a book is finished (no status, or "done"), "listening", or "want" (want to listen).
      How its hours count: time logged to it is real listening and counts everywhere. Once it's finished,
@@ -1954,7 +1955,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
   function openBook(id){
     const b=LIB.find(x=>x.id===id); if(!b) return;
     editing=b; delArmed=false; $("#bkDelete").textContent="Delete book";
-    $("#bkTitle").value=b.t; $("#bkAuthor").value=b.author||""; $("#bkSeries").value=b.series||""; $("#bkNum").value=b.num||""; $("#bkGenre").value=b.genre||"";
+    $("#bkTitle").value=b.t; $("#bkAuthor").value=b.author||""; $("#bkSeries").value=b.series||""; $("#bkNum").value=b.num||""; $("#bkGenre").value=GENRE_KEYS.has(b.genre)?b.genre:"";   // a genre this version doesn't know shows as "No genre", not a blank box
     const H=b.h?Math.floor(b.h):0, Mi=b.h?Math.round((b.h-H)*60):0;
     $("#bkH").value=b.h?(Mi===60?H+1:H):""; $("#bkM").value=b.h?(Mi===60?0:Mi):"";
     $("#bkDate").value=b.finished||""; $("#bkDate").max=dayKey(new Date());
@@ -2555,9 +2556,8 @@ html.locked .toast.show{transform:translate(-50%,0)}
   // the logging sheet, ready for a book (from a Log button, or the timer)
   let fromTimer=false;   // the form holds the stopped timer's time: logging it splits at midnight and clears it
   function openLive(bookId,mins,timer=false){
-    openSheet(); $("#menu").style.display="none"; $("#f-live").classList.add("show"); renderLiveForm(bookId);
+    openSheet(); fromTimer=timer; $("#menu").style.display="none"; $("#f-live").classList.add("show"); renderLiveForm(bookId);
     if(mins){ hIn.value=Math.floor(mins/60)||""; mIn.value=mins%60||""; logLabel(); }
-    fromTimer=timer;
   }
   function renderLiveForm(bookId){
     const list=LIB.filter(b=>b.status==="listening");
@@ -2571,17 +2571,19 @@ html.locked .toast.show{transform:translate(-50%,0)}
   const clock=ms=>{ const t=Math.max(0,Math.floor(ms/1000)), h=Math.floor(t/3600), m=Math.floor(t%3600/60), sec=t%60; return h?`${h}:${pad(m)}:${pad(sec)}`:`${m}:${pad(sec)}`; };
   let timerTick=null;
   function renderTimer(){
-    const t=ST.timer, on=!!t;
+    const t=ST.timer, on=!!t, pendU=ST.timerUnlogged;   // pendU: a stopped timer's time, not logged yet (a second timer would have replaced it)
     document.body.classList.toggle("timing",on); $("#timerBar").hidden=!on;
     const book=on&&t.book&&LIB.find(b=>b.id===t.book);
     $("#timerBook").textContent=book?book.t:"";
     $("#timerBox").innerHTML=on?`<p><b>Timer running since ${new Date(t.start).toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"})}</b>Stop it to fill in the time.</p><button class="lact go" type="button" id="timerStop">Stop</button>`
+      :pendU&&fromTimer?`<p><b>Timer stopped at ${hm(pendU.mins/60)}</b>Change the time below if it's off.</p>`
+      :pendU?`<p><b>${hm(pendU.mins/60)} from your timer isn't logged yet</b>Log or discard it before starting a new timer.</p><button class="lact go" type="button" data-pend="log">Log it</button>`
       :`<p><b>Use a timer</b>Start when you begin listening. It keeps time even if you lock your phone.</p><button class="lact go" type="button" id="timerStart">${PLAY}Start</button>`;
     clearInterval(timerTick);
     if(on){ const upd=()=>{ $("#timerTime").textContent=clock(Date.now()-Date.parse(t.start)); }; upd(); timerTick=setInterval(upd,1000); }
   }
   $("#timerBox").addEventListener("click",e=>{
-    if(e.target.closest("#timerStart")){ ST.timer={start:new Date().toISOString(),book:$("#logBook").value||null}; save(); closeSheet(); renderTimer(); toast("Timer started. Tap the bar at the top to stop."); }
+    if(e.target.closest("#timerStart")&&!ST.timerUnlogged){ ST.timer={start:new Date().toISOString(),book:$("#logBook").value||null}; save(); closeSheet(); renderTimer(); toast("Timer started. Tap the bar at the top to stop."); }
     if(e.target.closest("#timerStop")) stopTimer();
   });
   $("#timerBar").onclick=stopTimer;
@@ -2602,7 +2604,7 @@ html.locked .toast.show{transform:translate(-50%,0)}
   document.addEventListener("click",e=>{
     const b=e.target.closest("[data-pend]"); if(!b||!ST.timerUnlogged) return;
     if(b.dataset.pend==="log"){ const u=ST.timerUnlogged; openLive(u.book,u.mins,true); }
-    else { ST.timerUnlogged=null; save(); renderPending(); toast("Timer time discarded"); }
+    else { ST.timerUnlogged=null; fromTimer=false; save(); renderPending(); renderTimer(); toast("Timer time discarded"); }
   });
   document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible"&&ST.timer) renderTimer(); });
   $$("[data-back]").forEach(b=>b.onclick=showMenu);
@@ -2659,6 +2661,12 @@ html.locked .toast.show{transform:translate(-50%,0)}
     $("#rankTicks").innerHTML=next?`<span>${lo.toLocaleString()}</span><span>${fmtN(Math.max(0,hi-ST.total)).toLocaleString()} hours to go</span><span>${hi.toLocaleString()}</span>`:`<span>${lo.toLocaleString()}</span><span>Legend</span><span></span>`;
   }
   const hIn=$("#f-live input[type=number]:first-of-type"), mIn=$$("#f-live input[type=number]")[1];
+  // a day (or days) in plain words for a message: "today", "yesterday", "Nov 16", "those days"; with on=true: "today", "yesterday", "on Nov 16", "on those days"
+  function dayWord(days,on=false){
+    if(days.length>1) return (on?"on ":"")+"those days";
+    const t=new Date(), k=dayKey(t); t.setDate(t.getDate()-1);
+    return days[0]===k?"today":days[0]===dayKey(t)?"yesterday":(on?"on ":"")+parseDay(days[0]).toLocaleDateString(undefined,{month:"short",day:"numeric"});
+  }
   const logMins=()=>Math.round(Math.max(0,+hIn.value||0)*60+Math.max(0,+mIn.value||0));   // 90 in minutes is an hour and a half
   function logLabel(){ const m=logMins(); $("#logBtn").textContent=m>0?`Log ${hm(m/60)}`:"Log time"; }
   hIn.oninput=mIn.oninput=logLabel;
@@ -2679,35 +2687,57 @@ html.locked .toast.show{transform:translate(-50%,0)}
     const now=new Date(), d=dayKey(now), prev=ST.lastLog;
     const welcome=!!prev&&prev!==d&&daysBetween(prev,d)>=8;   // a week or more away: welcome back
     // one session (split at midnight when timed across it): it counts once toward each day, the streak and the total, and the book's progress
-    const parts=span?splitByDay(span.start,span.end,Math.round(hours*60)):[{at:now.toISOString(),d,m:Math.round(hours*60)}];
+    const parts=span?span.parts||splitByDay(span.start,span.end,Math.round(hours*60)):[{at:now.toISOString(),d,m:Math.round(hours*60)}];
     parts.forEach((x,i)=>ST.sessions.push(Object.assign({id:uid(),at:x.at,d:x.d,m:x.m,note:i?null:note||null,book:book||null},i?{part:true}:{})));
     if(note){ ST.notes.push({t:note,h:hours}); ST.notesWritten++; }
     derive(); save(); renderHero(); renderGoals(); renderNow(); renderNotes(); recomputeMedals(); renderInsights(); renderBackupNudge();
     return welcome;
   }
   // "1,234 hrs 56 mins" from the Audible app, typed into hours and minutes
-  const quickHours=p=>{ const h=Math.max(0,parseFloat(String($("#"+p+"H").value).replace(/,/g,""))||0), m=Math.min(59,Math.max(0,parseFloat($("#"+p+"M").value)||0)); return Math.round((h+m/60)*100)/100; };
+  const quickHours=p=>{ const h=Math.max(0,parseFloat(String($("#"+p+"H").value).replace(/,/g,""))||0), m=Math.max(0,parseFloat($("#"+p+"M").value)||0); return Math.round((h+m/60)*100)/100; };   // 75 minutes carries into the hours
   function addPastHours(hours,src){ ST.past.push({id:uid(),src,h:hours,at:new Date().toISOString()}); derive(); save(); renderHero(); recomputeMedals(); renderInsights(); }
   $$("[data-done]").forEach(b=>b.onclick=()=>{
     const k=b.dataset.done;
     if(k==="live"){
-      const hours=logMins()/60;
+      let hours=logMins()/60;
       if(hours<=0){ toast("Enter how long you listened"); return; }
-      // typed time can't take today past 24 hours (30 in the hours box is usually a slip for 30 minutes); a timer's span is real and splits by day
-      const todayM=D.dayMin[dayKey(new Date())]||0;
-      if(!(fromTimer&&ST.timerUnlogged)&&todayM+Math.round(hours*60)>1440){ toast(todayM?`That's over 24 hours today. ${hm(todayM/60)} is already logged.`:"A day only has 24 hours. Check the time."); (hours>24?hIn:mIn).focus(); return; }
+      dayCheck();   // a form left open past midnight: the limits below are for the day it is now
+      const u=fromTimer&&ST.timerUnlogged, todayM=D.dayMin[dayKey(new Date())]||0;
+      let fit=null, cut=0, cutDays=[];
+      if(u){
+        // timer time is split over the days it ran; each day keeps what fits beside the time already logged on it (a day holds 24 hours), and the rest is named, not dropped silently
+        const typedM=Math.round(hours*60), ranM=Math.ceil((Date.parse(u.end)-Date.parse(u.start))/60000);
+        fit=splitByDay(u.start,u.end,typedM);
+        const room=p=>Math.max(0,1440-(D.dayMin[p.d]||0));
+        // more typed in than the timer ran is typed time: stopped the same way, with the form left open
+        if(typedM>ranM&&fit.some(p=>p.m>room(p))){ const over=fit.find(p=>p.m>room(p)), had=D.dayMin[over.d]||0; toast(had&&over.m<=1440?`That's over 24 hours ${dayWord([over.d])==="today"?"today":"in a day"}. ${hm(had/60)} is already logged.`:"A day only has 24 hours. Check the time."); hIn.focus(); return; }
+        fit.forEach(p=>{ p.m=Math.min(p.m,1440);   // a full day can round to a minute over
+          const r=room(p); if(p.m>r){ cut+=p.m-r; cutDays.push(p.d); p.m=r; } });
+        fit=fit.filter(p=>p.m>0);
+        // nothing fits: the form stays open and the timer's time stays waiting (Log it / Discard), so nothing is lost
+        if(!fit.length){ toast(`${cap(dayWord(cutDays))} already ${cutDays.length>1?"have":"has"} 24 hours logged, so none of this fits.`); return; }
+        hours=fit.reduce((t,p)=>t+p.m,0)/60;
+      }
+      // typed time can't take today past 24 hours (30 in the hours box is usually a slip for 30 minutes)
+      else if(todayM+Math.round(hours*60)>1440){ toast(todayM?`That's over 24 hours today. ${hm(todayM/60)} is already logged.`:"A day only has 24 hours. Check the time."); (hours>24?hIn:mIn).focus(); return; }
       const bookId=$("#logBook").value||null, book=bookId&&LIB.find(x=>x.id===bookId);
-      const u=fromTimer&&ST.timerUnlogged, welcome=logListening(hours,$("#noteIn").value.trim(),bookId,u?{start:u.start,end:u.end}:null);
+      const welcome=logListening(hours,$("#noteIn").value.trim(),bookId,u?{start:u.start,end:u.end,parts:fit}:null);
       if(u){ ST.timerUnlogged=null; fromTimer=false; save(); renderPending(); }
       hIn.value=""; mIn.value=""; $("#noteIn").value=""; logLabel();
       closeSheet(); go("s-home",{tab:true}); toast(welcome?`Welcome back. Logged ${hm(hours)}.`:book?`Logged ${hm(hours)} of ${book.t}`:`Logged ${hm(hours)}. Streak: ${ST.streak} day${ST.streak===1?"":"s"}`);
-      // the whole length listened: gently ask, once
-      if(book&&book.status==="listening"&&book.h>0&&progOf(book)>=book.h-1e-9&&!book.askedDone){
-        book.askedDone=true; save();
-        setTimeout(async()=>{ if(await ask({title:"Did you finish it?",msg:`You've listened to ${hm(progOf(book))} of ${book.t}, its whole length.`,ok:"Yes, I finished it",cancel:"Not yet"})) finishBook(book); else showPendingEarned(); },500);
-        return;
-      }
-      showPendingEarned(); return;
+      const after=()=>{
+        // the whole length listened: gently ask, once
+        if(book&&book.status==="listening"&&book.h>0&&progOf(book)>=book.h-1e-9&&!book.askedDone){
+          book.askedDone=true; save();
+          setTimeout(async()=>{ if(await ask({title:"Did you finish it?",msg:`You've listened to ${hm(progOf(book))} of ${book.t}, its whole length.`,ok:"Yes, I finished it",cancel:"Not yet"})) finishBook(book); else showPendingEarned(); },500);
+          return;
+        }
+        showPendingEarned();
+      };
+      // some of the timer's time didn't fit: say so in a box that waits for a tap (a toast would be gone under the medal messages)
+      if(cut) ask({title:`Logged ${hm(hours)} of your timer`,msg:`${hm(cut/60)} was left off. With the time already logged ${dayWord(cutDays,true)}, it would be more than 24 hours in a day.`,single:true}).then(after);
+      else after();
+      return;
     }
     if(k==="quick"){
       const h=quickHours("qs"); if(h<=0){ toast("Enter your Audible listening time"); return; }
